@@ -34,6 +34,7 @@ $pie_rows = $pie_data->fetchAll();
 <?php
 $hide_navbar = true;
 include '../includes/header.php'; ?>
+<script src="/armas/assets/js/charts.js"></script>
 
 <div class="dashboard-layout">
     <aside class="sidebar">
