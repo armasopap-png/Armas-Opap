@@ -83,14 +83,12 @@ include '../includes/header.php'; ?>
                             <div class="form-group"><label class="form-label">Last Name</label><input type="text"
                                     name="last_name" class="form-control input-caps"
                                     oninput="this.value=this.value.toUpperCase()" required></div>
-                            <div class="form-group"><label class="form-label">First Name <span
-                                        class="auto-caps-badge">AUTO-CAPS</span></label><input type="text"
+                            <div class="form-group"><label class="form-label">First Name </label><input type="text"
                                     name="first_name" class="form-control input-caps"
                                     oninput="this.value=this.value.toUpperCase()" required></div>
                         </div>
                         <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-                            <div class="form-group"><label class="form-label">Middle Name <span
-                                        class="auto-caps-badge">AUTO-CAPS</span></label><input type="text"
+                            <div class="form-group"><label class="form-label">Middle Name </label><input type="text"
                                     name="middle_name" class="form-control input-caps"
                                     oninput="this.value=this.value.toUpperCase()"></div>
                             <div class="form-group"><label class="form-label">Suffix</label><input type="text"
@@ -106,8 +104,7 @@ include '../includes/header.php'; ?>
                             </select></div>
                         <div class="form-group"><label class="form-label">Temporary Password</label><input type="text"
                                 name="temp_password" class="form-control" required minlength="8"></div>
-                        <div class="form-group"><label class="form-label">Address <span
-                                    class="auto-caps-badge">AUTO-CAPS</span></label><textarea name="address"
+                        <div class="form-group"><label class="form-label">Address </label><textarea name="address"
                                 class="form-control input-caps" rows="2"
                                 oninput="this.value=this.value.toUpperCase()"></textarea></div>
                         <div class="form-group"><label class="form-label">Contact</label><input type="text"
