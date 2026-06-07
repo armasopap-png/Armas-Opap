@@ -26,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $country = strtoupper(trim(htmlspecialchars($_POST['country'])));
 $city = strtoupper(trim(htmlspecialchars($_POST['city'])));
 $location = $city . ', ' . $country;
+$current_address = strtoupper(trim(htmlspecialchars($_POST['current_address'] ?? '')));
     $employer = strtoupper(trim(htmlspecialchars($_POST['employer_name'])));
     $departure = $_POST['date_of_departure'];
     $ec_name = strtoupper(trim(htmlspecialchars($_POST['emergency_contact_name'])));
@@ -38,23 +39,24 @@ $location = $city . ', ' . $country;
     $count = $count_stmt->fetchColumn() + 1;
     $case_number = 'ARMAS-' . $year . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
 
-    $pdo->prepare("INSERT INTO cases
-        (case_number, ofw_id, agency_id, type, description, location_abroad, employer_name,
-         date_of_departure, emergency_contact_name, emergency_contact_number, status)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?)")
-        ->execute([
-            $case_number,
-            $ofw['id'],
-            $ofw['agency_id'],
-            $type,
-            $description,
-            $location,
-            $employer,
-            $departure,
-            $ec_name,
-            $ec_number,
-            'pending'
-        ]);
+   $pdo->prepare("INSERT INTO cases
+    (case_number, ofw_id, agency_id, type, description, location_abroad, current_address, employer_name,
+     date_of_departure, emergency_contact_name, emergency_contact_number, status)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")
+    ->execute([
+        $case_number,
+        $ofw['id'],
+        $ofw['agency_id'],
+        $type,
+        $description,
+        $location,
+        $current_address,
+        $employer,
+        $departure,
+        $ec_name,
+        $ec_number,
+        'pending'
+    ]);
 
     // Notify agency
     // Notify agency - get the agency's user_id
@@ -189,6 +191,15 @@ include '../includes/header.php'; ?>
             <option value="OTHER">Other</option>
         </select>
     </div>
+
+<div class="form-group">
+    <label class="form-label">Current Address / Area</label>
+    <input type="text" name="current_address" class="form-control input-caps"
+        oninput="this.value=this.value.toUpperCase()"
+        placeholder="OPTIONAL">
+</div>
+
+    
     <div class="form-group">
         <label class="form-label">City <span style="color:red">*</span></label>
         <input type="text" name="city" class="form-control input-caps"
