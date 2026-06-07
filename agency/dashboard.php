@@ -100,13 +100,7 @@ include '../includes/header.php'; ?>
         </nav>
 
         <div class="sidebar-footer">
-            <div class="user-info">
-                <div class="user-avatar"><?php echo substr($agency['name'], 0, 1); ?></div>
-                <div class="user-details">
-                    <div class="user-name"><?php echo htmlspecialchars($agency['name']); ?></div>
-                    <div class="user-role">Agency</div>
-                </div>
-            </div>
+            <a href="/armas/pages/logout.php" class="btn btn-outline btn-sm w-100">Logout</a>
         </div>
     </aside>
 
@@ -116,7 +110,13 @@ include '../includes/header.php'; ?>
                 <h1>Agency Dashboard</h1>
             </div>
             <div class="main-header-actions">
-                <a href="/armas/pages/logout.php" class="btn btn-outline btn-sm">Logout</a>
+                <div class="user-info">
+                    <div class="user-avatar"><?php echo substr($agency['name'], 0, 1); ?></div>
+                    <div class="user-details">
+                        <div class="user-name"><?php echo htmlspecialchars($agency['name']); ?></div>
+                        <div class="user-role">Agency</div>
+                    </div>
+                </div>
             </div>
         </header>
 
