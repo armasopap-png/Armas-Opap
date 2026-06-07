@@ -68,12 +68,12 @@ $agencies = $pdo->query("SELECT a.*, u.email, u.status as user_status FROM agenc
                                         <td><?php echo htmlspecialchars($a['email']); ?></td>
                                         <td><?php echo get_status_badge($a['user_status']); ?></td>
                                         <td><?php echo date('M d, Y', strtotime($a['created_at'])); ?></td>
-                                        <td>
-                                            <button class="btn btn-sm btn-outline"
-                                                onclick="confirmAction('<?php echo $a['user_status'] === 'active' ? 'Deactivate' : 'Activate'; ?> this agency?', () => toggleStatus(<?php echo $a['user_id']; ?>, '<?php echo $a['user_status'] === 'active' ? 'inactive' : 'active'; ?>', 'confirmModal'))"
-                                                <?php echo $a['user_status'] === 'active' ? 'Deactivate' : 'Activate'; ?>
-                                                </button>
-                                        </td>
+                                       <td>
+    <button class="btn btn-sm btn-outline"
+        onclick="confirmAction('<?php echo $a['user_status'] === 'active' ? 'Deactivate' : 'Activate'; ?> this agency?', () => toggleStatus(<?php echo $a['user_id']; ?>, '<?php echo $a['user_status'] === 'active' ? 'inactive' : 'active'; ?>', 'confirmModal'))"
+        <?php echo $a['user_status'] === 'active' ? 'Deactivate' : 'Activate'; ?>
+        </button>
+</td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -84,6 +84,45 @@ $agencies = $pdo->query("SELECT a.*, u.email, u.status as user_status FROM agenc
         </div>
     </main>
 </div>
+
+<style>
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 48px;
+        height: 26px;
+        cursor: pointer;
+    }
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .toggle-slider {
+        position: absolute;
+        inset: 0;
+        background: #e53e3e;
+        border-radius: 34px;
+        transition: 0.3s;
+    }
+    .toggle-slider::before {
+        content: '';
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        left: 3px;
+        bottom: 3px;
+        background: white;
+        border-radius: 50%;
+        transition: 0.3s;
+    }
+    .toggle-switch input:checked + .toggle-slider {
+        background: #38a169;
+    }
+    .toggle-switch input:checked + .toggle-slider::before {
+        transform: translateX(22px);
+    }
+</style>
 
 <script>
     function toggleStatus(userId, newStatus, modalId) {
