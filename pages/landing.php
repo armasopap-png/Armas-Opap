@@ -677,7 +677,7 @@ require_once 'includes/functions.php';
         <div class="section-container">
             <div class="about-grid">
                 <div class="about-image">
-                    <img src="'assets/img/armas.jpg' width='600' height='400' viewBox='0 0 600 400'%3E%3Crect fill='%231A3A6B' width='600' height='400'/%3E%3Ctext x='300' y='180' text-anchor='middle' fill='%23C8A951' font-family='serif' font-size='48' font-weight='bold'%3EARMAS%3C/text%3E%3Ctext x='300' y='230' text-anchor='middle' fill='white' font-family='sans-serif' font-size='18'%3EProtecting Every Filipino%3C/text%3E%3Ctext x='300' y='260' text-anchor='middle' fill='white' font-family='sans-serif' font-size='18'%3EEvery Mile Away%3C/text%3E%3C/svg%3E" alt="ARMAS Mission">
+                    <img src="/armas/assets/img/armas.jpg" alt="ARMAS Mission" style="width:100%;border-radius:12px;">
                 </div>
                 <div class="about-content">
                     <h3>About ARMAS</h3>
