@@ -1,0 +1,279 @@
+<?php
+
+/**
+ * ARMAS OFW Profile
+ */
+session_start();
+require_once '../includes/db.php';
+require_once '../includes/auth.php';
+require_once '../includes/functions.php';
+require_auth('ofw');
+
+$page_title = 'My Profile';
+$use_dashboard_css = true;
+$success = '';
+$error = '';
+
+// Get OFW profile
+$stmt = $pdo->prepare("SELECT o.*, u.email FROM ofws o JOIN users u ON o.user_id = u.id WHERE o.user_id = ?");
+$stmt->execute([$_SESSION['user_id']]);
+$ofw = $stmt->fetch();
+
+// Update profile
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
+    $last_name = strtoupper(trim(htmlspecialchars($_POST['last_name'])));
+    $first_name = strtoupper(trim(htmlspecialchars($_POST['first_name'])));
+    $middle_name = strtoupper(trim(htmlspecialchars($_POST['middle_name'])));
+    $suffix = htmlspecialchars($_POST['suffix']);
+    $address = strtoupper(trim(htmlspecialchars($_POST['address'])));
+    $contact = htmlspecialchars($_POST['contact_number']);
+
+    $pdo->prepare("UPDATE ofws SET last_name = ?, first_name = ?, middle_name = ?, suffix = ?, address = ?, contact_number = ? WHERE user_id = ?")
+        ->execute([$last_name, $first_name, $middle_name, $suffix, $address, $contact, $_SESSION['user_id']]);
+
+    $success = 'Profile updated successfully!';
+
+    // Refresh data
+    $stmt = $pdo->prepare("SELECT o.*, u.email FROM ofws o JOIN users u ON o.user_id = u.id WHERE o.user_id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+    $ofw = $stmt->fetch();
+}
+
+// Change password
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
+    $current = $_POST['current_password'];
+    $new = $_POST['new_password'];
+    $confirm = $_POST['confirm_password'];
+
+    // Verify current password
+    $stmt = $pdo->prepare("SELECT password_hash FROM users WHERE id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+    $user = $stmt->fetch();
+
+    if (!password_verify($current, $user['password_hash'])) {
+        $error = 'Current password is incorrect.';
+    } elseif (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*\-_=+{}\[\]|;:\'",.<>?\/`~\\\\]).{8,}$/', $new)) {
+        $error = 'Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character.';
+    } elseif ($new !== $confirm) {
+        $error = 'New passwords do not match.';
+    } else {
+        $hash = password_hash($new, PASSWORD_BCRYPT);
+        $pdo->prepare("UPDATE users SET password_hash = ? WHERE id = ?")->execute([$hash, $_SESSION['user_id']]);
+        $success = 'Password changed successfully!';
+    }
+}
+?>
+<?php
+$hide_navbar = true;
+include '../includes/header.php'; ?>
+
+<div class="dashboard-layout">
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <img src="/armas/assets/img/armas.jpg" alt="ARMAS" class="sidebar-logo">
+            <div class="sidebar-brand-text">
+                <span class="logo-text">ARMAS</span>
+                <span class="brand-subtitle">OFW Portal</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Main Menu</div>
+                <a href="/armas/ofw/dashboard.php" class="sidebar-link">
+                    <span class="sidebar-link-icon">📊</span>
+                    <span class="sidebar-link-text">Dashboard</span>
+                </a>
+                <a href="/armas/ofw/submit-case.php" class="sidebar-link">
+                    <span class="sidebar-link-icon">📝</span>
+                    <span class="sidebar-link-text">Submit Case</span>
+                </a>
+                <a href="/armas/ofw/track-case.php" class="sidebar-link">
+                    <span class="sidebar-link-icon">🔍</span>
+                    <span class="sidebar-link-text">Track Case</span>
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Account</div>
+                <a href="/armas/ofw/notifications.php" class="sidebar-link">
+                    <span class="sidebar-link-icon">🔔</span>
+                    <span class="sidebar-link-text">Notifications</span>
+                </a>
+                <a href="/armas/ofw/profile.php" class="sidebar-link active">
+                    <span class="sidebar-link-icon">👤</span>
+                    <span class="sidebar-link-text">Profile</span>
+                </a>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="/armas/pages/logout.php" class="btn btn-outline btn-sm w-100">Logout</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="main-header">
+            <div class="main-header-title">
+                <h1>My Profile</h1>
+            </div>
+            <div class="main-header-actions">
+                <div class="user-info">
+                    <div class="user-avatar"><?php echo substr($ofw['first_name'], 0, 1); ?></div>
+                    <div class="user-details">
+                        <div class="user-name"><?php echo htmlspecialchars($ofw['first_name'] . ' ' . $ofw['last_name']); ?></div>
+                        <div class="user-role">OFW</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-body">
+            <?php if ($success): ?>
+                <div class="flash flash-success">
+                    <span><?php echo $success; ?></span>
+                    <button class="flash-close" onclick="this.parentElement.style.display='none'">&times;</button>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($error): ?>
+                <div class="flash flash-error">
+                    <span><?php echo $error; ?></span>
+                    <button class="flash-close" onclick="this.parentElement.style.display='none'">&times;</button>
+                </div>
+            <?php endif; ?>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('profile')">Profile Information</button>
+                <button class="tab-btn" onclick="switchTab('password')">Change Password</button>
+            </div>
+
+            <!-- Profile Tab -->
+            <div id="profile" class="tab-content active">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Personal Information</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST">
+                            <input type="hidden" name="update_profile" value="1">
+
+                            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div class="form-group">
+                                    <label class="form-label">Last Name</label>
+                                    <input type="text" name="last_name" class="form-control input-caps"
+                                        value="<?php echo htmlspecialchars($ofw['last_name']); ?>"
+                                        oninput="this.value=this.value.replace(/[^a-zA-Z.\s\-]/g,'').toUpperCase()" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">First Name</label>
+                                    <input type="text" name="first_name" class="form-control input-caps"
+                                        value="<?php echo htmlspecialchars($ofw['first_name']); ?>"
+                                        oninput="this.value=this.value.replace(/[^a-zA-Z.\s\-]/g,'').toUpperCase()" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div class="form-group">
+                                    <label class="form-label">Middle Name</label>
+                                    <input type="text" name="middle_name" class="form-control input-caps"
+                                        value="<?php echo htmlspecialchars($ofw['middle_name'] ?? ''); ?>"
+                                        oninput="this.value=this.value.replace(/[^a-zA-Z.\s\-]/g,'').toUpperCase()">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Suffix</label>
+                                    <input type="text" name="suffix" class="form-control"
+                                        value="<?php echo htmlspecialchars($ofw['suffix'] ?? ''); ?>"
+                                        placeholder="Jr., Sr., III">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Email Address</label>
+                                <input type="email" class="form-control"
+                                    value="<?php echo htmlspecialchars($ofw['email']); ?>" disabled>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Address</label>
+                                <textarea name="address" class="form-control input-caps" rows="2"
+                                    oninput="this.value=this.value.toUpperCase()"><?php echo htmlspecialchars($ofw['address'] ?? ''); ?></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Contact Number</label>
+                                <input type="text" name="contact_number" class="form-control"
+                                    value="<?php echo htmlspecialchars($ofw['contact_number'] ?? ''); ?>"
+                                    oninput="this.value=this.value.replace(/[^0-9+\s\-]/g,'')">
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </form>
+                        <script>
+                            document.querySelector('form [name="update_profile"]').closest('form').addEventListener('submit', function(e) {
+                                const nameFields = ['last_name', 'first_name', 'middle_name'];
+                                for (const field of nameFields) {
+                                    const val = this.querySelector(`[name="${field}"]`).value;
+                                    if (/[0-9!@#$%^&*()_+={}\[\]|\\:;"'<>,.?\/`~]/.test(val)) {
+                                        alert('Names must not contain numbers or special characters.');
+                                        e.preventDefault();
+                                        return;
+                                    }
+                                }
+                                const contact = this.querySelector('[name="contact_number"]').value;
+                                if (contact && !/^\+?[0-9\s\-]+$/.test(contact)) {
+                                    alert('Contact number must contain numbers only.');
+                                    e.preventDefault();
+                                    return;
+                                }
+                            });
+                        </script>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password Tab -->
+            <div id="password" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Change Password</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST">
+                            <input type="hidden" name="change_password" value="1">
+
+                            <div class="form-group">
+                                <label class="form-label">Current Password</label>
+                                <input type="password" name="current_password" class="form-control" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">New Password</label>
+                                <input type="password" name="new_password" class="form-control" required minlength="8">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Confirm New Password</label>
+                                <input type="password" name="confirm_password" class="form-control" required>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Change Password</button>
+                        </form>
+                        <script>
+                            document.querySelector('form [name="change_password"]').closest('form').addEventListener('submit', function(e) {
+                                const newPass = this.querySelector('[name="new_password"]').value;
+                                const strong = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+={}\[\]|\\:;"'<>,.?\/`~\-]).{8,}$/;
+                                if (!strong.test(newPass)) {
+                                    alert('Password must have at least 8 characters and include:\n• One uppercase letter\n• One lowercase letter\n• One number\n• One special character');
+                                    e.preventDefault();
+                                }
+                            });
+                        </script>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<?php include '../includes/footer.php'; ?>
