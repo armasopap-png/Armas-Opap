@@ -8,8 +8,8 @@ $page_title = 'Agency List';
 $use_dashboard_css = true;
 $agencies = $pdo->query("SELECT a.*, u.email, u.status as user_status FROM agencies a JOIN users u ON a.user_id = u.id ORDER BY a.created_at DESC")->fetchAll();
 ?><?php
-$hide_navbar = true;
-include '../includes/header.php'; ?>
+    $hide_navbar = true;
+    include '../includes/header.php'; ?>
 <div class="dashboard-layout">
     <aside class="sidebar">
         <div class="sidebar-brand"><img src="/armas/assets/img/armas.png" alt="ARMAS" class="sidebar-logo">
@@ -70,9 +70,9 @@ include '../includes/header.php'; ?>
                                         <td><?php echo date('M d, Y', strtotime($a['created_at'])); ?></td>
                                         <td>
                                             <button class="btn btn-sm btn-outline"
-                                                onclick="confirmAction('Deactivate this agency?', () => toggleStatus(<?php echo $a['user_id']; ?>, '<?php echo $a['user_status'] === 'active' ? 'inactive' : 'active'; ?>, 'confirmModal'))">
+                                                onclick="confirmAction('<?php echo $a['user_status'] === 'active' ? 'Deactivate' : 'Activate'; ?> this agency?', () => toggleStatus(<?php echo $a['user_id']; ?>, '<?php echo $a['user_status'] === 'active' ? 'inactive' : 'active'; ?>', 'confirmModal'))"
                                                 <?php echo $a['user_status'] === 'active' ? 'Deactivate' : 'Activate'; ?>
-                                            </button>
+                                                </button>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -84,4 +84,41 @@ include '../includes/header.php'; ?>
         </div>
     </main>
 </div>
+
+<script>
+    function toggleStatus(userId, newStatus, modalId) {
+        fetch('/armas/api/toggle-status.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    user_id: userId,
+                    status: newStatus
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.message ?? 'Could not update status.'));
+                }
+            })
+            .catch(() => alert('Request failed.'));
+    }
+
+    function confirmAction(message, callback) {
+        document.getElementById('confirmMessage').textContent = message;
+        document.getElementById('confirmModal').style.display = 'flex';
+        document.getElementById('confirmBtn').onclick = function() {
+            document.getElementById('confirmModal').style.display = 'none';
+            callback();
+        };
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+</script>
 <?php include '../includes/footer.php'; ?>
