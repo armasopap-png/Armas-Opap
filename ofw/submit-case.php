@@ -167,14 +167,33 @@ include '../includes/header.php'; ?>
                             </select>
                         </div>
 
-                        <div class="form-group">
-                            <label class="form-label">
-                                Location Abroad
-                            </label>
-                            <input type="text" name="location_abroad" class="form-control input-caps"
-                                oninput="this.value=this.value.toUpperCase()" required
-                                placeholder="e.g., RIYADH, SAUDI ARABIA">
-                        </div>
+                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+    <div class="form-group">
+        <label class="form-label">Country <span style="color:red">*</span></label>
+        <select name="country" class="form-control" required>
+            <option value="">-- Select country --</option>
+            <option value="SAUDI ARABIA">Saudi Arabia</option>
+            <option value="UNITED ARAB EMIRATES">United Arab Emirates</option>
+            <option value="QATAR">Qatar</option>
+            <option value="KUWAIT">Kuwait</option>
+            <option value="BAHRAIN">Bahrain</option>
+            <option value="OMAN">Oman</option>
+            <option value="SINGAPORE">Singapore</option>
+            <option value="HONG KONG">Hong Kong</option>
+            <option value="TAIWAN">Taiwan</option>
+            <option value="JAPAN">Japan</option>
+            <option value="SOUTH KOREA">South Korea</option>
+            <option value="MALAYSIA">Malaysia</option>
+            <option value="OTHER">Other</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label class="form-label">City <span style="color:red">*</span></label>
+        <input type="text" name="city" class="form-control input-caps"
+            oninput="this.value=this.value.toUpperCase()" required
+            placeholder="EX., RIYADH">
+    </div>
+</div>
 
                         <div class="form-group">
                             <label class="form-label">
