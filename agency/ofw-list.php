@@ -91,7 +91,7 @@ include '../includes/header.php'; ?>
                 <h1>OFW List</h1>
             </div>
             <div class="main-header-actions">
-                <a href="/armas/agency/add-ofw.php" class="btn btn-secondary">+ Add New OFW</a>
+                <a href="/armas/agency/add-ofw.php" class="btn btn-secondary btn-sm">+ Add New OFW</a>
             </div>
         </header>
 
