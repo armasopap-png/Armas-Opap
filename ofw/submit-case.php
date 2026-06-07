@@ -151,10 +151,6 @@ include '../includes/header.php'; ?>
                     <h3>Case Information</h3>
                 </div>
                 <div class="card-body">
-                    <div class="alert-info"
-                        style="background: var(--accent); padding: 16px; border-radius: var(--radius-md); margin-bottom: 24px;">
-                        <strong>ℹ️ Note:</strong> All text fields will be automatically converted to uppercase.
-                    </div>
 
                     <form method="POST" action="">
                         <div class="form-group">
