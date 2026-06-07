@@ -99,7 +99,7 @@ include '../includes/header.php'; ?>
         <div class="main-body">
             <div class="report-header">
                 <div class="report-title">
-                    <img src="/armas/assets/img/armas.jpg" alt="ARMAS">
+                    <img src="/armas/assets/img/armas.png" alt="ARMAS">
                     <div>
                         <h2><?php echo htmlspecialchars($agency['name']); ?></h2>
                         <p>Generated on <?php echo date('F d, Y'); ?></p>
