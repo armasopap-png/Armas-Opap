@@ -8,8 +8,13 @@ $page_title = 'Agency Cases';
 $use_dashboard_css = true;
 $agencies = $pdo->query("SELECT id, name FROM agencies ORDER BY name")->fetchAll();
 $agency_id = $_GET['agency_id'] ?? ($agencies[0]['id'] ?? null);
-$cases = $agency_id ? $pdo->prepare("SELECT c.*, o.first_name, o.last_name FROM cases c JOIN ofws o ON c.ofw_id = o.id WHERE c.agency_id = ? ORDER BY c.created_at DESC")->execute([$agency_id]) : [];
-$cases = $agency_id ? $pdo->prepare("SELECT c.*, o.first_name, o.last_name FROM cases c JOIN ofws o ON c.ofw_id = o.id WHERE c.agency_id = ? ORDER BY c.created_at DESC")->fetchAll() : [];
+if ($agency_id) {
+    $stmt = $pdo->prepare("SELECT c.*, o.first_name, o.last_name FROM cases c JOIN ofws o ON c.ofw_id = o.id WHERE c.agency_id = ? ORDER BY c.created_at DESC");
+    $stmt->execute([$agency_id]);
+    $cases = $stmt->fetchAll();
+} else {
+    $cases = [];
+}
 ?><?php
 $hide_navbar = true;
 include '../includes/header.php'; ?>
