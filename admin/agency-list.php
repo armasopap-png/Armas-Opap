@@ -68,11 +68,11 @@ $agencies = $pdo->query("SELECT a.*, u.email, u.status as user_status FROM agenc
                                         <td><?php echo htmlspecialchars($a['email']); ?></td>
                                         <td><?php echo get_status_badge($a['user_status']); ?></td>
                                         <td><?php echo date('M d, Y', strtotime($a['created_at'])); ?></td>
-                                       <td>
-    <button class="btn btn-sm btn-outline"
-        onclick="confirmAction('<?php echo $a['user_status'] === 'active' ? 'Deactivate' : 'Activate'; ?> this agency?', () => toggleStatus(<?php echo $a['user_id']; ?>, '<?php echo $a['user_status'] === 'active' ? 'inactive' : 'active'; ?>', 'confirmModal'))"
-        <?php echo $a['user_status'] === 'active' ? 'Deactivate' : 'Activate'; ?>
-        </button>
+                                           <td>
+    <label class="toggle-switch" onclick="handleToggle(event, <?php echo $a['user_id']; ?>, '<?php echo $a['user_status']; ?>', '<?php echo htmlspecialchars($a['name']); ?>')">
+        <input type="checkbox" <?php echo $a['user_status'] === 'active' ? 'checked' : ''; ?> readonly>
+        <span class="toggle-slider"></span>
+    </label>
 </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -85,79 +85,51 @@ $agencies = $pdo->query("SELECT a.*, u.email, u.status as user_status FROM agenc
     </main>
 </div>
 
+
+
+<!-- Confirm Modal -->
+<div id="confirmModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:12px; padding:32px; max-width:400px; width:90%; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <p id="confirmMessage" style="font-size:1rem; margin-bottom:24px; color:#1a3a6b; font-weight:500;"></p>
+        <div style="display:flex; gap:12px; justify-content:center;">
+            <button onclick="document.getElementById('confirmModal').style.display='none'" style="padding:10px 24px; border:1px solid #ccc; border-radius:8px; background:#fff; cursor:pointer;">Cancel</button>
+            <button id="confirmBtn" style="padding:10px 24px; border:none; border-radius:8px; background:#1a3a6b; color:#fff; cursor:pointer; font-weight:600;">Confirm</button>
+        </div>
+    </div>
+</div>
+
 <style>
-    .toggle-switch {
-        position: relative;
-        display: inline-block;
-        width: 48px;
-        height: 26px;
-        cursor: pointer;
-    }
-    .toggle-switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-    }
-    .toggle-slider {
-        position: absolute;
-        inset: 0;
-        background: #e53e3e;
-        border-radius: 34px;
-        transition: 0.3s;
-    }
-    .toggle-slider::before {
-        content: '';
-        position: absolute;
-        width: 20px;
-        height: 20px;
-        left: 3px;
-        bottom: 3px;
-        background: white;
-        border-radius: 50%;
-        transition: 0.3s;
-    }
-    .toggle-switch input:checked + .toggle-slider {
-        background: #38a169;
-    }
-    .toggle-switch input:checked + .toggle-slider::before {
-        transform: translateX(22px);
-    }
+    .toggle-switch { position:relative; display:inline-block; width:48px; height:26px; cursor:pointer; }
+    .toggle-switch input { opacity:0; width:0; height:0; }
+    .toggle-slider { position:absolute; inset:0; background:#e53e3e; border-radius:34px; transition:0.3s; }
+    .toggle-slider::before { content:''; position:absolute; width:20px; height:20px; left:3px; bottom:3px; background:white; border-radius:50%; transition:0.3s; }
+    .toggle-switch input:checked + .toggle-slider { background:#38a169; }
+    .toggle-switch input:checked + .toggle-slider::before { transform:translateX(22px); }
 </style>
 
 <script>
-    function toggleStatus(userId, newStatus, modalId) {
-        fetch('/armas/api/toggle-status.php', {
+    function handleToggle(e, userId, currentStatus, agencyName) {
+        e.preventDefault();
+        const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+        const action = currentStatus === 'active' ? 'Deactivate' : 'Activate';
+
+        document.getElementById('confirmMessage').textContent = 'Are you sure you want to ' + action + ' "' + agencyName + '"?';
+        document.getElementById('confirmModal').style.display = 'flex';
+
+        document.getElementById('confirmBtn').onclick = function () {
+            document.getElementById('confirmModal').style.display = 'none';
+            fetch('/armas/api/toggle-status.php', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    user_id: userId,
-                    status: newStatus
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId, status: newStatus })
             })
             .then(res => res.json())
             .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert('Error: ' + (data.message ?? 'Could not update status.'));
-                }
+                if (data.success) { location.reload(); }
+                else { alert('Error: ' + (data.message ?? 'Could not update status.')); }
             })
             .catch(() => alert('Request failed.'));
-    }
-
-    function confirmAction(message, callback) {
-        document.getElementById('confirmMessage').textContent = message;
-        document.getElementById('confirmModal').style.display = 'flex';
-        document.getElementById('confirmBtn').onclick = function() {
-            document.getElementById('confirmModal').style.display = 'none';
-            callback();
         };
-    }
-
-    function closeModal(id) {
-        document.getElementById(id).style.display = 'none';
     }
 </script>
 <?php include '../includes/footer.php'; ?>
