@@ -123,7 +123,7 @@ include '../includes/header.php'; ?>
                 </a>
                 <a href="/armas/agency/ofw-list.php" class="sidebar-link">
                     <span class="sidebar-link-icon">👥</span>
-                    <span class="sidebar-link-text">hahaha</span>
+                    <span class="sidebar-link-text">awaw</span>
                 </a>
                 <a href="/armas/agency/add-ofw.php" class="sidebar-link">
                     <span class="sidebar-link-icon">➕</span>
