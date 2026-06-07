@@ -32,6 +32,7 @@ $current_address = strtoupper(trim(htmlspecialchars($_POST['current_address'] ??
     $ec_name = strtoupper(trim(htmlspecialchars($_POST['emergency_contact_name'])));
     $ec_number = htmlspecialchars($_POST['emergency_contact_number']);
     $description = strtoupper(trim(htmlspecialchars($_POST['description'])));
+    
 
     // Generate case number: ARMAS-YYYY-XXXX
     $year = date('Y');
@@ -39,10 +40,10 @@ $current_address = strtoupper(trim(htmlspecialchars($_POST['current_address'] ??
     $count = $count_stmt->fetchColumn() + 1;
     $case_number = 'ARMAS-' . $year . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
 
-   $pdo->prepare("INSERT INTO cases
-    (case_number, ofw_id, agency_id, type, description, location_abroad, current_address, employer_name,
+ $pdo->prepare("INSERT INTO cases
+    (case_number, ofw_id, agency_id, type, description, location_abroad, city, current_address, employer_name,
      date_of_departure, emergency_contact_name, emergency_contact_number, status)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
     ->execute([
         $case_number,
         $ofw['id'],
@@ -50,6 +51,7 @@ $current_address = strtoupper(trim(htmlspecialchars($_POST['current_address'] ??
         $type,
         $description,
         $location,
+        $city,
         $current_address,
         $employer,
         $departure,
@@ -57,7 +59,6 @@ $current_address = strtoupper(trim(htmlspecialchars($_POST['current_address'] ??
         $ec_number,
         'pending'
     ]);
-
     // Notify agency
     // Notify agency - get the agency's user_id
     $agency_stmt = $pdo->prepare("SELECT user_id FROM agencies WHERE id = ?");
