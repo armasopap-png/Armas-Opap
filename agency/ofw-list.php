@@ -1,4 +1,5 @@
 <?php
+
 /**
  * ARMAS Agency OFW List
  */
@@ -38,7 +39,7 @@ include '../includes/header.php'; ?>
 <div class="dashboard-layout">
     <aside class="sidebar">
         <div class="sidebar-brand">
-            <img src="/armas/assets/img/armas.png" alt="ARMAS" class="sidebar-logo">
+            <img src="/armas/assets/img/armas.jpg" alt="ARMAS" class="sidebar-logo">
             <div class="sidebar-brand-text">
                 <span class="logo-text">ARMAS</span>
                 <span class="brand-subtitle">Agency Portal</span>
@@ -127,7 +128,7 @@ include '../includes/header.php'; ?>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                        <?php foreach ($ofws as $ofw): ?>
+                                    <?php foreach ($ofws as $ofw): ?>
                                         <tr>
                                             <td><?php echo $ofw['id']; ?></td>
                                             <td><?php echo htmlspecialchars($ofw['first_name'] . ' ' . $ofw['last_name']); ?>
@@ -137,7 +138,7 @@ include '../includes/header.php'; ?>
                                             <td><?php echo get_status_badge($ofw['user_status']); ?></td>
                                             <td><?php echo date('M d, Y', strtotime($ofw['created_at'])); ?></td>
                                         </tr>
-                                        <?php endforeach; ?>
+                                    <?php endforeach; ?>
                                 </tbody>
                             </table>
                         </div>

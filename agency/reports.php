@@ -38,7 +38,7 @@ include '../includes/header.php'; ?>
 <div class="dashboard-layout">
     <aside class="sidebar">
         <div class="sidebar-brand">
-            <img src="/armas/assets/img/armas.png" alt="ARMAS" class="sidebar-logo">
+            <img src="/armas/assets/img/armas.jpg" alt="ARMAS" class="sidebar-logo">
             <div class="sidebar-brand-text">
                 <span class="logo-text">ARMAS</span>
                 <span class="brand-subtitle">Agency Portal</span>
@@ -99,7 +99,7 @@ include '../includes/header.php'; ?>
         <div class="main-body">
             <div class="report-header">
                 <div class="report-title">
-                    <img src="/armas/assets/img/armas.png" alt="ARMAS">
+                    <img src="/armas/assets/img/armas.jpg" alt="ARMAS">
                     <div>
                         <h2><?php echo htmlspecialchars($agency['name']); ?></h2>
                         <p>Generated on <?php echo date('F d, Y'); ?></p>
