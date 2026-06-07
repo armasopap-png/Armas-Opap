@@ -12,7 +12,7 @@ require_auth('agency');
 $page_title = 'Cases';
 $use_dashboard_css = true;
 
-$stmt = $pdo->prepare("SELECT id FROM agencies WHERE user_id = ?");
+$stmt = $pdo->prepare("SELECT id, name FROM agencies WHERE user_id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $agency = $stmt->fetch();
 $agency_id = $agency['id'];
@@ -156,7 +156,15 @@ include '../includes/header.php'; ?>
     <main class="main-content">
         <header class="main-header">
             <div class="main-header-title">
-                <h1>Case Management</h1>
+            </div>
+            <div class="main-header-actions">
+                <div class="user-info">
+                    <div class="user-avatar"><?php echo substr($agency['name'], 0, 1); ?></div>
+                    <div class="user-details">
+                        <div class="user-name"><?php echo htmlspecialchars($agency['name']); ?></div>
+                        <div class="user-role">Agency</div>
+                    </div>
+                </div>
             </div>
         </header>
 

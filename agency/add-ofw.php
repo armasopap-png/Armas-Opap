@@ -14,6 +14,11 @@ $use_dashboard_css = true;
 $success = '';
 $error = '';
 
+// Always fetch agency for header
+$stmt = $pdo->prepare("SELECT * FROM agencies WHERE user_id = ?");
+$stmt->execute([$_SESSION['user_id']]);
+$agency = $stmt->fetch();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt = $pdo->prepare("SELECT id FROM agencies WHERE user_id = ?");
     $stmt->execute([$_SESSION['user_id']]);
@@ -114,7 +119,15 @@ include '../includes/header.php'; ?>
     <main class="main-content">
         <header class="main-header">
             <div class="main-header-title">
-                <h1>Add New OFW</h1>
+            </div>
+            <div class="main-header-actions">
+                <div class="user-info">
+                    <div class="user-avatar"><?php echo substr($agency['name'], 0, 1); ?></div>
+                    <div class="user-details">
+                        <div class="user-name"><?php echo htmlspecialchars($agency['name']); ?></div>
+                        <div class="user-role">Agency</div>
+                    </div>
+                </div>
             </div>
         </header>
 

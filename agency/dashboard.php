@@ -107,7 +107,6 @@ include '../includes/header.php'; ?>
     <main class="main-content">
         <header class="main-header">
             <div class="main-header-title">
-                <h1>Agency Dashboard</h1>
             </div>
             <div class="main-header-actions">
                 <div class="user-info">
@@ -122,7 +121,7 @@ include '../includes/header.php'; ?>
 
         <div class="main-body">
             <div class="welcome-banner">
-                <h2>Welcome, <?php echo htmlspecialchars($agency['name']); ?>!</h2>
+                <h2><?php echo htmlspecialchars($agency['name']); ?>!</h2>
                 <p>Manage your OFWs and cases from this dashboard.</p>
             </div>
 
