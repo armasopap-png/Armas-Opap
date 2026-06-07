@@ -215,8 +215,18 @@ include '../includes/header.php'; ?>
                                             <td><?php echo get_status_badge($case['status']); ?></td>
                                             <td><?php echo date('M d, Y', strtotime($case['created_at'])); ?></td>
                                             <td>
-                                                <a href="?view=<?php echo $case['id']; ?>" title="View Case">🔍</a>
-                                                <a href="?edit=<?php echo $case['id']; ?>" title="Edit Case">✏️</a>
+                                                <a href="?view=<?php echo $case['id']; ?>" title="View Case" style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:8px; background:#eff6ff; color:#1a3a6b; text-decoration:none; margin-right:4px; transition:background 0.2s;" onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">
+                                                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                                        <circle cx="12" cy="12" r="3" />
+                                                    </svg>
+                                                </a>
+                                                <a href="?edit=<?php echo $case['id']; ?>" title="Edit Status" style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:8px; background:#fefce8; color:#c8a951; text-decoration:none; transition:background 0.2s;" onmouseover="this.style.background='#fef9c3'" onmouseout="this.style.background='#fefce8'">
+                                                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                                    </svg>
+                                                </a>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
