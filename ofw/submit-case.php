@@ -23,7 +23,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // All text fields stored as uppercase
     $type = htmlspecialchars($_POST['case_type']);
-    $location = strtoupper(trim(htmlspecialchars($_POST['location_abroad'])));
+    $country = strtoupper(trim(htmlspecialchars($_POST['country'])));
+$city = strtoupper(trim(htmlspecialchars($_POST['city'])));
+$location = $city . ', ' . $country;
     $employer = strtoupper(trim(htmlspecialchars($_POST['employer_name'])));
     $departure = $_POST['date_of_departure'];
     $ec_name = strtoupper(trim(htmlspecialchars($_POST['emergency_contact_name'])));
