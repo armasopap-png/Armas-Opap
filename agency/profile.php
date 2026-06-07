@@ -140,12 +140,12 @@ include '../includes/header.php'; ?>
                             <div class="form-group">
                                 <label class="form-label">Agency Name</label>
                                 <input type="text" name="name" class="form-control"
-                                    value="<?php echo htmlspecialchars($agency['name']); ?>" required>
+                                    value="<?php echo htmlspecialchars($agency['name']); ?>" disabled>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">License Number</label>
                                 <input type="text" name="license_number" class="form-control"
-                                    value="<?php echo htmlspecialchars($agency['license_number'] ?? ''); ?>">
+                                    value="<?php echo htmlspecialchars($agency['license_number'] ?? ''); ?>" disabled>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Email</label>
@@ -154,13 +154,12 @@ include '../includes/header.php'; ?>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Address</label>
-                                <textarea name="address" class="form-control"
-                                    rows="2"><?php echo htmlspecialchars($agency['address'] ?? ''); ?></textarea>
+                                <textarea name="address" class="form-control" rows="2" disabled><?php echo htmlspecialchars($agency['address'] ?? ''); ?></textarea>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Contact</label>
                                 <input type="text" name="contact_number" class="form-control"
-                                    value="<?php echo htmlspecialchars($agency['contact_number'] ?? ''); ?>">
+                                    value="<?php echo htmlspecialchars($agency['contact_number'] ?? ''); ?>" disabled>
                             </div>
                             <button type="submit" class="btn btn-primary">Save</button>
                         </form>
