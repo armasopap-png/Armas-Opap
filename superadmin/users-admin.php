@@ -65,9 +65,14 @@ include '../includes/header.php'; ?>
                                         </td>
                                         <td><?php echo get_status_badge($u['status']); ?></td>
                                         <td><?php echo date('M d, Y', strtotime($u['created_at'])); ?></td>
-                                        <td><?php if ($u['role'] !== 'superadmin'): ?><button class="btn btn-sm btn-outline"
-                                                    onclick="confirmAction('Toggle status?', () => toggleStatus(<?php echo $u['id']; ?>, '<?php echo $u['status'] === 'active' ? 'inactive' : 'active'; ?>, 'confirmModal'))"><?php echo $u['status'] === 'active' ? 'Deactivate' : 'Activate'; ?></button><?php else: ?>-<?php endif; ?>
-                                        </td>
+                                        <td style="text-align:center;">
+    <?php if ($u['role'] !== 'superadmin'): ?>
+    <label class="toggle-switch" onclick="handleToggle(event, <?php echo $u['id']; ?>, '<?php echo $u['status']; ?>', '<?php echo htmlspecialchars($u['email']); ?>')">
+        <input type="checkbox" <?php echo $u['status'] === 'active' ? 'checked' : ''; ?> readonly>
+        <span class="toggle-slider"></span>
+    </label>
+    <?php else: ?>—<?php endif; ?>
+</td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -78,4 +83,49 @@ include '../includes/header.php'; ?>
         </div>
     </main>
 </div>
+
+<!-- Confirm Modal -->
+<div id="confirmModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:12px; padding:32px; max-width:400px; width:90%; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <p id="confirmMessage" style="font-size:1rem; margin-bottom:24px; color:#1a3a6b; font-weight:500;"></p>
+        <div style="display:flex; gap:12px; justify-content:center;">
+            <button onclick="document.getElementById('confirmModal').style.display='none'" style="padding:10px 24px; border:1px solid #ccc; border-radius:8px; background:#fff; cursor:pointer;">Cancel</button>
+            <button id="confirmBtn" style="padding:10px 24px; border:none; border-radius:8px; background:#1a3a6b; color:#fff; cursor:pointer; font-weight:600;">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .toggle-switch { position:relative; display:inline-block; width:48px; height:26px; cursor:pointer; }
+    .toggle-switch input { opacity:0; width:0; height:0; }
+    .toggle-slider { position:absolute; inset:0; background:#e53e3e; border-radius:34px; transition:0.3s; }
+    .toggle-slider::before { content:''; position:absolute; width:20px; height:20px; left:3px; bottom:3px; background:white; border-radius:50%; transition:0.3s; }
+    .toggle-switch input:checked + .toggle-slider { background:#38a169; }
+    .toggle-switch input:checked + .toggle-slider::before { transform:translateX(22px); }
+</style>
+
+<script>
+    function handleToggle(e, userId, currentStatus, name) {
+        e.preventDefault();
+        const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+        const action = currentStatus === 'active' ? 'Deactivate' : 'Activate';
+        document.getElementById('confirmMessage').textContent = 'Are you sure you want to ' + action + ' "' + name + '"?';
+        document.getElementById('confirmModal').style.display = 'flex';
+        document.getElementById('confirmBtn').onclick = function () {
+            document.getElementById('confirmModal').style.display = 'none';
+            fetch('/armas/api/toggle-status.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId, status: newStatus })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) { location.reload(); }
+                else { alert('Error: ' + (data.message ?? 'Could not update status.')); }
+            })
+            .catch(() => alert('Request failed.'));
+        };
+    }
+</script>
+
 <?php include '../includes/footer.php'; ?>
