@@ -104,8 +104,7 @@ include '../includes/header.php'; ?>
                             </select></div>
                         <div class="form-group"><label class="form-label">Temporary Password</label><input type="text"
                                 name="temp_password" class="form-control" required minlength="8"></div>
-                        <div class="form-group"><label class="form-label">Address <span
-                                    class="auto-caps-badge">AUTO-CAPS</span></label><textarea name="address"
+                        <div class="form-group"><label class="form-label">Address </label><textarea name="address"
                                 class="form-control input-caps" rows="2"
                                 oninput="this.value=this.value.toUpperCase()"></textarea></div>
                         <div class="form-group"><label class="form-label">Contact</label><input type="text"
