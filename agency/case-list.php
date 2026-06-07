@@ -329,8 +329,27 @@ include '../includes/header.php'; ?>
                         <p style="color:#1e293b; font-weight:600; margin:0;"><?php echo htmlspecialchars($view_case['type']); ?></p>
                     </div>
                     <div style="background:#f8fafc; border-radius:10px; padding:16px;">
-                        <p style="color:#94a3b8; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin:0 0 4px;">Location Abroad</p>
-                        <p style="color:#1e293b; font-weight:600; margin:0;"><?php echo htmlspecialchars($view_case['location_abroad']); ?></p>
+                        <p style="color:#94a3b8; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin:0 0 4px;">Country</p>
+                        <p style="color:#1e293b; font-weight:600; margin:0;">
+                            <?php
+                            // location_abroad is stored as "CITY, COUNTRY"
+                            $parts = explode(', ', $view_case['location_abroad'], 2);
+                            echo htmlspecialchars($parts[1] ?? $view_case['location_abroad']);
+                            ?>
+                        </p>
+                    </div>
+                    <div style="background:#f8fafc; border-radius:10px; padding:16px;">
+                        <p style="color:#94a3b8; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin:0 0 4px;">City</p>
+                        <p style="color:#1e293b; font-weight:600; margin:0;">
+                            <?php
+                            $parts = explode(', ', $view_case['location_abroad'], 2);
+                            echo htmlspecialchars($parts[0] ?? '—');
+                            ?>
+                        </p>
+                    </div>
+                    <div style="background:#f8fafc; border-radius:10px; padding:16px;">
+                        <p style="color:#94a3b8; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin:0 0 4px;">Current Address / Area</p>
+                        <p style="color:#1e293b; font-weight:600; margin:0;"><?php echo htmlspecialchars($view_case['current_address'] ?? '—'); ?></p>
                     </div>
                     <div style="background:#f8fafc; border-radius:10px; padding:16px;">
                         <p style="color:#94a3b8; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin:0 0 4px;">Employer</p>
