@@ -25,10 +25,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $city = strtoupper(trim(htmlspecialchars($_POST['city'])));
     $location = $city . ', ' . $country;
     $current_address = strtoupper(trim(htmlspecialchars($_POST['current_address'] ?? '')));
-    $employer = strtoupper(trim(htmlspecialchars($_POST['employer_name'])));
-    $departure = $_POST['date_of_departure'];
-    $ec_name = strtoupper(trim(htmlspecialchars($_POST['emergency_contact_name'])));
-    $ec_number = htmlspecialchars($_POST['emergency_contact_number']);
     $description = strtoupper(trim(htmlspecialchars($_POST['description'])));
 
     // Generate case number: ARMAS-YYYY-XXXX (Optimized to use index ranges)
@@ -39,9 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $case_number = 'ARMAS-' . $year . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
 
     $pdo->prepare("INSERT INTO cases
-        (case_number, ofw_id, agency_id, type, description, location_abroad, city, current_address, employer_name,
-         date_of_departure, emergency_contact_name, emergency_contact_number, status)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
+        (case_number, ofw_id, agency_id, type, description, location_abroad, city, current_address, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
         ->execute([
             $case_number,
             $ofw['id'],
@@ -51,10 +46,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $location,
             $city,
             $current_address,
-            $employer,
-            $departure,
-            $ec_name,
-            $ec_number,
             'pending'
         ]);
 
@@ -210,40 +201,11 @@ include '../includes/header.php'; ?>
                             </div>
                         </div>
 
-                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                            <div class="form-group">
-                                <label class="form-label">City <span style="color:red">*</span></label>
-                                <input type="text" name="city" class="form-control input-caps"
-                                    oninput="this.value=this.value.toUpperCase()" required
-                                    placeholder="EX., RIYADH">
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Date of Departure</label>
-                                <input type="date" name="date_of_departure" class="form-control" required>
-                            </div>
-                        </div>
-
                         <div class="form-group">
-                            <label class="form-label">Employer Name</label>
-                            <input type="text" name="employer_name" class="form-control input-caps"
-                                oninput="this.value=this.value.replace(/[^a-zA-Z.\s\-]/g,'').toUpperCase()" required placeholder="e.g., ABC COMPANY">
-                        </div>
-
-                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                            <div class="form-group">
-                                <label class="form-label">Emergency Contact Name</label>
-                                <input type="text" name="emergency_contact_name" class="form-control input-caps"
-                                    oninput="this.value=this.value.replace(/[^a-zA-Z.\s\-]/g,'').toUpperCase()"
-                                    required placeholder="Full name">
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Emergency Contact Number</label>
-                                <input type="text" name="emergency_contact_number" class="form-control"
-                                    oninput="this.value=this.value.replace(/[^0-9+\s\-]/g,'')"
-                                    required placeholder="+63 912 345 6789">
-                            </div>
+                            <label class="form-label">City <span style="color:red">*</span></label>
+                            <input type="text" name="city" class="form-control input-caps"
+                                oninput="this.value=this.value.toUpperCase()" required
+                                placeholder="EX., RIYADH">
                         </div>
 
                         <div class="form-group">
