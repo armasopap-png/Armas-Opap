@@ -496,6 +496,13 @@ ALTER TABLE `otp_codes`
   ADD CONSTRAINT `otp_codes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 COMMIT;
 
+ALTER TABLE `ofws` 
+  DROP FOREIGN KEY `cases_ibfk_1`, -- Drop constraints temporarily if needed for table re-alignment
+  DROP COLUMN `agency_id`,
+  ADD COLUMN `sex` ENUM('MALE', 'FEMALE') NOT NULL AFTER `suffix`,
+  ADD COLUMN `birthdate` DATE NOT NULL AFTER `sex`,
+  ADD COLUMN `supporting_document` VARCHAR(255) NOT NULL AFTER `contact_number`;
+
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
