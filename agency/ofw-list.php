@@ -12,7 +12,7 @@ require_auth('agency');
 $page_title = 'OFW List';
 $use_dashboard_css = true;
 
-$stmt = $pdo->prepare("SELECT id FROM agencies WHERE user_id = ?");
+$stmt = $pdo->prepare("SELECT * FROM agencies WHERE user_id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $agency = $stmt->fetch();
 $agency_id = $agency['id'];
@@ -88,10 +88,15 @@ include '../includes/header.php'; ?>
     <main class="main-content">
         <header class="main-header">
             <div class="main-header-title">
-                <h1>OFW List</h1>
             </div>
             <div class="main-header-actions">
-                <a href="/armas/agency/add-ofw.php" class="btn btn-secondary">+ Add New OFW</a>
+                <div class="user-info">
+                    <div class="user-avatar"><?php echo substr($agency['name'], 0, 1); ?></div>
+                    <div class="user-details">
+                        <div class="user-name"><?php echo htmlspecialchars($agency['name']); ?></div>
+                        <div class="user-role">Agency</div>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -103,6 +108,7 @@ include '../includes/header.php'; ?>
                 </div>
                 <button type="submit" class="btn btn-primary btn-sm">Search</button>
                 <a href="/armas/agency/ofw-list.php" class="btn btn-outline btn-sm">Clear</a>
+                <a href="/armas/agency/add-ofw.php" class="btn btn-secondary btn-sm">+ Add New OFW</a>
             </form>
 
             <div class="card">

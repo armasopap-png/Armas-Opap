@@ -100,29 +100,28 @@ include '../includes/header.php'; ?>
         </nav>
 
         <div class="sidebar-footer">
-            <div class="user-info">
-                <div class="user-avatar"><?php echo substr($agency['name'], 0, 1); ?></div>
-                <div class="user-details">
-                    <div class="user-name"><?php echo htmlspecialchars($agency['name']); ?></div>
-                    <div class="user-role">Agency</div>
-                </div>
-            </div>
+            <a href="/armas/pages/logout.php" class="btn btn-outline btn-sm w-100">Logout</a>
         </div>
     </aside>
 
     <main class="main-content">
         <header class="main-header">
             <div class="main-header-title">
-                <h1>Agency Dashboard</h1>
             </div>
             <div class="main-header-actions">
-                <a href="/armas/pages/logout.php" class="btn btn-outline btn-sm">Logout</a>
+                <div class="user-info">
+                    <div class="user-avatar"><?php echo substr($agency['name'], 0, 1); ?></div>
+                    <div class="user-details">
+                        <div class="user-name"><?php echo htmlspecialchars($agency['name']); ?></div>
+                        <div class="user-role">Agency</div>
+                    </div>
+                </div>
             </div>
         </header>
 
         <div class="main-body">
             <div class="welcome-banner">
-                <h2>Welcome, <?php echo htmlspecialchars($agency['name']); ?>!</h2>
+                <h2><?php echo htmlspecialchars($agency['name']); ?>!</h2>
                 <p>Manage your OFWs and cases from this dashboard.</p>
             </div>
 

@@ -34,6 +34,7 @@ include '../includes/header.php'; ?>
                         class="sidebar-link-icon">🏢</span><span class="sidebar-link-text">Agencies</span></a>
                 <a href="/armas/superadmin/users-admin.php" class="sidebar-link"><span
                         class="sidebar-link-icon">⚙️</span><span class="sidebar-link-text">Admins</span></a>
+                <a href="/armas/superadmin/agency-cases.php" class="sidebar-link"><span class="sidebar-link-icon">📋</span><span class="sidebar-link-text">Agency Cases</span></a>
                 <a href="/armas/superadmin/audit-logs.php" class="sidebar-link"><span
                         class="sidebar-link-icon">📝</span><span class="sidebar-link-text">Audit Logs</span></a>
         </nav>

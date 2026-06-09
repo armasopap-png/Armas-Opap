@@ -1,4 +1,5 @@
 <?php
+
 /**
  * ARMAS Shared Header
  * Include at the top of every page
@@ -24,6 +25,9 @@
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <?php if (isset($use_charts) && $use_charts): ?>
+        <script src="/armas/assets/js/charts.js"></script>
+    <?php endif; ?>
 
     <!-- ARMAS CSS -->
     <link rel="stylesheet" href="/armas/assets/css/style.css">

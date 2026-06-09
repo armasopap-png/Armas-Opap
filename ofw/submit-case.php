@@ -23,12 +23,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // All text fields stored as uppercase
     $type = htmlspecialchars($_POST['case_type']);
-    $location = strtoupper(trim(htmlspecialchars($_POST['location_abroad'])));
+    $country = strtoupper(trim(htmlspecialchars($_POST['country'])));
+$city = strtoupper(trim(htmlspecialchars($_POST['city'])));
+$location = $city . ', ' . $country;
+$current_address = strtoupper(trim(htmlspecialchars($_POST['current_address'] ?? '')));
     $employer = strtoupper(trim(htmlspecialchars($_POST['employer_name'])));
     $departure = $_POST['date_of_departure'];
     $ec_name = strtoupper(trim(htmlspecialchars($_POST['emergency_contact_name'])));
     $ec_number = htmlspecialchars($_POST['emergency_contact_number']);
     $description = strtoupper(trim(htmlspecialchars($_POST['description'])));
+    
 
     // Generate case number: ARMAS-YYYY-XXXX
     $year = date('Y');
@@ -36,24 +40,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $count = $count_stmt->fetchColumn() + 1;
     $case_number = 'ARMAS-' . $year . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
 
-    $pdo->prepare("INSERT INTO cases
-        (case_number, ofw_id, agency_id, type, description, location_abroad, employer_name,
-         date_of_departure, emergency_contact_name, emergency_contact_number, status)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?)")
-        ->execute([
-            $case_number,
-            $ofw['id'],
-            $ofw['agency_id'],
-            $type,
-            $description,
-            $location,
-            $employer,
-            $departure,
-            $ec_name,
-            $ec_number,
-            'pending'
-        ]);
-
+ $pdo->prepare("INSERT INTO cases
+    (case_number, ofw_id, agency_id, type, description, location_abroad, city, current_address, employer_name,
+     date_of_departure, emergency_contact_name, emergency_contact_number, status)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    ->execute([
+        $case_number,
+        $ofw['id'],
+        $ofw['agency_id'],
+        $type,
+        $description,
+        $location,
+        $city,
+        $current_address,
+        $employer,
+        $departure,
+        $ec_name,
+        $ec_number,
+        'pending'
+    ]);
     // Notify agency
     // Notify agency - get the agency's user_id
     $agency_stmt = $pdo->prepare("SELECT user_id FROM agencies WHERE id = ?");
@@ -151,10 +156,6 @@ include '../includes/header.php'; ?>
                     <h3>Case Information</h3>
                 </div>
                 <div class="card-body">
-                    <div class="alert-info"
-                        style="background: var(--accent); padding: 16px; border-radius: var(--radius-md); margin-bottom: 24px;">
-                        <strong>ℹ️ Note:</strong> All text fields will be automatically converted to uppercase.
-                    </div>
 
                     <form method="POST" action="">
                         <div class="form-group">
@@ -171,14 +172,42 @@ include '../includes/header.php'; ?>
                             </select>
                         </div>
 
-                        <div class="form-group">
-                            <label class="form-label">
-                                Location Abroad
-                            </label>
-                            <input type="text" name="location_abroad" class="form-control input-caps"
-                                oninput="this.value=this.value.toUpperCase()" required
-                                placeholder="e.g., RIYADH, SAUDI ARABIA">
-                        </div>
+                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+    <div class="form-group">
+        <label class="form-label">Country <span style="color:red">*</span></label>
+        <select name="country" class="form-control" required>
+            <option value="">-- Select country --</option>
+            <option value="SAUDI ARABIA">Saudi Arabia</option>
+            <option value="UNITED ARAB EMIRATES">United Arab Emirates</option>
+            <option value="QATAR">Qatar</option>
+            <option value="KUWAIT">Kuwait</option>
+            <option value="BAHRAIN">Bahrain</option>
+            <option value="OMAN">Oman</option>
+            <option value="SINGAPORE">Singapore</option>
+            <option value="HONG KONG">Hong Kong</option>
+            <option value="TAIWAN">Taiwan</option>
+            <option value="JAPAN">Japan</option>
+            <option value="SOUTH KOREA">South Korea</option>
+            <option value="MALAYSIA">Malaysia</option>
+            <option value="OTHER">Other</option>
+        </select>
+    </div>
+
+<div class="form-group">
+    <label class="form-label">Current Address / Area</label>
+    <input type="text" name="current_address" class="form-control input-caps"
+        oninput="this.value=this.value.toUpperCase()"
+        placeholder="OPTIONAL">
+</div>
+
+    
+    <div class="form-group">
+        <label class="form-label">City <span style="color:red">*</span></label>
+        <input type="text" name="city" class="form-control input-caps"
+            oninput="this.value=this.value.toUpperCase()" required
+            placeholder="EX., RIYADH">
+    </div>
+</div>
 
                         <div class="form-group">
                             <label class="form-label">

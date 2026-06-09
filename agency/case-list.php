@@ -12,7 +12,7 @@ require_auth('agency');
 $page_title = 'Cases';
 $use_dashboard_css = true;
 
-$stmt = $pdo->prepare("SELECT id FROM agencies WHERE user_id = ?");
+$stmt = $pdo->prepare("SELECT id, name FROM agencies WHERE user_id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $agency = $stmt->fetch();
 $agency_id = $agency['id'];
@@ -156,7 +156,15 @@ include '../includes/header.php'; ?>
     <main class="main-content">
         <header class="main-header">
             <div class="main-header-title">
-                <h1>Case Management</h1>
+            </div>
+            <div class="main-header-actions">
+                <div class="user-info">
+                    <div class="user-avatar"><?php echo substr($agency['name'], 0, 1); ?></div>
+                    <div class="user-details">
+                        <div class="user-name"><?php echo htmlspecialchars($agency['name']); ?></div>
+                        <div class="user-role">Agency</div>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -215,8 +223,18 @@ include '../includes/header.php'; ?>
                                             <td><?php echo get_status_badge($case['status']); ?></td>
                                             <td><?php echo date('M d, Y', strtotime($case['created_at'])); ?></td>
                                             <td>
-                                                <a href="?view=<?php echo $case['id']; ?>" title="View Case">🔍</a>
-                                                <a href="?edit=<?php echo $case['id']; ?>" title="Edit Case">✏️</a>
+                                                <a href="?view=<?php echo $case['id']; ?>" title="View Case" style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:8px; background:#eff6ff; color:#1a3a6b; text-decoration:none; margin-right:4px; transition:background 0.2s;" onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">
+                                                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                                        <circle cx="12" cy="12" r="3" />
+                                                    </svg>
+                                                </a>
+                                                <a href="?edit=<?php echo $case['id']; ?>" title="Edit Status" style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:8px; background:#fefce8; color:#c8a951; text-decoration:none; transition:background 0.2s;" onmouseover="this.style.background='#fef9c3'" onmouseout="this.style.background='#fefce8'">
+                                                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                                    </svg>
+                                                </a>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -281,38 +299,102 @@ include '../includes/header.php'; ?>
 
 <!-- View Case Modal -->
 <?php if ($view_case): ?>
-    <div class="modal" style="display:flex;">
-        <div class="modal-content" style="max-width:700px;">
-            <h3>Case Details: <span class="case-id"><?php echo htmlspecialchars($view_case['case_number']); ?></span></h3>
+    <div class="modal" style="display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px);">
+        <div style="background:#fff; border-radius:16px; width:100%; max-width:680px; max-height:90vh; overflow-y:auto; box-shadow:0 25px 60px rgba(0,0,0,0.2);">
 
-            <div style="margin: 20px 0;">
-                <p><strong>OFW Name:</strong> <?php echo htmlspecialchars($view_case['first_name'] . ' ' . $view_case['last_name']); ?></p>
-                <p><strong>Type:</strong> <?php echo htmlspecialchars($view_case['type']); ?></p>
-                <p><strong>Status:</strong> <?php echo get_status_badge($view_case['status']); ?></p>
-                <p><strong>Location:</strong> <?php echo htmlspecialchars($view_case['location_abroad']); ?></p>
-                <p><strong>Employer:</strong> <?php echo htmlspecialchars($view_case['employer_name']); ?></p>
-                <p><strong>Description:</strong> <?php echo htmlspecialchars($view_case['description']); ?></p>
-                <p><strong>Emergency Contact:</strong> <?php echo htmlspecialchars($view_case['emergency_contact_name']); ?> — <?php echo htmlspecialchars($view_case['emergency_contact_number']); ?></p>
-                <p><strong>Date of Departure:</strong> <?php echo date('M d, Y', strtotime($view_case['date_of_departure'])); ?></p>
-                <p><strong>Submitted:</strong> <?php echo date('M d, Y h:i A', strtotime($view_case['created_at'])); ?></p>
-            </div>
-
-            <h4>Case Timeline</h4>
-            <div class="timeline">
-                <div class="timeline-item">
-                    <div class="timeline-date"><?php echo date('M d, Y h:i A', strtotime($view_case['created_at'])); ?></div>
-                    <div class="timeline-content">Case submitted</div>
-                </div>
-                <?php foreach ($case_updates as $update): ?>
-                    <div class="timeline-item">
-                        <div class="timeline-date"><?php echo date('M d, Y h:i A', strtotime($update['created_at'])); ?></div>
-                        <div class="timeline-content"><?php echo htmlspecialchars($update['note']); ?></div>
+            <!-- Header -->
+            <div style="background:linear-gradient(135deg, #1a3a6b, #0f2447); padding:28px 32px; border-radius:16px 16px 0 0; position:relative;">
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <div>
+                        <p style="color:rgba(255,255,255,0.6); font-size:0.75rem; text-transform:uppercase; letter-spacing:2px; margin:0 0 6px;">Case Details</p>
+                        <h2 style="color:#fff; margin:0; font-size:1.4rem; font-family:monospace; letter-spacing:1px;"><?php echo htmlspecialchars($view_case['case_number']); ?></h2>
                     </div>
-                <?php endforeach; ?>
+                    <div style="text-align:right;">
+                        <?php echo get_status_badge($view_case['status']); ?>
+                        <p style="color:rgba(255,255,255,0.5); font-size:0.75rem; margin:6px 0 0;"><?php echo date('M d, Y', strtotime($view_case['created_at'])); ?></p>
+                    </div>
+                </div>
             </div>
 
-            <div class="modal-actions" style="margin-top:20px;">
-                <a href="case-list.php" class="btn btn-primary">Close</a>
+            <div style="padding:28px 32px;">
+
+                <!-- OFW Info -->
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+                    <div style="background:#f8fafc; border-radius:10px; padding:16px;">
+                        <p style="color:#94a3b8; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin:0 0 4px;">OFW Name</p>
+                        <p style="color:#1e293b; font-weight:600; margin:0;"><?php echo htmlspecialchars($view_case['first_name'] . ' ' . $view_case['last_name']); ?></p>
+                    </div>
+                    <div style="background:#f8fafc; border-radius:10px; padding:16px;">
+                        <p style="color:#94a3b8; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin:0 0 4px;">Case Type</p>
+                        <p style="color:#1e293b; font-weight:600; margin:0;"><?php echo htmlspecialchars($view_case['type']); ?></p>
+                    </div>
+                    <div style="background:#f8fafc; border-radius:10px; padding:16px;">
+                        <p style="color:#94a3b8; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin:0 0 4px;">Country</p>
+                        <p style="color:#1e293b; font-weight:600; margin:0;">
+                            <?php
+                            // location_abroad is stored as "CITY, COUNTRY"
+                            $parts = explode(', ', $view_case['location_abroad'], 2);
+                            echo htmlspecialchars($parts[1] ?? $view_case['location_abroad']);
+                            ?>
+                        </p>
+                    </div>
+                    <div style="background:#f8fafc; border-radius:10px; padding:16px;">
+                        <p style="color:#94a3b8; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin:0 0 4px;">City</p>
+                        <p style="color:#1e293b; font-weight:600; margin:0;">
+                            <?php
+                            $parts = explode(', ', $view_case['location_abroad'], 2);
+                            echo htmlspecialchars($parts[0] ?? '—');
+                            ?>
+                        </p>
+                    </div>
+                    <div style="background:#f8fafc; border-radius:10px; padding:16px;">
+                        <p style="color:#94a3b8; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin:0 0 4px;">Current Address / Area</p>
+                        <p style="color:#1e293b; font-weight:600; margin:0;"><?php echo htmlspecialchars($view_case['current_address'] ?? '—'); ?></p>
+                    </div>
+                    <div style="background:#f8fafc; border-radius:10px; padding:16px;">
+                        <p style="color:#94a3b8; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin:0 0 4px;">Employer</p>
+                        <p style="color:#1e293b; font-weight:600; margin:0;"><?php echo htmlspecialchars($view_case['employer_name']); ?></p>
+                    </div>
+                    <div style="background:#f8fafc; border-radius:10px; padding:16px;">
+                        <p style="color:#94a3b8; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin:0 0 4px;">Emergency Contact</p>
+                        <p style="color:#1e293b; font-weight:600; margin:0;"><?php echo htmlspecialchars($view_case['emergency_contact_name']); ?></p>
+                        <p style="color:#64748b; font-size:0.85rem; margin:2px 0 0;"><?php echo htmlspecialchars($view_case['emergency_contact_number']); ?></p>
+                    </div>
+                    <div style="background:#f8fafc; border-radius:10px; padding:16px;">
+                        <p style="color:#94a3b8; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin:0 0 4px;">Date of Departure</p>
+                        <p style="color:#1e293b; font-weight:600; margin:0;"><?php echo date('M d, Y', strtotime($view_case['date_of_departure'])); ?></p>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div style="background:#f8fafc; border-radius:10px; padding:16px; margin-bottom:24px;">
+                    <p style="color:#94a3b8; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin:0 0 8px;">Description</p>
+                    <p style="color:#1e293b; margin:0; line-height:1.6;"><?php echo htmlspecialchars($view_case['description']); ?></p>
+                </div>
+
+                <!-- Timeline -->
+                <div style="margin-bottom:24px;">
+                    <p style="color:#94a3b8; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin:0 0 16px;">Case Timeline</p>
+                    <div style="position:relative; padding-left:24px; border-left:2px solid #e2e8f0;">
+                        <div style="margin-bottom:20px; position:relative;">
+                            <div style="position:absolute; left:-31px; top:4px; width:12px; height:12px; background:#1a3a6b; border-radius:50%; border:2px solid #fff; box-shadow:0 0 0 2px #1a3a6b;"></div>
+                            <p style="color:#94a3b8; font-size:0.75rem; margin:0 0 4px;"><?php echo date('M d, Y h:i A', strtotime($view_case['created_at'])); ?></p>
+                            <p style="color:#1e293b; font-weight:500; margin:0; background:#f1f5f9; padding:10px 14px; border-radius:8px;">Case submitted</p>
+                        </div>
+                        <?php foreach ($case_updates as $update): ?>
+                            <div style="margin-bottom:20px; position:relative;">
+                                <div style="position:absolute; left:-31px; top:4px; width:12px; height:12px; background:#c8a951; border-radius:50%; border:2px solid #fff; box-shadow:0 0 0 2px #c8a951;"></div>
+                                <p style="color:#94a3b8; font-size:0.75rem; margin:0 0 4px;"><?php echo date('M d, Y h:i A', strtotime($update['created_at'])); ?></p>
+                                <p style="color:#1e293b; font-weight:500; margin:0; background:#fefce8; padding:10px 14px; border-radius:8px; border-left:3px solid #c8a951;"><?php echo htmlspecialchars($update['note']); ?></p>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <!-- Close -->
+                <div style="text-align:right;">
+                    <a href="case-list.php" class="btn btn-primary">Close</a>
+                </div>
             </div>
         </div>
     </div>

@@ -34,6 +34,7 @@ $pie_rows = $pie_data->fetchAll();
 <?php
 $hide_navbar = true;
 include '../includes/header.php'; ?>
+<script src="/armas/assets/js/charts.js"></script>
 
 <div class="dashboard-layout">
     <aside class="sidebar">
@@ -86,13 +87,15 @@ include '../includes/header.php'; ?>
 
     <main class="main-content">
         <header class="main-header">
-            <div class="main-header-title">
-                <h1>Reports</h1>
-            </div>
-            <div class="main-header-actions no-print">
-                <button class="btn btn-outline btn-sm" onclick="window.print()">🖨 Print Report</button>
-                <a href="/armas/api/export-csv.php?agency_id=<?php echo $agency_id; ?>"
-                    class="btn btn-secondary btn-sm">⬇ Export CSV</a>
+            <div class="main-header-title"></div>
+            <div class="main-header-actions">
+                <div class="user-info">
+                    <div class="user-avatar"><?php echo substr($agency['name'], 0, 1); ?></div>
+                    <div class="user-details">
+                        <div class="user-name"><?php echo htmlspecialchars($agency['name']); ?></div>
+                        <div class="user-role">Agency</div>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -104,6 +107,10 @@ include '../includes/header.php'; ?>
                         <h2><?php echo htmlspecialchars($agency['name']); ?></h2>
                         <p>Generated on <?php echo date('F d, Y'); ?></p>
                     </div>
+                </div>
+                <div class="report-actions no-print">
+                    <button class="btn btn-outline btn-sm" onclick="window.print()">🖨 Print Report</button>
+                    <a href="/armas/api/export-csv.php?agency_id=<?php echo $agency_id; ?>" class="btn btn-secondary btn-sm">⬇ Export CSV</a>
                 </div>
             </div>
 
@@ -153,6 +160,12 @@ include '../includes/header.php'; ?>
         content: '';
         display: block;
         clear: both;
+    }
+</style>
+
+<style>
+    .report-header {
+        align-items: flex-start;
     }
 </style>
 

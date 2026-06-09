@@ -5,7 +5,7 @@
  */
 
 $host = 'localhost';
-$dbname = 'armas_db';
+$dbname = 'armas';
 $username = 'root';
 $password = '';
 
