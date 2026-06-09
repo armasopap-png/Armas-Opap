@@ -53,7 +53,6 @@ $hide_navbar = true;
 include '../includes/header.php'; ?>
 
 <div class="dashboard-layout">
-    <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-brand">
             <img src="/armas/assets/img/armas.jpg" alt="ARMAS" class="sidebar-logo">
@@ -67,23 +66,45 @@ include '../includes/header.php'; ?>
             <div class="sidebar-section">
                 <div class="sidebar-section-title">Main Menu</div>
                 <a href="/armas/ofw/dashboard.php" class="sidebar-link active">
-                    <span class="sidebar-link-icon">📊</span>
+                    <span class="sidebar-link-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="9" rx="1"></rect>
+                            <rect x="14" y="3" width="7" height="5" rx="1"></rect>
+                            <rect x="14" y="12" width="7" height="9" rx="1"></rect>
+                            <rect x="3" y="16" width="7" height="5" rx="1"></rect>
+                        </svg>
+                    </span>
                     <span class="sidebar-link-text">Dashboard</span>
                 </a>
                 <a href="/armas/ofw/submit-case.php" class="sidebar-link">
-                    <span class="sidebar-link-icon">📝</span>
-                    <span class="sidebar-link-text">Submit Case</span>
+                    <span class="sidebar-link-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                    </span>
+                    <span class="sidebar-link-text">Submit Report</span>
                 </a>
                 <a href="/armas/ofw/track-case.php" class="sidebar-link">
-                    <span class="sidebar-link-icon">🔍</span>
-                    <span class="sidebar-link-text">Track Case</span>
+                    <span class="sidebar-link-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </span>
+                    <span class="sidebar-link-text">Track Cases</span>
                 </a>
             </div>
 
             <div class="sidebar-section">
                 <div class="sidebar-section-title">Account</div>
                 <a href="/armas/ofw/notifications.php" class="sidebar-link">
-                    <span class="sidebar-link-icon">🔔</span>
+                    <span class="sidebar-link-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                    </span>
                     <span class="sidebar-link-text">Notifications</span>
                     <?php if ($unread_count > 0): ?>
                         <span class="badge"
@@ -91,7 +112,12 @@ include '../includes/header.php'; ?>
                     <?php endif; ?>
                 </a>
                 <a href="/armas/ofw/profile.php" class="sidebar-link">
-                    <span class="sidebar-link-icon">👤</span>
+                    <span class="sidebar-link-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </span>
                     <span class="sidebar-link-text">Profile</span>
                 </a>
             </div>
@@ -102,7 +128,6 @@ include '../includes/header.php'; ?>
         </div>
     </aside>
 
-    <!-- Main Content -->
     <main class="main-content">
         <header class="main-header">
             <div class="main-header-title">
@@ -120,7 +145,6 @@ include '../includes/header.php'; ?>
         </header>
 
         <div class="main-body">
-            <!-- Welcome Banner -->
             <div class="welcome-banner">
                 <h2>Welcome to ARMAS</h2>
                 <p>Protecting Every Filipino, Every Mile Away. Submit your repatriation request or track your existing
@@ -128,7 +152,6 @@ include '../includes/header.php'; ?>
                 <a href="/armas/ofw/submit-case.php" class="btn btn-secondary">Submit New Case</a>
             </div>
 
-            <!-- Stats Cards -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon primary">📋</div>
@@ -160,7 +183,6 @@ include '../includes/header.php'; ?>
                 </div>
             </div>
 
-            <!-- Quick Actions -->
             <div class="quick-actions">
                 <a href="/armas/ofw/submit-case.php" class="quick-action-btn">
                     <div class="quick-action-icon">📝</div>
@@ -180,7 +202,6 @@ include '../includes/header.php'; ?>
                 </a>
             </div>
 
-            <!-- Recent Notifications -->
             <div class="card">
                 <div class="card-header">
                     <h3>Recent Notifications</h3>
@@ -188,10 +209,15 @@ include '../includes/header.php'; ?>
                 </div>
                 <div class="card-body">
                     <?php if (empty($notifications)): ?>
-                        <div class="empty-state">
-                            <div class="empty-state-icon">🔔</div>
-                            <h3>No Notifications</h3>
-                            <p>You're all caught up!</p>
+                        <div class="empty-state" style="text-align: center; padding: 40px 20px;">
+                            <div class="empty-state-icon" style="margin-bottom: 16px; display: inline-flex; justify-content: center; align-items: center; color: #1a3a6b; opacity: 0.8;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                                </svg>
+                            </div>
+                            <h3 style="color: #0f2447; margin: 0 0 8px; font-size: 1.2rem;">No Notifications</h3>
+                            <p style="color: #64748b; font-size: 0.9rem; margin: 0;">You're all caught up!</p>
                         </div>
                     <?php else: ?>
                         <div class="notification-list">

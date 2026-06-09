@@ -81,27 +81,54 @@ include '../includes/header.php'; ?>
             <div class="sidebar-section">
                 <div class="sidebar-section-title">Main Menu</div>
                 <a href="/armas/ofw/dashboard.php" class="sidebar-link">
-                    <span class="sidebar-link-icon">📊</span>
+                    <span class="sidebar-link-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="9" rx="1"></rect>
+                            <rect x="14" y="3" width="7" height="5" rx="1"></rect>
+                            <rect x="14" y="12" width="7" height="9" rx="1"></rect>
+                            <rect x="3" y="16" width="7" height="5" rx="1"></rect>
+                        </svg>
+                    </span>
                     <span class="sidebar-link-text">Dashboard</span>
                 </a>
                 <a href="/armas/ofw/submit-case.php" class="sidebar-link">
-                    <span class="sidebar-link-icon">📝</span>
-                    <span class="sidebar-link-text">Submit Case</span>
+                    <span class="sidebar-link-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                    </span>
+                    <span class="sidebar-link-text">Submit Report</span>
                 </a>
                 <a href="/armas/ofw/track-case.php" class="sidebar-link">
-                    <span class="sidebar-link-icon">🔍</span>
-                    <span class="sidebar-link-text">Track Case</span>
+                    <span class="sidebar-link-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </span>
+                    <span class="sidebar-link-text">Track Cases</span>
                 </a>
             </div>
 
             <div class="sidebar-section">
                 <div class="sidebar-section-title">Account</div>
                 <a href="/armas/ofw/notifications.php" class="sidebar-link">
-                    <span class="sidebar-link-icon">🔔</span>
+                    <span class="sidebar-link-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                    </span>
                     <span class="sidebar-link-text">Notifications</span>
                 </a>
                 <a href="/armas/ofw/profile.php" class="sidebar-link active">
-                    <span class="sidebar-link-icon">👤</span>
+                    <span class="sidebar-link-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </span>
                     <span class="sidebar-link-text">Profile</span>
                 </a>
             </div>
@@ -148,7 +175,6 @@ include '../includes/header.php'; ?>
                 <button class="tab-btn" onclick="switchTab('password')">Change Password</button>
             </div>
 
-            <!-- Profile Tab -->
             <div id="profile" class="tab-content active">
                 <div class="card">
                     <div class="card-header">
@@ -232,7 +258,6 @@ include '../includes/header.php'; ?>
                 </div>
             </div>
 
-            <!-- Password Tab -->
             <div id="password" class="tab-content">
                 <div class="card">
                     <div class="card-header">

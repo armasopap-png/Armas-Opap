@@ -18,8 +18,8 @@ $stmt->execute([$_SESSION['user_id']]);
 $ofw = $stmt->fetch();
 $ofw_id = $ofw['id'];
 
-// Pagination
-$page = isset($_GET['page']) ? intval($_GET['page']) : 1;
+// Pagination (Secured against negative inputs)
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $per_page = 10;
 $offset = ($page - 1) * $per_page;
 
@@ -101,27 +101,40 @@ include '../includes/header.php'; ?>
             <div class="sidebar-section">
                 <div class="sidebar-section-title">Main Menu</div>
                 <a href="/armas/ofw/dashboard.php" class="sidebar-link">
-                    <span class="sidebar-link-icon">📊</span>
+                    <span class="sidebar-link-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                    </span>
                     <span class="sidebar-link-text">Dashboard</span>
                 </a>
-                <a href="/armas/ofw/submit-case.php" class="sidebar-link">
-                    <span class="sidebar-link-icon">📝</span>
-                    <span class="sidebar-link-text">Submit Case</span>
+                 <a href="/armas/ofw/submit-case.php" class="sidebar-link">
+                    <span class="sidebar-link-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                    </span>
+                    <span class="sidebar-link-text">Submit Report</span>
                 </a>
                 <a href="/armas/ofw/track-case.php" class="sidebar-link active">
-                    <span class="sidebar-link-icon">🔍</span>
-                    <span class="sidebar-link-text">Track Case</span>
+                    <span class="sidebar-link-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    </span>
+                    <span class="sidebar-link-text">Track Cases</span>
                 </a>
             </div>
 
             <div class="sidebar-section">
                 <div class="sidebar-section-title">Account</div>
                 <a href="/armas/ofw/notifications.php" class="sidebar-link">
-                    <span class="sidebar-link-icon">🔔</span>
+                    <span class="sidebar-link-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    </span>
                     <span class="sidebar-link-text">Notifications</span>
                 </a>
                 <a href="/armas/ofw/profile.php" class="sidebar-link">
-                    <span class="sidebar-link-icon">👤</span>
+                    <span class="sidebar-link-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </span>
                     <span class="sidebar-link-text">Profile</span>
                 </a>
             </div>
@@ -149,7 +162,6 @@ include '../includes/header.php'; ?>
         </header>
 
         <div class="main-body">
-            <!-- Search Filter -->
             <form method="GET" class="search-filter-bar">
                 <div class="search-box">
                     <input type="text" name="search" class="form-control"
@@ -170,7 +182,6 @@ include '../includes/header.php'; ?>
                 <a href="/armas/ofw/track-case.php" class="btn btn-outline btn-sm">Clear</a>
             </form>
 
-            <!-- Cases Table -->
             <div class="card">
                 <div class="card-body">
                     <?php if (empty($cases)): ?>
@@ -210,7 +221,6 @@ include '../includes/header.php'; ?>
                             </table>
                         </div>
 
-                        <!-- Pagination -->
                         <?php if ($total_pages > 1): ?>
                             <div class="pagination">
                                 <?php if ($page > 1): ?>
@@ -236,12 +246,10 @@ include '../includes/header.php'; ?>
     </main>
 </div>
 
-<!-- Case Details Modal -->
 <?php if ($view_case): ?>
-    <div class="modal" style="display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px);">
+    <div class="modal" style="display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); position:fixed; top:0; left:0; width:100%; height:100%; z-index:1050;">
         <div style="background:#fff; border-radius:16px; width:100%; max-width:680px; max-height:90vh; overflow-y:auto; box-shadow:0 25px 60px rgba(0,0,0,0.2);">
 
-            <!-- Header -->
             <div style="background:linear-gradient(135deg, #1a3a6b, #0f2447); padding:28px 32px; border-radius:16px 16px 0 0;">
                 <div style="display:flex; align-items:center; justify-content:space-between;">
                     <div>
@@ -257,7 +265,6 @@ include '../includes/header.php'; ?>
 
             <div style="padding:28px 32px;">
 
-                <!-- Info Grid -->
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
                     <div style="background:#f8fafc; border-radius:10px; padding:16px;">
                         <p style="color:#94a3b8; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin:0 0 4px;">Case Type</p>
@@ -270,20 +277,15 @@ include '../includes/header.php'; ?>
                     <div style="background:#f8fafc; border-radius:10px; padding:16px;">
                         <p style="color:#94a3b8; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin:0 0 4px;">Country</p>
                         <p style="color:#1e293b; font-weight:600; margin:0;">
-                            <?php
+                            <?php 
                             $parts = explode(', ', $view_case['location_abroad'], 2);
-                            echo htmlspecialchars($parts[1] ?? $view_case['location_abroad']);
+                            echo htmlspecialchars($parts[1] ?? $view_case['location_abroad']); 
                             ?>
                         </p>
                     </div>
                     <div style="background:#f8fafc; border-radius:10px; padding:16px;">
                         <p style="color:#94a3b8; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin:0 0 4px;">City</p>
-                        <p style="color:#1e293b; font-weight:600; margin:0;">
-                            <?php
-                            $parts = explode(', ', $view_case['location_abroad'], 2);
-                            echo htmlspecialchars($parts[0] ?? '—');
-                            ?>
-                        </p>
+                        <p style="color:#1e293b; font-weight:600; margin:0;"><?php echo htmlspecialchars($view_case['city'] ?? '—'); ?></p>
                     </div>
                     <div style="background:#f8fafc; border-radius:10px; padding:16px;">
                         <p style="color:#94a3b8; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin:0 0 4px;">Current Address / Area</p>
@@ -304,13 +306,11 @@ include '../includes/header.php'; ?>
                     </div>
                 </div>
 
-                <!-- Description -->
                 <div style="background:#f8fafc; border-radius:10px; padding:16px; margin-bottom:24px;">
                     <p style="color:#94a3b8; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin:0 0 8px;">Description</p>
                     <p style="color:#1e293b; margin:0; line-height:1.6;"><?php echo htmlspecialchars($view_case['description']); ?></p>
                 </div>
 
-                <!-- Timeline -->
                 <div style="margin-bottom:24px;">
                     <p style="color:#94a3b8; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin:0 0 16px;">Case Timeline</p>
                     <div style="position:relative; padding-left:24px; border-left:2px solid #e2e8f0;">
@@ -329,7 +329,6 @@ include '../includes/header.php'; ?>
                     </div>
                 </div>
 
-                <!-- Close -->
                 <div style="text-align:right;">
                     <a href="/armas/ofw/track-case.php" class="btn btn-primary">Close</a>
                 </div>
