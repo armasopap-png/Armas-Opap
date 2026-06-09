@@ -65,6 +65,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if (empty($contact)) {
         $errors[] = 'Contact number is required.';
+    } elseif (!preg_match('/^\d{11}$/', preg_replace('/\s+/', '', $contact))) {
+        $errors[] = 'Contact number must be exactly 11 digits (numbers only).';
     }
     if ($password !== $confirm) {
         $errors[] = 'Passwords do not match.';
@@ -179,7 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .form-label { display: flex; align-items: center; font-weight: 500; margin-bottom: 6px; color: var(--dark); }
         .form-control { width: 100%; padding: 12px 14px; font-size: 0.95rem; border: 2px solid var(--border); border-radius: var(--radius-md); background: #ffffff; box-sizing: border-box; height: 48px; font-family: inherit; }
         .form-control:focus { outline: none; border-color: var(--primary); }
-        .input-caps { text-transform: uppercase; }
+        .input-caps { text-transform: uppercase; background-color: #ffffff !important; }
         textarea.form-control { height: auto; min-height: 80px; resize: vertical; }
         select.form-control { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
         .password-wrapper { position: relative; }
@@ -288,7 +290,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <div class="form-group">
                     <label class="form-label">Contact Number</label>
-                    <input type="text" name="contact_number" class="form-control" value="<?php echo isset($_POST['contact_number']) ? htmlspecialchars($_POST['contact_number']) : ''; ?>" placeholder="+63 912 345 6789" required>
+                    <input type="text" name="contact_number" class="form-control" data-numeric-only maxlength="11" value="<?php echo isset($_POST['contact_number']) ? htmlspecialchars($_POST['contact_number']) : ''; ?>" placeholder="09XX XXX XXXX" required>
                 </div>
 
                 <div class="form-group">
@@ -347,7 +349,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             input.addEventListener('input', function() { this.value = this.value.toUpperCase(); });
         });
 
-        // Block numbers and special characters on name fields (letters, spaces, hyphens, periods only)
+        // Block letters and special characters on contact number (digits only, max 11)
+        document.querySelectorAll('[data-numeric-only]').forEach(input => {
+            input.addEventListener('keydown', function(e) {
+                const controlKeys = ['Backspace','Delete','Tab','Escape','Enter','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'];
+                if (controlKeys.includes(e.key)) return;
+                if ((e.ctrlKey || e.metaKey) && ['a','c','v','x'].includes(e.key.toLowerCase())) return;
+                if (!/^\d$/.test(e.key)) {
+                    e.preventDefault();
+                }
+            });
+
+            input.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const pasted = (e.clipboardData || window.clipboardData).getData('text');
+                const cleaned = pasted.replace(/\D/g, '').slice(0, 11);
+                document.execCommand('insertText', false, cleaned);
+            });
+        });
         document.querySelectorAll('[data-alpha-only]').forEach(input => {
             input.addEventListener('keydown', function(e) {
                 // Allow: backspace, delete, tab, escape, enter, arrow keys, home, end
