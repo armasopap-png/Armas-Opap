@@ -33,8 +33,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($last_name) || empty($first_name)) {
         $errors[] = 'Last name and first name are required.';
     }
+    if (!empty($last_name) && !preg_match('/^[A-Za-z\s\-\.]+$/', $last_name)) {
+        $errors[] = 'Last name must contain letters only (no numbers or special characters).';
+    }
+    if (!empty($first_name) && !preg_match('/^[A-Za-z\s\-\.]+$/', $first_name)) {
+        $errors[] = 'First name must contain letters only (no numbers or special characters).';
+    }
     if (empty($middle_name)) {
         $errors[] = 'Middle name is required.';
+    }
+    if (!empty($middle_name) && !preg_match('/^[A-Za-z\s\-\.]+$/', $middle_name)) {
+        $errors[] = 'Middle name must contain letters only (no numbers or special characters).';
+    }
+    if (!empty($suffix) && !preg_match('/^[A-Za-z\s\-\.]+$/', $suffix)) {
+        $errors[] = 'Suffix must contain letters only (no numbers or special characters).';
     }
     if (!in_array($sex, ['MALE', 'FEMALE'])) {
         $errors[] = 'Please select a valid option for sex.';
@@ -215,22 +227,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Last Name</label>
-                        <input type="text" name="last_name" class="form-control input-caps" value="<?php echo isset($_POST['last_name']) ? htmlspecialchars($_POST['last_name']) : ''; ?>" required>
+                        <input type="text" name="last_name" class="form-control input-caps" data-alpha-only value="<?php echo isset($_POST['last_name']) ? htmlspecialchars($_POST['last_name']) : ''; ?>" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">First Name</label>
-                        <input type="text" name="first_name" class="form-control input-caps" value="<?php echo isset($_POST['first_name']) ? htmlspecialchars($_POST['first_name']) : ''; ?>" required>
+                        <input type="text" name="first_name" class="form-control input-caps" data-alpha-only value="<?php echo isset($_POST['first_name']) ? htmlspecialchars($_POST['first_name']) : ''; ?>" required>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Middle Name</label>
-                        <input type="text" name="middle_name" class="form-control input-caps" value="<?php echo isset($_POST['middle_name']) ? htmlspecialchars($_POST['middle_name']) : ''; ?>" required>
+                        <input type="text" name="middle_name" class="form-control input-caps" data-alpha-only value="<?php echo isset($_POST['middle_name']) ? htmlspecialchars($_POST['middle_name']) : ''; ?>" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Suffix (Jr., Sr., III)</label>
-                        <input type="text" name="suffix" class="form-control input-caps" value="<?php echo isset($_POST['suffix']) ? htmlspecialchars($_POST['suffix']) : ''; ?>">
+                        <input type="text" name="suffix" class="form-control input-caps" data-alpha-only value="<?php echo isset($_POST['suffix']) ? htmlspecialchars($_POST['suffix']) : ''; ?>">
                     </div>
                 </div>
 
@@ -333,6 +345,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Sanitize string data transforms automatically
         document.querySelectorAll('.input-caps').forEach(input => {
             input.addEventListener('input', function() { this.value = this.value.toUpperCase(); });
+        });
+
+        // Block numbers and special characters on name fields (letters, spaces, hyphens, periods only)
+        document.querySelectorAll('[data-alpha-only]').forEach(input => {
+            input.addEventListener('keydown', function(e) {
+                // Allow: backspace, delete, tab, escape, enter, arrow keys, home, end
+                const controlKeys = ['Backspace','Delete','Tab','Escape','Enter','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'];
+                if (controlKeys.includes(e.key)) return;
+                // Allow: Ctrl/Cmd+A, C, V, X (clipboard)
+                if ((e.ctrlKey || e.metaKey) && ['a','c','v','x'].includes(e.key.toLowerCase())) return;
+                // Allow only letters (a-z, A-Z), spaces, hyphens, and periods
+                if (!/^[a-zA-Z\s\-\.]$/.test(e.key)) {
+                    e.preventDefault();
+                }
+            });
+
+            // Also strip on paste (in case user pastes invalid content)
+            input.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const pasted = (e.clipboardData || window.clipboardData).getData('text');
+                const cleaned = pasted.replace(/[^a-zA-Z\s\-\.]/g, '');
+                document.execCommand('insertText', false, cleaned);
+            });
         });
     </script>
 </body>
