@@ -9,7 +9,7 @@ require_once '../includes/auth.php';
 require_once '../includes/functions.php';
 require_auth('agency');
 
-$page_title = 'Cases';
+$page_title = 'Reports';
 $use_dashboard_css = true;
 
 $stmt = $pdo->prepare("SELECT id, name FROM agencies WHERE user_id = ?");
@@ -131,7 +131,7 @@ include '../includes/header.php'; ?>
                 </a>
                 <a href="/armas/agency/case-list.php" class="sidebar-link active">
                     <span class="sidebar-link-icon">📋</span>
-                    <span class="sidebar-link-text">Cases</span>
+                    <span class="sidebar-link-text">Reports</span>
                 </a>
                 <a href="/armas/agency/reports.php" class="sidebar-link">
                     <span class="sidebar-link-icon">📈</span>
@@ -196,7 +196,7 @@ include '../includes/header.php'; ?>
                     <?php if (empty($cases)): ?>
                         <div class="empty-state">
                             <div class="empty-state-icon">📋</div>
-                            <h3>No Cases Found</h3>
+                            <h3>No Reports Found</h3>
                         </div>
                     <?php else: ?>
                         <div class="table-container">

@@ -85,11 +85,16 @@ include '../includes/header.php'; ?>
                 <div class="sidebar-section-title">Main Menu</div>
                 <a href="/armas/ofw/dashboard.php" class="sidebar-link">
                     <span class="sidebar-link-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="9"></rect>
+                            <rect x="14" y="3" width="7" height="5"></rect>
+                            <rect x="14" y="12" width="7" height="9"></rect>
+                            <rect x="3" y="16" width="7" height="5"></rect>
+                        </svg>
                     </span>
                     <span class="sidebar-link-text">Dashboard</span>
                 </a>
-                 <a href="/armas/ofw/submit-case.php" class="sidebar-link">
+                <a href="/armas/ofw/submit-case.php" class="sidebar-link">
                     <span class="sidebar-link-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -100,9 +105,12 @@ include '../includes/header.php'; ?>
                 </a>
                 <a href="/armas/ofw/track-case.php" class="sidebar-link">
                     <span class="sidebar-link-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
                     </span>
-                    <span class="sidebar-link-text">Track Cases</span>
+                    <span class="sidebar-link-text">Track Reports</span>
                 </a>
             </div>
 
@@ -110,13 +118,19 @@ include '../includes/header.php'; ?>
                 <div class="sidebar-section-title">Account</div>
                 <a href="/armas/ofw/notifications.php" class="sidebar-link">
                     <span class="sidebar-link-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
                     </span>
                     <span class="sidebar-link-text">Notifications</span>
                 </a>
                 <a href="/armas/ofw/profile.php" class="sidebar-link">
                     <span class="sidebar-link-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
                     </span>
                     <span class="sidebar-link-text">Profile</span>
                 </a>
@@ -154,14 +168,14 @@ include '../includes/header.php'; ?>
 
             <div class="card">
                 <div class="card-header">
-                    <h3>Case Information</h3>
+                    <h3>Report Information</h3>
                 </div>
                 <div class="card-body">
                     <form method="POST" action="">
                         <div class="form-group">
-                            <label class="form-label required">Case Type</label>
+                            <label class="form-label required">Report Type</label>
                             <select name="case_type" class="form-control" required>
-                                <option value="">-- Select Case Type --</option>
+                                <option value="">-- Select Report Type --</option>
                                 <option value="Emergency Repatriation">Emergency Repatriation</option>
                                 <option value="Legal Assistance">Legal Assistance</option>
                                 <option value="Medical Support">Medical Support</option>

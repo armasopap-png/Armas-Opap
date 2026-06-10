@@ -92,7 +92,7 @@ include '../includes/header.php'; ?>
                             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                         </svg>
                     </span>
-                    <span class="sidebar-link-text">Track Cases</span>
+                    <span class="sidebar-link-text">Track Reports</span>
                 </a>
             </div>
 
@@ -156,7 +156,7 @@ include '../includes/header.php'; ?>
                 <div class="stat-card">
                     <div class="stat-icon primary">📋</div>
                     <div class="stat-content">
-                        <h4>Total Cases</h4>
+                        <h4>Total Reports</h4>
                         <div class="stat-value"><?php echo $total_cases; ?></div>
                     </div>
                 </div>
@@ -186,11 +186,11 @@ include '../includes/header.php'; ?>
             <div class="quick-actions">
                 <a href="/armas/ofw/submit-case.php" class="quick-action-btn">
                     <div class="quick-action-icon">📝</div>
-                    <span class="quick-action-label">Submit New Case</span>
+                    <span class="quick-action-label">Submit New Report</span>
                 </a>
                 <a href="/armas/ofw/track-case.php" class="quick-action-btn">
                     <div class="quick-action-icon">🔍</div>
-                    <span class="quick-action-label">Track Cases</span>
+                    <span class="quick-action-label">Track Reports</span>
                 </a>
                 <a href="/armas/ofw/notifications.php" class="quick-action-btn">
                     <div class="quick-action-icon">🔔</div>

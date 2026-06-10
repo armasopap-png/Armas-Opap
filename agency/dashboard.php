@@ -121,7 +121,7 @@ include '../includes/header.php'; ?>
 
         <div class="main-body">
             <div class="welcome-banner">
-                <h2><?php echo htmlspecialchars($agency['name']); ?>!</h2>
+                <h2><?php echo htmlspecialchars($agency['name']); ?></h2>
                 <p>Manage your OFWs and cases from this dashboard.</p>
             </div>
 
@@ -136,7 +136,7 @@ include '../includes/header.php'; ?>
                 <div class="stat-card">
                     <div class="stat-icon warning">📋</div>
                     <div class="stat-content">
-                        <h4>Total Cases</h4>
+                        <h4>Total Reports</h4>
                         <div class="stat-value"><?php echo $case_count; ?></div>
                     </div>
                 </div>
@@ -158,19 +158,19 @@ include '../includes/header.php'; ?>
 
             <div class="charts-grid">
                 <div class="chart-card">
-                    <h3>Cases by Status</h3>
+                    <h3>Reports by Status</h3>
                     <div class="chart-container">
                         <canvas id="barChart"></canvas>
                     </div>
                 </div>
                 <div class="chart-card">
-                    <h3>Monthly Cases</h3>
+                    <h3>Monthly Reports</h3>
                     <div class="chart-container">
                         <canvas id="lineChart"></canvas>
                     </div>
                 </div>
                 <div class="chart-card">
-                    <h3>Cases by Type</h3>
+                    <h3>Reports by Type</h3>
                     <div class="chart-container">
                         <canvas id="pieChart"></canvas>
                     </div>
