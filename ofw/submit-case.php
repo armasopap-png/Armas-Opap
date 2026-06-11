@@ -67,9 +67,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 <?php
-$hide_navbar = true;
-include '../includes/header.php'; ?>
+// ... (Your top PHP session and authentication checks stay exactly the same)
 
+$hide_navbar = true;
+include '../includes/header.php'; 
+
+// Include the local sidebar component right here:
+include 'sidebar.php'; 
+?>
 <div class="dashboard-layout">
     <aside class="sidebar">
         <div class="sidebar-brand">

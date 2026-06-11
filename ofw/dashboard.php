@@ -48,23 +48,225 @@ $unread_count = $unread->fetchColumn();
 
 
 <?php
-
 $hide_navbar = true;
 include '../includes/header.php'; ?>
 
-<div class="dashboard-layout">
+<style>
+    /* --- Layout Container --- */
+    .dashboard-layout {
+        display: flex;
+        min-height: 100vh;
+        position: relative;
+    }
+
+    /* --- Desktop Mini Sidebar Base Setup --- */
+    .sidebar {
+        width: 70px; /* Default size shows icons only */
+        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow-x: hidden;
+        white-space: nowrap;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 1040;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+    }
+
+    /* --- Smooth Expand on Mouse Hover --- */
+    .sidebar:hover {
+        width: 260px; /* Expands smoothly to show full text links */
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+    }
+
+    /* --- Sync Layout Grid Main Content Margin --- */
+    .main-content {
+        flex-grow: 1;
+        margin-left: 70px; /* Reserves standard room for collapsed rail size */
+        width: calc(100% - 70px);
+        transition: margin-left 0.3s ease, width 0.3s ease;
+    }
+
+    /* --- Inside Layout Structure Control Text Visibilities --- */
+    .sidebar .sidebar-brand-text,
+    .sidebar .sidebar-link-text,
+    .sidebar .sidebar-section-title,
+    .sidebar .badge,
+    .sidebar .sidebar-footer {
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        display: inline-block;
+        pointer-events: none; /* Prevents cursor misclicks while animating */
+    }
+
+    /* Show everything cleanly when hovered */
+    .sidebar:hover .sidebar-brand-text,
+    .sidebar:hover .sidebar-link-text,
+    .sidebar:hover .sidebar-section-title,
+    .sidebar:hover .badge,
+    .sidebar:hover .sidebar-footer {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* Adjust branding and layouts to stay centered while collapsed */
+    .sidebar-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 15px;
+    }
+
+    .sidebar-logo {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+        border-radius: 50%;
+    }
+
+    .sidebar-link {
+        display: flex;
+        align-items: center;
+        padding: 14px 20px;
+        gap: 20px;
+        text-decoration: none;
+    }
+
+    .sidebar-link-icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 24px;
+        flex-shrink: 0;
+    }
+
+    /* --- Mobile Header Bar with Left-aligned Controls --- */
+    .mobile-header-bar {
+        display: none;
+        background-color: #1a1a24;
+        padding: 12px 16px;
+        align-items: center;
+        color: #fff;
+        position: sticky;
+        top: 0;
+        z-index: 1050;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .mobile-left-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .mobile-menu-btn {
+        background: transparent;
+        border: none;
+        color: white;
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.4);
+        z-index: 1030;
+    }
+
+    /* --- Mobile Touch Screen Fallback Rules (Under 992px) --- */
+    @media (max-width: 992px) {
+        .mobile-header-bar {
+            display: flex; /* Active mobile strip header layout */
+        }
+
+        .sidebar {
+            width: 260px !important;
+            transform: translateX(-100%); /* Stays fully offscreen */
+            transition: transform 0.3s ease;
+        }
+
+        /* Prevent auto hover interactions while resizing onto mobile systems */
+        .sidebar .sidebar-brand-text,
+        .sidebar .sidebar-link-text,
+        .sidebar .sidebar-section-title,
+        .sidebar .badge,
+        .sidebar .sidebar-footer {
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+
+        .main-content {
+            margin-left: 0 !important;
+            width: 100% !important;
+            padding: 0 16px;
+        }
+
+        /* Show mobile responsive sliding panel draw style overrides */
+        .dashboard-layout.mobile-open .sidebar {
+            transform: translateX(0);
+        }
+
+        .dashboard-layout.mobile-open .sidebar-overlay {
+            display: block;
+        }
+
+        .main-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .main-header-actions {
+            margin-left: 0 !important;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important;
+            gap: 12px !important;
+        }
+
+        .quick-actions {
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
+    }
+</style>
+
+<div class="mobile-header-bar">
+    <div class="mobile-left-group">
+        <button class="mobile-menu-btn" id="mobileMenuToggle" aria-label="Open Menu">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+        <img src="/armas/assets/img/armas.jpg" alt="ARMAS" style="width: 32px; height: 32px; border-radius: 50%;">
+        <span style="font-weight: bold; letter-spacing: 0.5px; font-size: 1.1rem;">ARMAS Portal</span>
+    </div>
+</div>
+
+<div class="dashboard-layout" id="dashboardLayout">
+    
     <aside class="sidebar">
         <div class="sidebar-brand">
             <img src="/armas/assets/img/armas.jpg" alt="ARMAS" class="sidebar-logo">
             <div class="sidebar-brand-text">
-                <span class="logo-text">ARMAS</span>
-                <span class="brand-subtitle">OFW Portal</span>
+                <span class="logo-text" style="font-weight:700; color:#fff; font-size:1.2rem;">ARMAS</span>
+                <span class="brand-subtitle" style="display:block; font-size:0.75rem; color:#94a3b8;">OFW Portal</span>
             </div>
         </div>
 
         <nav class="sidebar-nav">
             <div class="sidebar-section">
-                <div class="sidebar-section-title">Main Menu</div>
+                <div class="sidebar-section-title" style="padding: 10px 20px; font-size:0.75rem; text-transform:uppercase; color:#64748b; font-weight:600;">Main Menu</div>
                 <a href="/armas/ofw/dashboard.php" class="sidebar-link active">
                     <span class="sidebar-link-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -97,7 +299,7 @@ include '../includes/header.php'; ?>
             </div>
 
             <div class="sidebar-section">
-                <div class="sidebar-section-title">Account</div>
+                <div class="sidebar-section-title" style="padding: 10px 20px; font-size:0.75rem; text-transform:uppercase; color:#64748b; font-weight:600;">Account</div>
                 <a href="/armas/ofw/notifications.php" class="sidebar-link">
                     <span class="sidebar-link-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -107,8 +309,7 @@ include '../includes/header.php'; ?>
                     </span>
                     <span class="sidebar-link-text">Notifications</span>
                     <?php if ($unread_count > 0): ?>
-                        <span class="badge"
-                            style="margin-left: auto; background: var(--danger); color: white;"><?php echo $unread_count; ?></span>
+                        <span class="badge" style="margin-left: auto; background: var(--danger); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;"><?php echo $unread_count; ?></span>
                     <?php endif; ?>
                 </a>
                 <a href="/armas/ofw/profile.php" class="sidebar-link">
@@ -123,22 +324,24 @@ include '../includes/header.php'; ?>
             </div>
         </nav>
 
-        <div class="sidebar-footer">
+        <div class="sidebar-footer" style="position: absolute; bottom: 20px; left: 0; width: 100%; padding: 0 15px; box-sizing: border-box;">
             <a href="/armas/pages/logout.php" class="btn btn-outline btn-sm w-100">Logout</a>
         </div>
     </aside>
 
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <main class="main-content">
-        <header class="main-header">
+        <header class="main-header" style="display: flex; align-items: center; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid #e2e8f0; margin-bottom: 24px;">
             <div class="main-header-title">
-                <h1>Welcome, <?php echo htmlspecialchars($ofw['first_name']); ?>!</h1>
+                <h1 style="margin: 0; font-size: 1.75rem; color: #0f172a;">Welcome, <?php echo htmlspecialchars($ofw['first_name']); ?>!</h1>
             </div>
             <div class="main-header-actions">
-                <div class="user-info">
-                    <div class="user-avatar"><?php echo substr($ofw['first_name'], 0, 1); ?></div>
+                <div class="user-info" style="display: flex; align-items: center; gap: 12px;">
+                    <div class="user-avatar" style="width: 40px; height: 40px; background-color: #e2e8f0; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; color: #1e293b;"><?php echo substr($ofw['first_name'], 0, 1); ?></div>
                     <div class="user-details">
-                        <div class="user-name"><?php echo htmlspecialchars($ofw['first_name'] . ' ' . $ofw['last_name']); ?></div>
-                        <div class="user-role">OFW</div>
+                        <div class="user-name" style="font-weight: 600; color: #1e293b;"><?php echo htmlspecialchars($ofw['first_name'] . ' ' . $ofw['last_name']); ?></div>
+                        <div class="user-role" style="font-size: 0.85rem; color: #64748b;">OFW</div>
                     </div>
                 </div>
             </div>
@@ -147,8 +350,7 @@ include '../includes/header.php'; ?>
         <div class="main-body">
             <div class="welcome-banner">
                 <h2>Welcome to ARMAS</h2>
-                <p>Protecting Every Filipino, Every Mile Away. Submit your repatriation request or track your existing
-                    cases here.</p>
+                <p>Protecting Every Filipino, Every Mile Away. Submit your repatriation request or track your existing cases here.</p>
                 <a href="/armas/ofw/submit-case.php" class="btn btn-secondary">Submit New Case</a>
             </div>
 
@@ -222,13 +424,10 @@ include '../includes/header.php'; ?>
                     <?php else: ?>
                         <div class="notification-list">
                             <?php foreach ($notifications as $notif): ?>
-                                <div class="notification-item <?php echo $notif['read_at'] ? 'read' : 'unread'; ?>"
-                                    data-id="<?php echo $notif['id']; ?>">
-                                    <div class="notification-icon"><?php echo $notif['type'] === 'new_case' ? '📋' : 'ℹ️'; ?>
-                                    </div>
+                                <div class="notification-item <?php echo $notif['read_at'] ? 'read' : 'unread'; ?>" data-id="<?php echo $notif['id']; ?>">
+                                    <div class="notification-icon"><?php echo $notif['type'] === 'new_case' ? '📋' : 'ℹ️'; ?></div>
                                     <div class="notification-content">
-                                        <div class="notification-message"><?php echo htmlspecialchars($notif['message']); ?>
-                                        </div>
+                                        <div class="notification-message"><?php echo htmlspecialchars($notif['message']); ?></div>
                                         <div class="notification-time">
                                             <?php echo date('M d, Y h:i A', strtotime($notif['created_at'])); ?>
                                         </div>
@@ -242,5 +441,25 @@ include '../includes/header.php'; ?>
         </div>
     </main>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const dashboardLayout = document.getElementById('dashboardLayout');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', function () {
+                dashboardLayout.classList.toggle('mobile-open');
+            });
+        }
+
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', function () {
+                dashboardLayout.classList.remove('mobile-open');
+            });
+        }
+    });
+</script>
 
 <?php include '../includes/footer.php'; ?>

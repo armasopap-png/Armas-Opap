@@ -45,9 +45,14 @@ $stmt->execute([$_SESSION['user_id']]);
 $ofw = $stmt->fetch();
 ?>
 <?php
-$hide_navbar = true;
-include '../includes/header.php'; ?>
+// ... (Your top PHP session and authentication checks stay exactly the same)
 
+$hide_navbar = true;
+include '../includes/header.php'; 
+
+// Include the local sidebar component right here:
+include 'sidebar.php'; 
+?>
 <div class="dashboard-layout">
     <aside class="sidebar">
         <div class="sidebar-brand">
@@ -88,7 +93,7 @@ include '../includes/header.php'; ?>
                             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                         </svg>
                     </span>
-                    <span class="sidebar-link-text">Track Cases</span>
+                    <span class="sidebar-link-text">Track Reports</span>
                 </a>
             </div>
 
