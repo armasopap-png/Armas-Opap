@@ -28,14 +28,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = 'ARMAS: Your account has been deactivated.';
             } else {
                 // Reset attempts, set session
-                $pdo->prepare("UPDATE users SET login_attempts=0, locked_until=NULL WHERE id=?")
-                    ->execute([$user['id']]);
+                $ip = $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
+                $now = date('Y-m-d H:i:s');
+
+                $pdo->prepare("UPDATE users SET login_attempts=0, locked_until=NULL, last_login=?, last_login_ip=? WHERE id=?")
+                    ->execute([$now, $ip, $user['id']]);
+
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['role'] = $user['role'];
                 $_SESSION['status'] = $user['status'];
 
                 // Log to audit_logs
-                $ip = $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
                 $pdo->prepare("INSERT INTO audit_logs (actor_id, action, ip_address) VALUES (?,?,?)")
                     ->execute([$user['id'], 'LOGIN', $ip]);
 

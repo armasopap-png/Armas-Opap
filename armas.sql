@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 07, 2026 at 10:14 AM
+-- Generation Time: Jun 13, 2026 at 01:00 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -156,7 +156,74 @@ INSERT INTO `audit_logs` (`id`, `actor_id`, `action`, `target_type`, `target_id`
 (81, 23, 'LOGOUT', NULL, NULL, '::1', '2026-06-07 07:55:28'),
 (82, 4, 'LOGIN', NULL, NULL, '::1', '2026-06-07 07:56:13'),
 (83, 4, 'LOGOUT', NULL, NULL, '::1', '2026-06-07 08:08:27'),
-(84, 4, 'LOGIN', NULL, NULL, '::1', '2026-06-07 08:08:40');
+(84, 4, 'LOGIN', NULL, NULL, '::1', '2026-06-07 08:08:40'),
+(85, 4, 'LOGIN', NULL, NULL, '::1', '2026-06-07 08:50:01'),
+(86, 2, 'LOGIN', NULL, NULL, '::1', '2026-06-07 08:51:35'),
+(87, 4, 'LOGOUT', NULL, NULL, '::1', '2026-06-07 08:52:22'),
+(88, 1, 'LOGIN', NULL, NULL, '::1', '2026-06-07 08:52:49'),
+(89, 1, 'LOGIN', NULL, NULL, '::1', '2026-06-07 08:53:41'),
+(90, 1, 'LOGOUT', NULL, NULL, '::1', '2026-06-07 08:59:08'),
+(91, 4, 'LOGIN', NULL, NULL, '::1', '2026-06-07 08:59:20'),
+(92, 22, 'LOGIN', NULL, NULL, '::1', '2026-06-07 08:59:31'),
+(93, 4, 'LOGOUT', NULL, NULL, '::1', '2026-06-07 11:50:05'),
+(94, 19, 'LOGIN', NULL, NULL, '::1', '2026-06-07 12:07:08'),
+(95, 19, 'LOGOUT', NULL, NULL, '::1', '2026-06-07 14:14:23'),
+(96, 4, 'LOGIN', NULL, NULL, '::1', '2026-06-07 14:15:26'),
+(97, 4, 'LOGOUT', NULL, NULL, '::1', '2026-06-07 14:29:37'),
+(98, 4, 'LOGIN', NULL, NULL, '::1', '2026-06-07 14:30:31'),
+(99, 22, 'LOGOUT', NULL, NULL, '::1', '2026-06-07 14:32:51'),
+(100, 2, 'LOGIN', NULL, NULL, '::1', '2026-06-07 14:33:59'),
+(101, 2, 'LOGIN', NULL, NULL, '::1', '2026-06-07 14:35:45'),
+(102, 22, 'LOGIN', NULL, NULL, '::1', '2026-06-07 14:36:11'),
+(103, 2, 'LOGOUT', NULL, NULL, '::1', '2026-06-07 14:36:45'),
+(104, 2, 'LOGIN', NULL, NULL, '::1', '2026-06-07 14:37:37'),
+(105, 4, 'LOGOUT', NULL, NULL, '::1', '2026-06-07 14:43:20'),
+(106, 4, 'LOGIN', NULL, NULL, '::1', '2026-06-07 14:43:49'),
+(107, 4, 'LOGOUT', NULL, NULL, '::1', '2026-06-07 14:44:23'),
+(108, 1, 'LOGIN', NULL, NULL, '::1', '2026-06-07 14:44:47'),
+(109, 1, 'LOGOUT', NULL, NULL, '::1', '2026-06-07 14:50:44'),
+(110, 4, 'LOGIN', NULL, NULL, '::1', '2026-06-07 14:50:51'),
+(111, 4, 'LOGOUT', NULL, NULL, '::1', '2026-06-07 16:33:26'),
+(112, 22, 'LOGIN', NULL, NULL, '::1', '2026-06-07 16:35:06'),
+(113, 22, 'SUBMIT_CASE', 'cases', NULL, '::1', '2026-06-07 16:36:11'),
+(114, 22, 'LOGOUT', NULL, NULL, '::1', '2026-06-07 16:38:31'),
+(115, 4, 'LOGIN', NULL, NULL, '::1', '2026-06-07 16:38:37'),
+(116, 4, 'LOGOUT', NULL, NULL, '::1', '2026-06-07 16:39:15'),
+(117, 22, 'LOGIN', NULL, NULL, '::1', '2026-06-07 16:39:25'),
+(118, 22, 'LOGOUT', NULL, NULL, '::1', '2026-06-07 16:42:35'),
+(119, 4, 'LOGIN', NULL, NULL, '::1', '2026-06-07 16:42:41'),
+(120, 4, 'LOGOUT', NULL, NULL, '::1', '2026-06-07 17:01:32'),
+(121, 19, 'LOGIN', NULL, NULL, '::1', '2026-06-07 17:01:38'),
+(122, 19, 'LOGOUT', NULL, NULL, '::1', '2026-06-07 17:01:47'),
+(123, 22, 'LOGIN', NULL, NULL, '::1', '2026-06-07 17:02:00'),
+(124, 22, 'LOGOUT', NULL, NULL, '::1', '2026-06-07 17:16:01'),
+(125, 1, 'LOGIN', NULL, NULL, '::1', '2026-06-07 17:16:20'),
+(126, 4, 'LOGIN', NULL, NULL, '::1', '2026-06-08 02:54:09'),
+(127, 4, 'LOGOUT', NULL, NULL, '::1', '2026-06-08 02:56:16'),
+(128, 19, 'LOGIN', NULL, NULL, '::1', '2026-06-08 03:01:09'),
+(129, 19, 'LOGOUT', NULL, NULL, '::1', '2026-06-08 03:02:06'),
+(130, 19, 'LOGIN', NULL, NULL, '::1', '2026-06-08 03:02:23'),
+(131, 19, 'LOGOUT', NULL, NULL, '::1', '2026-06-08 03:02:33'),
+(132, 4, 'LOGIN', NULL, NULL, '::1', '2026-06-08 03:02:40'),
+(133, 4, 'LOGOUT', NULL, NULL, '::1', '2026-06-08 03:14:51'),
+(134, 19, 'LOGIN', NULL, NULL, '::1', '2026-06-08 03:15:03'),
+(135, 19, 'LOGOUT', NULL, NULL, '::1', '2026-06-08 03:15:41'),
+(136, 4, 'LOGIN', NULL, NULL, '::1', '2026-06-08 03:26:34'),
+(137, 4, 'LOGOUT', NULL, NULL, '::1', '2026-06-08 03:43:37'),
+(138, 19, 'LOGIN', NULL, NULL, '::1', '2026-06-08 03:43:52'),
+(139, 19, 'SUBMIT_CASE', 'cases', NULL, '::1', '2026-06-08 03:44:55'),
+(140, 19, 'LOGOUT', NULL, NULL, '::1', '2026-06-08 03:44:56'),
+(141, 4, 'LOGIN', NULL, NULL, '::1', '2026-06-08 03:45:10'),
+(142, 4, 'LOGOUT', NULL, NULL, '::1', '2026-06-08 03:45:21'),
+(143, 19, 'LOGIN', NULL, NULL, '::1', '2026-06-08 03:45:27'),
+(144, 19, 'LOGOUT', NULL, NULL, '::1', '2026-06-08 03:47:18'),
+(145, 19, 'LOGIN', NULL, NULL, '::1', '2026-06-10 14:41:39'),
+(146, 19, 'LOGOUT', NULL, NULL, '::1', '2026-06-10 14:46:37'),
+(147, 4, 'LOGIN', NULL, NULL, '::1', '2026-06-10 14:46:42'),
+(148, 19, 'LOGIN', NULL, NULL, '::1', '2026-06-11 14:19:05'),
+(149, 19, 'LOGOUT', NULL, NULL, '::1', '2026-06-11 14:22:24'),
+(150, 4, 'LOGIN', NULL, NULL, '::1', '2026-06-11 14:23:16'),
+(151, 19, 'LOGIN', NULL, NULL, '::1', '2026-06-11 14:40:52');
 
 -- --------------------------------------------------------
 
@@ -173,6 +240,8 @@ CREATE TABLE `cases` (
   `status` enum('pending','in_process','resolved','closed') DEFAULT 'pending',
   `description` text DEFAULT NULL,
   `location_abroad` varchar(255) DEFAULT NULL,
+  `city` varchar(100) DEFAULT NULL,
+  `current_address` varchar(255) DEFAULT NULL,
   `employer_name` varchar(255) DEFAULT NULL,
   `date_of_departure` date DEFAULT NULL,
   `emergency_contact_name` varchar(255) DEFAULT NULL,
@@ -185,11 +254,13 @@ CREATE TABLE `cases` (
 -- Dumping data for table `cases`
 --
 
-INSERT INTO `cases` (`id`, `case_number`, `ofw_id`, `agency_id`, `type`, `status`, `description`, `location_abroad`, `employer_name`, `date_of_departure`, `emergency_contact_name`, `emergency_contact_number`, `created_at`, `updated_at`) VALUES
-(1, 'ARMAS-2026-0001', 14, 10, 'Legal Assistance', 'pending', 'N/A', '2313 SAUDI', 'ROBIN PANALIGAN', '2026-06-17', 'MARK JOSEPH', '9103028321', '2026-06-07 06:55:00', '2026-06-07 06:55:00'),
-(2, 'ARMAS-2026-0002', 14, 10, 'Financial Aid', 'pending', 'NANANANA', '', 'REANAN BANTA', '2026-06-07', 'ALBA LAWRENCE', '01928488244', '2026-06-07 07:05:16', '2026-06-07 07:05:16'),
-(3, 'ARMAS-2026-0003', 14, 10, 'Emergency Repatriation', 'in_process', 'SADASDDSADSA', '', 'MJ', '2026-06-18', 'ALBA LAWRENCE', '921902938', '2026-06-07 07:27:04', '2026-06-07 07:47:04'),
-(4, 'ARMAS-2026-0004', 14, 10, 'Psychosocial Support', 'closed', 'ASDAS', 'EUROPE', 'MATT', '2026-06-09', 'ASDADAS', '23423424', '2026-06-07 07:28:55', '2026-06-07 07:43:39');
+INSERT INTO `cases` (`id`, `case_number`, `ofw_id`, `agency_id`, `type`, `status`, `description`, `location_abroad`, `city`, `current_address`, `employer_name`, `date_of_departure`, `emergency_contact_name`, `emergency_contact_number`, `created_at`, `updated_at`) VALUES
+(1, 'ARMAS-2026-0001', 14, 10, 'Legal Assistance', 'pending', 'N/A', '2313 SAUDI', NULL, NULL, 'ROBIN PANALIGAN', '2026-06-17', 'MARK JOSEPH', '9103028321', '2026-06-07 06:55:00', '2026-06-07 06:55:00'),
+(2, 'ARMAS-2026-0002', 14, 10, 'Financial Aid', 'pending', 'NANANANA', '', NULL, NULL, 'REANAN BANTA', '2026-06-07', 'ALBA LAWRENCE', '01928488244', '2026-06-07 07:05:16', '2026-06-07 07:05:16'),
+(3, 'ARMAS-2026-0003', 14, 10, 'Emergency Repatriation', 'in_process', 'SADASDDSADSA', '', NULL, NULL, 'MJ', '2026-06-18', 'ALBA LAWRENCE', '921902938', '2026-06-07 07:27:04', '2026-06-07 07:47:04'),
+(4, 'ARMAS-2026-0004', 14, 10, 'Psychosocial Support', 'closed', 'ASDAS', 'EUROPE', NULL, NULL, 'MATT', '2026-06-09', 'ASDADAS', '23423424', '2026-06-07 07:28:55', '2026-06-07 07:43:39'),
+(5, 'ARMAS-2026-0005', 13, 9, 'Emergency Repatriation', 'pending', 'INAANO ANO GINAGANON GANON KAWAWA NAMAN AKO', 'RIYADH, MALAYSIA', NULL, '', 'ABC COMPANY', '2026-06-24', 'LAWRENCE ALBA', '09123456789', '2026-06-07 16:36:11', '2026-06-07 16:36:11'),
+(6, 'ARMAS-2026-0006', 11, 13, 'Emergency Repatriation', 'pending', 'LKHIHHKHLKNLK', 'CITY HALL, UNITED ARAB EMIRATES', 'CITY HALL', 'DITO LANG', 'AKO LANG', '2026-06-08', 'SIYA LANG', '09123456789', '2026-06-08 03:44:55', '2026-06-08 03:44:55');
 
 -- --------------------------------------------------------
 
@@ -238,7 +309,9 @@ INSERT INTO `notifications` (`id`, `user_id`, `message`, `type`, `read_at`, `cre
 (4, 4, 'New repatriation request ARMAS-2026-0004 has been submitted.', 'new_case', NULL, '2026-06-07 07:28:55'),
 (5, 23, 'Your case ARMAS-2026-0004 status has been updated to resolved.', 'status_update', '2026-06-07 15:46:59', '2026-06-07 07:42:05'),
 (6, 23, 'Your case ARMAS-2026-0004 status has been updated to closed.', 'status_update', '2026-06-07 15:46:57', '2026-06-07 07:43:39'),
-(7, 23, 'Your case ARMAS-2026-0003 status has been updated to in_process.', 'status_update', '2026-06-07 15:53:10', '2026-06-07 07:47:04');
+(7, 23, 'Your case ARMAS-2026-0003 status has been updated to in_process.', 'status_update', '2026-06-07 15:53:10', '2026-06-07 07:47:04'),
+(8, 3, 'New repatriation request ARMAS-2026-0005 has been submitted.', 'new_case', NULL, '2026-06-07 16:36:11'),
+(9, 7, 'New repatriation request ARMAS-2026-0006 has been submitted.', 'new_case', NULL, '2026-06-08 03:44:55');
 
 -- --------------------------------------------------------
 
@@ -257,18 +330,23 @@ CREATE TABLE `ofws` (
   `ofw_type` enum('land-based','sea-based') NOT NULL DEFAULT 'land-based',
   `address` text DEFAULT NULL,
   `contact_number` varchar(20) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `date_of_departure` date DEFAULT NULL,
+  `end_of_contract` date DEFAULT NULL,
+  `country` varchar(100) DEFAULT NULL,
+  `city` varchar(100) DEFAULT NULL,
+  `work_address` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `ofws`
 --
 
-INSERT INTO `ofws` (`id`, `user_id`, `last_name`, `first_name`, `middle_name`, `suffix`, `agency_id`, `ofw_type`, `address`, `contact_number`, `created_at`) VALUES
-(11, 19, 'BANTA', 'JOHN', 'REANAN L.', '', 13, 'land-based', '780 KAGANDAHAN ST', '09619878435', '2026-06-06 04:00:04'),
-(12, 20, 'AQUINO', 'IAN LAURENCE', 'TOMAS', '', 10, 'land-based', '555 PALTOC SAMPALOC MANILA', '09617244155', '2026-06-06 04:51:44'),
-(13, 22, 'PANALIGAN', 'ROBIN', 'E.', '', 9, 'sea-based', '661 MARY ANN ST. GAGALANGIN TONDO MANILA', '', '2026-06-07 05:04:12'),
-(14, 23, 'ALBA', 'LAWRENCE', 'MADEJA', '', 10, 'sea-based', '', '231332766787', '2026-06-07 05:04:31');
+INSERT INTO `ofws` (`id`, `user_id`, `last_name`, `first_name`, `middle_name`, `suffix`, `agency_id`, `ofw_type`, `address`, `contact_number`, `created_at`, `date_of_departure`, `end_of_contract`, `country`, `city`, `work_address`) VALUES
+(11, 19, 'BANTA', 'JOHN REANAN', 'LEGASPI', '', 13, 'land-based', '780 KAGANDAHAN ST', '09619878435', '2026-06-06 04:00:04', NULL, NULL, NULL, NULL, NULL),
+(12, 20, 'AQUINO', 'IAN LAURENCE', 'TOMAS', '', 10, 'land-based', '555 PALTOC SAMPALOC MANILA', '09617244155', '2026-06-06 04:51:44', NULL, NULL, NULL, NULL, NULL),
+(13, 22, 'PANALIGAN', 'ROBIN', 'E.', '', 9, 'sea-based', '661 MARY ANN ST. GAGALANGIN TONDO MANILA', '', '2026-06-07 05:04:12', NULL, NULL, NULL, NULL, NULL),
+(14, 23, 'ALBA', 'LAWRENCE', 'MADEJA', '', 10, 'sea-based', '', '231332766787', '2026-06-07 05:04:31', NULL, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -326,10 +404,10 @@ INSERT INTO `users` (`id`, `email`, `password_hash`, `role`, `status`, `login_at
 (6, 'agency5@maharlika.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'agency', 'pending', 0, NULL, '2026-06-06 03:19:48', '2026-06-07 03:27:42'),
 (7, 'agency6@sunrise.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'agency', 'active', 0, NULL, '2026-06-06 03:19:48', '2026-06-07 03:27:42'),
 (8, 'agency7@kabayan.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'agency', '', 0, NULL, '2026-06-06 03:19:48', '2026-06-07 03:27:42'),
-(19, 'reananbanta@gmail.com', '$2y$10$y9snz8g93RPLM2s/qaQZ7.LVFTwpaygiRiA5cUQEvW0SBosoJmsz.', 'ofw', 'active', 0, NULL, '2026-06-06 04:00:04', '2026-06-06 04:24:45'),
+(19, 'reananbanta@gmail.com', '$2y$10$y9snz8g93RPLM2s/qaQZ7.LVFTwpaygiRiA5cUQEvW0SBosoJmsz.', 'ofw', 'active', 0, NULL, '2026-06-06 04:00:04', '2026-06-08 03:43:52'),
 (20, 'ianaquino0208@gmail.com', '$2y$10$SVKYD6qHCFcH.ABizUr2uOLPBeOR6aqIm4bsDM9VbUtrOEVKcngjW', 'ofw', 'active', 0, NULL, '2026-06-06 04:51:44', '2026-06-06 04:52:34'),
 (21, 'superadmin@armas.gov.ph', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'superadmin', 'active', 0, NULL, '2026-06-07 04:01:25', '2026-06-07 04:01:25'),
-(22, 'panaliganrobin48@gmail.com', '$2y$10$ZR9dz7ROeIRxhnKYjQJLxu1vFiIaCvZ5utb6aesePy2gRUIfnJpYS', 'ofw', 'active', 0, NULL, '2026-06-07 05:04:12', '2026-06-07 05:05:07'),
+(22, 'panaliganrobin48@gmail.com', '$2y$10$ZR9dz7ROeIRxhnKYjQJLxu1vFiIaCvZ5utb6aesePy2gRUIfnJpYS', 'ofw', 'active', 0, NULL, '2026-06-07 05:04:12', '2026-06-07 16:35:06'),
 (23, 'opaparmas@gmail.com', '$2y$10$rNyzrgKwGzXoHAqP5QJW5.L26TKq/Aps9uPKtT/6QAu2xRc0ufwvC', 'ofw', 'active', 0, NULL, '2026-06-07 05:04:31', '2026-06-07 06:52:53');
 
 --
@@ -409,13 +487,13 @@ ALTER TABLE `agencies`
 -- AUTO_INCREMENT for table `audit_logs`
 --
 ALTER TABLE `audit_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=85;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=152;
 
 --
 -- AUTO_INCREMENT for table `cases`
 --
 ALTER TABLE `cases`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `case_updates`
@@ -427,7 +505,7 @@ ALTER TABLE `case_updates`
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `ofws`
@@ -495,13 +573,6 @@ ALTER TABLE `ofws`
 ALTER TABLE `otp_codes`
   ADD CONSTRAINT `otp_codes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 COMMIT;
-
-ALTER TABLE `ofws` 
-  DROP FOREIGN KEY `cases_ibfk_1`, -- Drop constraints temporarily if needed for table re-alignment
-  DROP COLUMN `agency_id`,
-  ADD COLUMN `sex` ENUM('MALE', 'FEMALE') NOT NULL AFTER `suffix`,
-  ADD COLUMN `birthdate` DATE NOT NULL AFTER `sex`,
-  ADD COLUMN `supporting_document` VARCHAR(255) NOT NULL AFTER `contact_number`;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

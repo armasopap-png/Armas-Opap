@@ -459,6 +459,26 @@ include '../includes/header.php'; ?>
                 dashboardLayout.classList.remove('mobile-open');
             });
         }
+
+        // ── OFW Location Capture ──────────────────────────────────────────
+        // Silently capture GPS on every dashboard load and send to server.
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    fetch('/armas/api/update-location.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude
+                        })
+                    });
+                },
+                function () { /* user denied — do nothing */ },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        }
+        // ──────────────────────────────────────────────────────────────────
     });
 </script>
 

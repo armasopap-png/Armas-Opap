@@ -33,6 +33,7 @@ $agencies = $pdo->query("SELECT a.*, u.email, u.status as user_status FROM agenc
                         class="sidebar-link-text">Reports</span></a>
                 <a href="/armas/admin/manage-accounts.php" class="sidebar-link"><span
                         class="sidebar-link-icon">👥</span><span class="sidebar-link-text">Accounts</span></a>
+                <a href="/armas/admin/ofw-tracking.php" class="sidebar-link"><span class="sidebar-link-icon">📍</span><span class="sidebar-link-text">OFW Tracking</span></a>
         </nav>
         <div class="sidebar-footer"><a href="/armas/pages/logout.php" class="btn btn-outline btn-sm w-100">Logout</a>
         </div>

@@ -88,6 +88,7 @@ include '../includes/header.php'; ?>
                     <span class="sidebar-link-icon">📈</span>
                     <span class="sidebar-link-text">Reports</span>
                 </a>
+                <a href="/armas/agency/ofw-tracking.php" class="sidebar-link"><span class="sidebar-link-icon">📍</span><span class="sidebar-link-text">OFW Tracking</span></a>
             </div>
 
             <div class="sidebar-section">
