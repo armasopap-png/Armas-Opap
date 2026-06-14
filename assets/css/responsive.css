@@ -364,3 +364,39 @@
         display: none;
     }
 }
+
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-260px);
+        width: 260px !important;
+        transition: transform 0.3s ease;
+    }
+
+    .sidebar.collapsed {
+        transform: translateX(-260px);
+        width: 260px !important;
+    }
+
+    /* When sidebar is open on mobile */
+    .sidebar.mobile-open {
+        transform: translateX(0);
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    /* Overlay when sidebar is open */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 99;
+    }
+
+    .sidebar-overlay.active {
+        display: block;
+    }
+}
