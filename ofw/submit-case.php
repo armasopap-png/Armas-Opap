@@ -75,6 +75,88 @@ include '../includes/header.php';
 // Include the local sidebar component right here:
 include 'sidebar.php'; 
 ?>
+<style>
+    /* --- CSS Variables Layout Engine para sa Swabeng Paggalaw --- */
+    :root {
+        --sidebar-width: 70px;
+        --layout-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Kapag hinover ang sidebar sa desktop screen, lumalawak ang space */
+    @media (min-width: 993px) {
+        .dashboard-layout:has(.sidebar:hover) {
+            --sidebar-width: 260px;
+        }
+    }
+
+    /* Override sa default wrapper ng main-content gamit ang adaptive transitions */
+    .main-content {
+        flex-grow: 1;
+        margin-left: var(--sidebar-width) !important;
+        width: calc(100% - var(--sidebar-width)) !important;
+        transition: var(--layout-transition) !important;
+    }
+
+    /* Itago ang text block structures ng sidebar kapag normal state */
+    .sidebar .sidebar-brand-text,
+    .sidebar .sidebar-link-text,
+    .sidebar .sidebar-section-title,
+    .sidebar .badge,
+    .sidebar .sidebar-footer {
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        display: inline-block;
+        pointer-events: none;
+    }
+
+    /* Lalabas lang ang mga text kapag hinover ang mismong sidebar control panel */
+    .dashboard-layout:has(.sidebar:hover) .sidebar-brand-text,
+    .dashboard-layout:has(.sidebar:hover) .sidebar-link-text,
+    .dashboard-layout:has(.sidebar:hover) .sidebar-section-title,
+    .dashboard-layout:has(.sidebar:hover) .badge,
+    .dashboard-layout:has(.sidebar:hover) .sidebar-footer {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* --- Mobile Header Elements --- */
+    .mobile-header-bar {
+        display: none;
+        background-color: #132247;
+        padding: 12px 16px;
+        align-items: center;
+        color: #fff;
+        position: sticky;
+        top: 0;
+        z-index: 1050;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .mobile-left-group { display: flex; align-items: center; gap: 12px; }
+    .mobile-menu-btn { background: transparent; border: none; color: white; cursor: pointer; display: flex; align-items: center; }
+    .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.4); z-index: 1030; }
+
+    @media (max-width: 992px) {
+        .mobile-header-bar { display: flex; }
+        .sidebar { width: 260px !important; transform: translateX(-100%); transition: transform 0.3s ease; }
+        .sidebar .sidebar-brand-text, .sidebar .sidebar-link-text, .sidebar .sidebar-section-title, .sidebar .sidebar-footer { opacity: 1 !important; pointer-events: auto !important; }
+        .main-content { margin-left: 0 !important; width: 100% !important; }
+        .dashboard-layout.mobile-open .sidebar { transform: translateX(0); }
+        .dashboard-layout.mobile-open .sidebar-overlay { display: block; }
+    }
+</style>
+<div class="mobile-header-bar">
+    <div class="mobile-left-group">
+        <button class="mobile-menu-btn" id="mobileMenuToggle" aria-label="Open Menu">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+        <img src="/armas/assets/img/armas.jpg" alt="ARMAS" style="width: 32px; height: 32px; border-radius: 50%;">
+        <span style="font-weight: bold; letter-spacing: 0.5px; font-size: 1.1rem;">ARMAS Portal</span>
+    </div>
+</div>
 <div class="dashboard-layout">
     <aside class="sidebar">
         <div class="sidebar-brand">
@@ -244,5 +326,25 @@ include 'sidebar.php';
         </div>
     </main>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const dashboardLayout = document.getElementById('dashboardLayout');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        if (mobileMenuToggle && dashboardLayout) {
+            mobileMenuToggle.addEventListener('click', function () {
+                dashboardLayout.classList.toggle('mobile-open');
+            });
+        }
+
+        if (sidebarOverlay && dashboardLayout) {
+            sidebarOverlay.addEventListener('click', function () {
+                dashboardLayout.classList.remove('mobile-open');
+            });
+        }
+    });
+</script>
 
 <?php include '../includes/footer.php'; ?>

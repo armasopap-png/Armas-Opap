@@ -52,17 +52,30 @@ $hide_navbar = true;
 include '../includes/header.php'; ?>
 
 <style>
-    /* --- Layout Container --- */
+    /* --- Modern CSS Variables Layout Engine --- */
+    :root {
+        --sidebar-width: 70px;
+        --layout-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* When desktop sidebar is hovered, update layout width across the parent tree */
+    @media (min-width: 993px) {
+        .dashboard-layout:has(.sidebar:hover) {
+            --sidebar-width: 260px;
+        }
+    }
+
+    /* --- Main Layout Wrapper --- */
     .dashboard-layout {
         display: flex;
         min-height: 100vh;
         position: relative;
     }
 
-    /* --- Desktop Mini Sidebar Base Setup --- */
+    /* --- Fixed Sidebar --- */
     .sidebar {
-        width: 70px; /* Default size shows icons only */
-        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        width: var(--sidebar-width);
+        transition: var(--layout-transition);
         overflow-x: hidden;
         white-space: nowrap;
         position: fixed;
@@ -70,24 +83,26 @@ include '../includes/header.php'; ?>
         left: 0;
         height: 100vh;
         z-index: 1040;
+        background: #1a2e5c;
         box-shadow: 2px 0 10px rgba(0,0,0,0.05);
     }
 
-    /* --- Smooth Expand on Mouse Hover --- */
     .sidebar:hover {
-        width: 260px; /* Expands smoothly to show full text links */
         box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
     }
 
-    /* --- Sync Layout Grid Main Content Margin --- */
+    /* --- Content Canvas Area --- */
     .main-content {
         flex-grow: 1;
-        margin-left: 70px; /* Reserves standard room for collapsed rail size */
-        width: calc(100% - 70px);
-        transition: margin-left 0.3s ease, width 0.3s ease;
+        margin-left: var(--sidebar-width);
+        width: calc(100% - var(--sidebar-width));
+        transition: var(--layout-transition);
+        /* Generous horizontal and vertical padding to prevent sidebar crowding */
+        padding: 30px 45px; 
+        box-sizing: border-box;
     }
 
-    /* --- Inside Layout Structure Control Text Visibilities --- */
+    /* --- Text Elements Visibility and Fade States --- */
     .sidebar .sidebar-brand-text,
     .sidebar .sidebar-link-text,
     .sidebar .sidebar-section-title,
@@ -96,20 +111,20 @@ include '../includes/header.php'; ?>
         opacity: 0;
         transition: opacity 0.2s ease;
         display: inline-block;
-        pointer-events: none; /* Prevents cursor misclicks while animating */
+        pointer-events: none;
     }
 
-    /* Show everything cleanly when hovered */
-    .sidebar:hover .sidebar-brand-text,
-    .sidebar:hover .sidebar-link-text,
-    .sidebar:hover .sidebar-section-title,
-    .sidebar:hover .badge,
-    .sidebar:hover .sidebar-footer {
+    /* Smoothly fade in content links alongside the expanding sidebar */
+    .dashboard-layout:has(.sidebar:hover) .sidebar-brand-text,
+    .dashboard-layout:has(.sidebar:hover) .sidebar-link-text,
+    .dashboard-layout:has(.sidebar:hover) .sidebar-section-title,
+    .dashboard-layout:has(.sidebar:hover) .badge,
+    .dashboard-layout:has(.sidebar:hover) .sidebar-footer {
         opacity: 1;
         pointer-events: auto;
     }
 
-    /* Adjust branding and layouts to stay centered while collapsed */
+    /* --- Layout Components Structural Styles --- */
     .sidebar-brand {
         display: flex;
         align-items: center;
@@ -130,6 +145,12 @@ include '../includes/header.php'; ?>
         padding: 14px 20px;
         gap: 20px;
         text-decoration: none;
+        color: #94a3b8;
+    }
+
+    .sidebar-link.active, .sidebar-link:hover {
+        color: #fff;
+        background-color: #243e7a;
     }
 
     .sidebar-link-icon {
@@ -140,10 +161,10 @@ include '../includes/header.php'; ?>
         flex-shrink: 0;
     }
 
-    /* --- Mobile Header Bar with Left-aligned Controls --- */
+    /* --- Top Mobile Header Utility Bar --- */
     .mobile-header-bar {
         display: none;
-        background-color: #1a1a24;
+        background-color: #132247;
         padding: 12px 16px;
         align-items: center;
         color: #fff;
@@ -181,19 +202,18 @@ include '../includes/header.php'; ?>
         z-index: 1030;
     }
 
-    /* --- Mobile Touch Screen Fallback Rules (Under 992px) --- */
+    /* --- Media Queries / Mobile Responsive System --- */
     @media (max-width: 992px) {
         .mobile-header-bar {
-            display: flex; /* Active mobile strip header layout */
+            display: flex;
         }
 
         .sidebar {
             width: 260px !important;
-            transform: translateX(-100%); /* Stays fully offscreen */
+            transform: translateX(-100%);
             transition: transform 0.3s ease;
         }
 
-        /* Prevent auto hover interactions while resizing onto mobile systems */
         .sidebar .sidebar-brand-text,
         .sidebar .sidebar-link-text,
         .sidebar .sidebar-section-title,
@@ -206,10 +226,9 @@ include '../includes/header.php'; ?>
         .main-content {
             margin-left: 0 !important;
             width: 100% !important;
-            padding: 0 16px;
+            padding: 24px 20px !important;
         }
 
-        /* Show mobile responsive sliding panel draw style overrides */
         .dashboard-layout.mobile-open .sidebar {
             transform: translateX(0);
         }
@@ -461,7 +480,6 @@ include '../includes/header.php'; ?>
         }
 
         // ── OFW Location Capture ──────────────────────────────────────────
-        // Silently capture GPS on every dashboard load and send to server.
         if ('geolocation' in navigator) {
             navigator.geolocation.getCurrentPosition(
                 function (position) {
@@ -478,7 +496,6 @@ include '../includes/header.php'; ?>
                 { enableHighAccuracy: true, timeout: 10000 }
             );
         }
-        // ──────────────────────────────────────────────────────────────────
     });
 </script>
 

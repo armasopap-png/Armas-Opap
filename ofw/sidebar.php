@@ -32,7 +32,17 @@
         flex-grow: 1;
         margin-left: 70px;
         width: calc(100% - 70px);
-        transition: margin-left 0.3s ease, width 0.3s ease;
+        padding: 24px 30px; /* Gives the 'Welcome, Robin!' header breathing room */
+        box-sizing: border-box;
+        transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* --- FIX: Adjust & Push Main Content dynamically on Desktop Hover --- */
+    @media (min-width: 993px) {
+        .sidebar:hover + .sidebar-overlay + .main-content {
+            margin-left: 260px;
+            width: calc(100% - 260px);
+        }
     }
 
     /* --- Structural Text Fading Controllers --- */
@@ -77,7 +87,7 @@
         .mobile-header-bar { display: flex; }
         .sidebar { width: 260px !important; transform: translateX(-100%); transition: transform 0.3s ease; }
         .sidebar .sidebar-brand-text, .sidebar .sidebar-link-text, .sidebar .sidebar-section-title, .sidebar .badge, .sidebar .sidebar-footer { opacity: 1 !important; pointer-events: auto !important; }
-        .main-content { margin-left: 0 !important; width: 100% !important; }
+        .main-content { margin-left: 0 !important; width: 100% !important; padding: 20px 15px; }
         .dashboard-layout.mobile-open .sidebar { transform: translateX(0); }
         .dashboard-layout.mobile-open .sidebar-overlay { display: block; }
     }
