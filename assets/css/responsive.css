@@ -3,51 +3,6 @@
  * All Media Queries
  */
 
-/* Tablet and below */
-@media (max-width: 1024px) {
-    .sidebar {
-        width: 80px;
-    }
-    
-    .sidebar-brand {
-        padding: 16px 12px;
-        justify-content: center;
-    }
-    
-    .sidebar-brand-text {
-        display: none;
-    }
-    
-    .sidebar-link {
-        padding: 12px;
-        justify-content: center;
-    }
-    
-    .sidebar-link-text {
-        display: none;
-    }
-    
-    .sidebar-link-icon {
-        margin: 0;
-    }
-    
-    .sidebar-section-title {
-        display: none;
-    }
-    
-    .user-details {
-        display: none;
-    }
-    
-    .main-content {
-        margin-left: 80px;
-    }
-    
-    .charts-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
 /* Mobile */
 @media (max-width: 768px) {
     /* Hide sidebar on mobile */
@@ -366,20 +321,30 @@
 }
 
 @media (max-width: 768px) {
+    /* Reset CSS variable so hover expansion never triggers on mobile */
+    .dashboard-layout {
+        --sidebar-w: 0px;
+    }
+
     .sidebar {
-        transform: translateX(-260px);
         width: 260px !important;
+        transform: translateX(-260px);
         transition: transform 0.3s ease;
     }
 
-    .sidebar.collapsed {
-        transform: translateX(-260px);
-        width: 260px !important;
+    .sidebar:hover {
+        width: 260px !important; /* disable hover expand on mobile */
     }
 
-    /* When sidebar is open on mobile */
     .sidebar.mobile-open {
         transform: translateX(0);
+    }
+
+    .sidebar .sidebar-brand-text,
+    .sidebar .sidebar-link-text,
+    .sidebar .sidebar-section-title {
+        opacity: 1 !important;
+        pointer-events: auto !important;
     }
 
     .main-content {
@@ -387,7 +352,6 @@
         width: 100% !important;
     }
 
-    /* Overlay when sidebar is open */
     .sidebar-overlay {
         display: none;
         position: fixed;

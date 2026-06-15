@@ -201,7 +201,7 @@ include '../includes/header.php'; ?>
     <main class="main-content">
         <header class="main-header">
             <div class="main-header-title" style="display:flex; align-items:center; gap:16px;">
-                <button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar">
+                <button class="sidebar-toggle d-mobile-only" onclick="toggleSidebar()" title="Menu">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="3" y1="6" x2="21" y2="6"></line>
                         <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -455,34 +455,20 @@ include '../includes/header.php'; ?>
 <script>
     function toggleSidebar() {
         const sidebar = document.querySelector('.sidebar');
-        const isMobile = window.innerWidth <= 768;
-
-        if (isMobile) {
-            sidebar.classList.toggle('mobile-open');
-            // Add/remove overlay
-            let overlay = document.getElementById('sidebarOverlay');
-            if (!overlay) {
-                overlay = document.createElement('div');
-                overlay.id = 'sidebarOverlay';
-                overlay.className = 'sidebar-overlay';
-                overlay.onclick = () => {
-                    sidebar.classList.remove('mobile-open');
-                    overlay.classList.remove('active');
-                };
-                document.body.appendChild(overlay);
-            }
-            overlay.classList.toggle('active', sidebar.classList.contains('mobile-open'));
-        } else {
-            sidebar.classList.toggle('collapsed');
-            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+        sidebar.classList.toggle('mobile-open');
+        let overlay = document.getElementById('sidebarOverlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'sidebarOverlay';
+            overlay.className = 'sidebar-overlay';
+            overlay.onclick = () => {
+                sidebar.classList.remove('mobile-open');
+                overlay.classList.remove('active');
+            };
+            document.body.appendChild(overlay);
         }
+        overlay.classList.toggle('active', sidebar.classList.contains('mobile-open'));
     }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        if (window.innerWidth > 768 && localStorage.getItem('sidebarCollapsed') === 'true') {
-            document.querySelector('.sidebar').classList.add('collapsed');
-        }
-    });
 </script>
 
 <?php include '../includes/footer.php'; ?>
