@@ -112,8 +112,20 @@ require_once 'includes/functions.php';
             transition: var(--transition);
         }
 
-        .nav-menu a:hover {
+        .nav-menu a:not(.btn):hover {
             color: var(--secondary);
+        }
+
+        .nav-menu .btn-outline-gold:hover {
+            background: var(--secondary);
+            color: var(--primary);
+        }
+
+        .nav-menu .btn-gold:hover {
+            background: transparent;
+            color: var(--secondary);
+            border: 2px solid var(--secondary);
+            text-decoration: none;
         }
 
         .nav-menu .btn {
@@ -638,7 +650,6 @@ require_once 'includes/functions.php';
                 <img src="/armas/assets/img/armas.jpg" alt="ARMAS Shield" class="navbar-logo">
                 <div class="navbar-brand-text">
                     <span class="logo-text">ARMAS</span>
-                    <span class="brand-subtitle">Assistance &amp; Repatriation</span>
                 </div>
             </a>
 
