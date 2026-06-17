@@ -57,7 +57,7 @@ include '../includes/header.php';
         --layout-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
-    /* Synchronize layout expansion when the desktop sidebar panel is hovered */
+    /* Synchronize layout expansion when desktop sidebar panel is hovered */
     @media (min-width: 993px) {
         .dashboard-layout:has(.sidebar:hover) {
             --sidebar-width: 260px;
@@ -90,7 +90,7 @@ include '../includes/header.php';
         box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
     }
 
-    /* --- Content Canvas Area --- */
+    /* --- Content Canvas Area with Unified Gap Spacing --- */
     .main-content {
         flex-grow: 1;
         margin-left: var(--sidebar-width);
@@ -112,7 +112,7 @@ include '../includes/header.php';
         pointer-events: none;
     }
 
-    /* Reveal structural text blocks neatly alongside the hover state window */
+    /* Reveal structural text blocks alongside hover state window */
     .dashboard-layout:has(.sidebar:hover) .sidebar-brand-text,
     .dashboard-layout:has(.sidebar:hover) .sidebar-link-text,
     .dashboard-layout:has(.sidebar:hover) .sidebar-section-title,
@@ -339,16 +339,13 @@ include '../includes/header.php';
 
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <main class="main-content">
-        <header class="main-header" style="display: flex; align-items: center; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid #e2e8f0; margin-bottom: 24px;">
-            <div class="main-header-title" style="display: flex; align-items: center; gap: 12px;">
-                <h1 style="margin: 0; font-size: 1.75rem; color: #0f172a;">Notifications</h1>
-                <span class="badge badge-pending" style="background: #fee2e2; color: #ef4444; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; font-weight: 600;"><?php echo $unread_count; ?> unread</span>
+   <main class="main-content">
+        <!-- Pinalitan na header style -->
+        <header class="main-header" style="display: flex; align-items: center; justify-content: space-between; background-color: #fff; padding: 20px 24px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-top: 10px; margin-bottom: 24px;">
+            <div class="main-header-title">
+                <h1 style="margin: 0; font-size: 1.75rem; color: #1a2e5c;">Notifications</h1>
             </div>
             <div class="main-header-actions" style="display: flex; align-items: center; gap: 20px;">
-                <?php if ($unread_count > 0): ?>
-                    <a href="?mark_all=1" class="btn btn-outline btn-sm">Mark All as Read</a>
-                <?php endif; ?>
                 <div class="user-info" style="display: flex; align-items: center; gap: 12px;">
                     <div class="user-avatar" style="width: 40px; height: 40px; background-color: #e2e8f0; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; color: #1e293b;"><?php echo substr($ofw['first_name'], 0, 1); ?></div>
                     <div class="user-details">

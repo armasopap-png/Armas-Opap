@@ -351,9 +351,11 @@ include '../includes/header.php'; ?>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <main class="main-content">
-        <header class="main-header" style="display: flex; align-items: center; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid #e2e8f0; margin-bottom: 24px;">
+        <!-- 🔥 BAGONG CODE: May dagdag na padding sa gilid at margin sa itaas -->
+<!-- 🔥 BAGONG CODE: Rounded, may background, at may gap sa gilid -->
+<header class="main-header" style="display: flex; align-items: center; justify-content: space-between; background-color: #fff; padding: 20px 24px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-top: 10px; margin-bottom: 24px;">
             <div class="main-header-title">
-                <h1 style="margin: 0; font-size: 1.75rem; color: #0f172a;">Welcome, <?php echo htmlspecialchars($ofw['first_name']); ?>!</h1>
+                <h1 style="margin: 0; font-size: 1.75rem; color: #1a2e5c;">Welcome, <?php echo htmlspecialchars($ofw['first_name']); ?>!</h1>
             </div>
             <div class="main-header-actions">
                 <div class="user-info" style="display: flex; align-items: center; gap: 12px;">
