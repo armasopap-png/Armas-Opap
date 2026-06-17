@@ -404,12 +404,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <button type="button" class="toggle-password" onclick="this.previousElementSibling.type = this.previousElementSibling.type === 'password' ? 'text' : 'password';">👁</button>
                         </div>
                         <div id="strength-bar"></div>
+                        <!-- Password Criteria Checklist -->
+                        <div id="pw-criteria" style="margin-top:10px; background:#f0f4fa; border:1px solid #dce6f5; border-radius:10px; padding:12px 14px; display:none;">
+                            <div style="font-size:.78rem; color:#475569; font-weight:600; margin-bottom:8px;">Password must contain:</div>
+                            <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:5px;">
+                                <li id="crit-length"  class="pw-crit"><span class="crit-icon">○</span> <span>Number of characters (8–20)</span></li>
+                                <li id="crit-lower"   class="pw-crit"><span class="crit-icon">○</span> <span>Lowercase letter</span></li>
+                                <li id="crit-upper"   class="pw-crit"><span class="crit-icon">○</span> <span>Capital letter</span></li>
+                                <li id="crit-number"  class="pw-crit"><span class="crit-icon">○</span> <span>Number</span></li>
+                                <li id="crit-special" class="pw-crit"><span class="crit-icon">○</span> <span>Special character</span></li>
+                            </ul>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Confirm Password</label>
-                        <input type="password" name="confirm_password" class="form-control" placeholder="Confirm password" required>
+                        <div class="password-wrapper">
+                            <input type="password" name="confirm_password" id="confirm_password" class="form-control" placeholder="Confirm password" required>
+                            <button type="button" class="toggle-password" onclick="this.previousElementSibling.type = this.previousElementSibling.type === 'password' ? 'text' : 'password';">👁</button>
+                        </div>
+                        <div id="confirm-match-msg" style="font-size:.78rem; margin-top:5px;"></div>
                     </div>
                 </div>
+
+                <style>
+                .pw-crit { display:flex; align-items:center; gap:8px; font-size:.82rem; color:#94a3b8; transition:color .2s; }
+                .pw-crit .crit-icon { font-size:.9rem; width:16px; text-align:center; }
+                .pw-crit.met { color:#16a34a; }
+                </style>
 
                 <button type="submit" class="btn btn-primary">Create Account</button>
             </form>
@@ -451,6 +472,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Set max to today
         birthdateInput.max = new Date().toLocaleDateString('en-CA');
         window.addEventListener('DOMContentLoaded', calculateAge);
+
+        // Password criteria real-time checker
+        (function() {
+            const pwInput   = document.getElementById('password');
+            const criteria  = document.getElementById('pw-criteria');
+            const critLen   = document.getElementById('crit-length');
+            const critLow   = document.getElementById('crit-lower');
+            const critUp    = document.getElementById('crit-upper');
+            const critNum   = document.getElementById('crit-number');
+            const critSpec  = document.getElementById('crit-special');
+            const confirmPw = document.getElementById('confirm_password');
+            const matchMsg  = document.getElementById('confirm-match-msg');
+            const bar       = document.getElementById('strength-bar');
+
+            function check(el, condition) {
+                el.classList.toggle('met', condition);
+                el.querySelector('.crit-icon').textContent = condition ? '✔' : '○';
+            }
+
+            pwInput.addEventListener('focus', function() { criteria.style.display = 'block'; });
+            pwInput.addEventListener('blur',  function() { if (!pwInput.value) criteria.style.display = 'none'; });
+
+            pwInput.addEventListener('input', function() {
+                const v = pwInput.value;
+                criteria.style.display = 'block';
+
+                const hasLen   = v.length >= 8 && v.length <= 20;
+                const hasLower = /[a-z]/.test(v);
+                const hasUpper = /[A-Z]/.test(v);
+                const hasNum   = /\d/.test(v);
+                const hasSpec  = /[\W_]/.test(v);
+
+                check(critLen,  hasLen);
+                check(critLow,  hasLower);
+                check(critUp,   hasUpper);
+                check(critNum,  hasNum);
+                check(critSpec, hasSpec);
+
+                // Strength bar
+                const score = [hasLen, hasLower, hasUpper, hasNum, hasSpec].filter(Boolean).length;
+                bar.className = '';
+                if (v.length === 0) { bar.className = ''; }
+                else if (score <= 2) bar.className = 'strength-weak';
+                else if (score <= 4) bar.className = 'strength-medium';
+                else                 bar.className = 'strength-strong';
+
+                // Re-check confirm match if already typed
+                if (confirmPw.value) checkConfirm();
+            });
+
+            function checkConfirm() {
+                if (!confirmPw.value) { matchMsg.textContent = ''; return; }
+                if (confirmPw.value === pwInput.value) {
+                    matchMsg.textContent = '✔ Passwords match';
+                    matchMsg.style.color = '#16a34a';
+                } else {
+                    matchMsg.textContent = '✖ Passwords do not match';
+                    matchMsg.style.color = '#dc2626';
+                }
+            }
+            confirmPw.addEventListener('input', checkConfirm);
+        })();
 
         // Sanitize string data transforms automatically
         document.querySelectorAll('.input-caps').forEach(input => {
