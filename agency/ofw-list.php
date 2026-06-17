@@ -26,12 +26,20 @@ if (isset($_POST['assign_ofw'])) {
     $city = htmlspecialchars($_POST['city']);
     $address = strtoupper(trim(htmlspecialchars($_POST['work_address'])));
 
-    // Update OFW record
-    $pdo->prepare("UPDATE ofws SET agency_id=?, date_of_departure=?, end_of_contract=?, country=?, city=?, work_address=? WHERE user_id=?")
-        ->execute([$agency_id, $departure, $end_contract, $country, $city, $address, $ofw_user_id]);
+    $today = date('Y-m-d');
+    $date_error = '';
+    if ($departure < $today) {
+        $date_error = 'Date of Departure cannot be in the past.';
+    } elseif ($end_contract < $departure) {
+        $date_error = 'End of Contract cannot be before Date of Departure.';
+    }
 
-    header('Location: ofw-list.php');
-    exit;
+    if (!$date_error) {
+        $pdo->prepare("UPDATE ofws SET agency_id=?, date_of_departure=?, end_of_contract=?, country=?, city=?, work_address=? WHERE user_id=?")
+            ->execute([$agency_id, $departure, $end_contract, $country, $city, $address, $ofw_user_id]);
+        header('Location: ofw-list.php');
+        exit;
+    }
 }
 
 // Get all OFWs for search (not yet assigned to this agency)
@@ -182,7 +190,7 @@ include '../includes/header.php'; ?>
                 </div>
                 <button type="submit" class="btn btn-primary btn-sm">Search</button>
                 <a href="/armas/agency/ofw-list.php" class="btn btn-outline btn-sm">Clear</a>
-                <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('assignModal').style.display='flex'">+ Add New OFW</button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('assignModal').style.display='flex'; initDateLimits();">+ Add New OFW</button>
             </form>
 
             <div class="card">
@@ -192,7 +200,7 @@ include '../includes/header.php'; ?>
                             <div class="empty-state-icon">👥</div>
                             <h3>No OFWs Found</h3>
                             <p>Add your first OFW record.</p>
-                            <button type="button" class="btn btn-primary mt-2" onclick="document.getElementById('assignModal').style.display='flex'">Add OFW</button>
+                            <button type="button" class="btn btn-primary mt-2" onclick="document.getElementById('assignModal').style.display='flex'; initDateLimits();">Add OFW</button>
                         </div>
                     <?php else: ?>
                         <div class="table-container">
@@ -261,11 +269,11 @@ include '../includes/header.php'; ?>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
                     <div class="form-group">
                         <label class="form-label">Date of Departure</label>
-                        <input type="date" name="date_of_departure" class="form-control" required>
+                        <input type="date" name="date_of_departure" id="date_of_departure" class="form-control" required min="<?php echo date('Y-m-d'); ?>">
                     </div>
                     <div class="form-group">
                         <label class="form-label">End of Contract</label>
-                        <input type="date" name="end_of_contract" class="form-control" required>
+                        <input type="date" name="end_of_contract" id="end_of_contract" class="form-control" required min="<?php echo date('Y-m-d'); ?>">
                     </div>
                 </div>
 
@@ -375,6 +383,83 @@ include '../includes/header.php'; ?>
         }
         overlay.classList.toggle('active', sidebar.classList.contains('mobile-open'));
     }
+</script>
+
+<script>
+// ── Date Validation ──────────────────────────────────────────────────
+function getToday() {
+    const d = new Date();
+    // Use local date, not UTC
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    const day = String(d.getDate()).padStart(2,'0');
+    return y+'-'+m+'-'+day;
+}
+
+function initDateLimits() {
+    const today = getToday();
+    const dep = document.getElementById('date_of_departure');
+    const con = document.getElementById('end_of_contract');
+    dep.min = today;
+    dep.value = '';
+    con.min = today;
+    con.value = '';
+}
+
+document.getElementById('date_of_departure').addEventListener('change', function () {
+    const today = getToday();
+    const con = document.getElementById('end_of_contract');
+    // Force back to today if user typed a past date
+    if (this.value < today) {
+        this.value = today;
+        alert('Date of Departure cannot be before today.');
+    }
+    con.min = this.value || today;
+    if (con.value && con.value < con.min) con.value = '';
+});
+
+document.getElementById('date_of_departure').addEventListener('input', function () {
+    const today = getToday();
+    if (this.value && this.value < today) {
+        this.value = today;
+    }
+});
+
+document.getElementById('end_of_contract').addEventListener('change', function () {
+    const dep = document.getElementById('date_of_departure');
+    const today = getToday();
+    const minDate = dep.value || today;
+    if (this.value < minDate) {
+        this.value = '';
+        alert('End of Contract cannot be before Date of Departure (or today if departure is not set).');
+    }
+});
+
+document.getElementById('end_of_contract').addEventListener('input', function () {
+    const dep = document.getElementById('date_of_departure');
+    const today = getToday();
+    const minDate = dep.value || today;
+    if (this.value && this.value < minDate) {
+        this.value = minDate;
+    }
+});
+
+// Also block form submit as last line of defense
+document.querySelector('#assignModal form') && document.querySelector('#assignModal form').addEventListener('submit', function(e) {
+    const today = getToday();
+    const dep = document.getElementById('date_of_departure').value;
+    const con = document.getElementById('end_of_contract').value;
+    if (dep < today) {
+        e.preventDefault();
+        alert('Date of Departure cannot be before today.');
+        return;
+    }
+    if (con < dep) {
+        e.preventDefault();
+        alert('End of Contract cannot be before Date of Departure.');
+        return;
+    }
+});
 </script>
 
 <?php include '../includes/footer.php'; ?>
