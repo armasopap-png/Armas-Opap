@@ -39,9 +39,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!empty($first_name) && !preg_match('/^[A-Za-z\s\-\.]+$/', $first_name)) {
         $errors[] = 'First name must contain letters only (no numbers or special characters).';
     }
-    if (empty($middle_name)) {
-        $errors[] = 'Middle name is required.';
-    }
     if (!empty($middle_name) && !preg_match('/^[A-Za-z\s\-\.]+$/', $middle_name)) {
         $errors[] = 'Middle name must contain letters only (no numbers or special characters).';
     }
@@ -53,6 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if (empty($birthdate)) {
         $errors[] = 'Birthdate is required.';
+    } elseif ($birthdate > date('Y-m-d')) {
+        $errors[] = 'Birthdate cannot be a future date.';
     }
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = 'Invalid email address.';
@@ -239,30 +238,77 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label">Middle Name</label>
-                        <input type="text" name="middle_name" class="form-control input-caps" data-alpha-only value="<?php echo isset($_POST['middle_name']) ? htmlspecialchars($_POST['middle_name']) : ''; ?>" required>
+                        <label class="form-label">Middle Name <span style="font-weight:400; color:var(--mid); font-size:0.82rem;">(Optional)</span></label>
+                        <input type="text" name="middle_name" class="form-control input-caps" data-alpha-only value="<?php echo isset($_POST['middle_name']) ? htmlspecialchars($_POST['middle_name']) : ''; ?>" placeholder="Optional">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Suffix (Jr., Sr., III)</label>
-                        <input type="text" name="suffix" class="form-control input-caps" data-alpha-only value="<?php echo isset($_POST['suffix']) ? htmlspecialchars($_POST['suffix']) : ''; ?>">
+                        <label class="form-label">Suffix <span style="font-weight:400; color:var(--mid); font-size:0.82rem;">(Optional)</span></label>
+                        <input type="text" name="suffix" class="form-control input-caps" data-alpha-only placeholder="Jr., Sr., III — Optional" value="<?php echo isset($_POST['suffix']) ? htmlspecialchars($_POST['suffix']) : ''; ?>">
                     </div>
                 </div>
 
+                <!-- Sex & OFW Type -->
+                <style>
+                .pill-selector { display:flex; gap:10px; }
+                .pill-option { flex:1; }
+                .pill-option input[type=radio] { display:none; }
+                .pill-option label {
+                    display:flex; align-items:center; justify-content:center; gap:8px;
+                    padding:12px 10px; border:2px solid #e2e8f0; border-radius:10px;
+                    cursor:pointer; font-size:.9rem; font-weight:500; color:#475569;
+                    background:#f8fafc; transition:all .18s; user-select:none;
+                }
+                .pill-option label:hover { border-color:#1a3a6b; background:#eff6ff; color:#1a3a6b; }
+                .pill-option input[type=radio]:checked + label {
+                    border-color:#1a3a6b; background:#1a3a6b; color:#fff; font-weight:600;
+                }
+                .pill-icon { font-size:1.2rem; }
+                </style>
+                <style>
+                .enhanced-select {
+                    appearance: none;
+                    -webkit-appearance: none;
+                    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231a3a6b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+                    background-repeat: no-repeat;
+                    background-position: right 14px center;
+                    background-size: 18px;
+                    padding-right: 42px !important;
+                    border: 2px solid #e2e8f0;
+                    border-radius: 10px;
+                    font-size: .92rem;
+                    color: #1e293b;
+                    cursor: pointer;
+                    transition: border-color .2s, box-shadow .2s;
+                }
+                .enhanced-select:focus {
+                    outline: none;
+                    border-color: #1a3a6b;
+                    box-shadow: 0 0 0 3px rgba(26,58,107,.1);
+                }
+                .enhanced-select:hover {
+                    border-color: #1a3a6b;
+                }
+                .enhanced-select option {
+                    color: #1e293b;
+                    font-size: .92rem;
+                }
+                </style>
+
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label">Sex</label>
-                        <select name="sex" class="form-control" required>
+                        <label class="form-label">Sex <span style="color:#dc2626">*</span></label>
+                        <select name="sex" class="form-control enhanced-select" required>
                             <option value="">-- Select Sex --</option>
-                            <option value="MALE" <?php echo (isset($_POST['sex']) && $_POST['sex'] === 'MALE') ? 'selected' : ''; ?>>Male</option>
-                            <option value="FEMALE" <?php echo (isset($_POST['sex']) && $_POST['sex'] === 'FEMALE') ? 'selected' : ''; ?>>Female</option>
+                            <option value="MALE" <?php echo (isset($_POST['sex']) && $_POST['sex']==='MALE') ? 'selected' : ''; ?>>Male</option>
+                            <option value="FEMALE" <?php echo (isset($_POST['sex']) && $_POST['sex']==='FEMALE') ? 'selected' : ''; ?>>Female</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">OFW Type</label>
-                        <select name="ofw_type" class="form-control" required>
-                            <option value="">-- Select Type --</option>
-                            <option value="land-based" <?php echo (isset($_POST['ofw_type']) && $_POST['ofw_type'] === 'land-based') ? 'selected' : ''; ?>>🏗️ Land-Based</option>
-                            <option value="sea-based" <?php echo (isset($_POST['ofw_type']) && $_POST['ofw_type'] === 'sea-based') ? 'selected' : ''; ?>>⚓ Sea-Based</option>
+                        <label class="form-label">OFW Type <span style="color:#dc2626">*</span></label>
+                        <select name="ofw_type" class="form-control enhanced-select" required>
+                            <option value="">-- Select OFW Type --</option>
+                            <option value="land-based" <?php echo (isset($_POST['ofw_type']) && $_POST['ofw_type']==='land-based') ? 'selected' : ''; ?>>🏗️ Land-Based</option>
+                            <option value="sea-based" <?php echo (isset($_POST['ofw_type']) && $_POST['ofw_type']==='sea-based') ? 'selected' : ''; ?>>⚓ Sea-Based</option>
                         </select>
                     </div>
                 </div>
@@ -270,7 +316,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Birthdate</label>
-                        <input type="date" name="birthdate" id="birthdate" class="form-control" value="<?php echo isset($_POST['birthdate']) ? htmlspecialchars($_POST['birthdate']) : ''; ?>" required>
+                        <input type="date" name="birthdate" id="birthdate" class="form-control" value="<?php echo isset($_POST['birthdate']) ? htmlspecialchars($_POST['birthdate']) : ''; ?>" max="<?php echo date('Y-m-d'); ?>" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Age</label>
@@ -294,10 +340,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Supporting Document (Passport / Visa)</label>
-                    <input type="file" name="supporting_doc" class="form-control" accept=".pdf, .jpg, .jpeg, .png" required style="padding: 8px 12px;">
-                    <small style="color: var(--mid); font-size: 0.8rem; display: block; margin-top: 4px;">Accepting verification credentials. (Max 5MB: PDF, JPG, PNG)</small>
+                    <label class="form-label">Supporting Document <span style="color:#dc2626">*</span></label>
+                    <div id="dropZone" onclick="document.getElementById('supporting_doc').click()" style="border:2px dashed #cbd5e1; border-radius:12px; padding:28px 20px; text-align:center; cursor:pointer; transition:all .2s; background:#f8fafc; position:relative;">
+                        <input type="file" id="supporting_doc" name="supporting_doc" accept=".pdf,.jpg,.jpeg,.png" required style="display:none;" onchange="handleFileSelect(this)">
+                        <div id="dropContent">
+                            <div style="margin-bottom:10px;"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#1a3a6b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
+                            <div style="font-weight:600; color:#1a3a6b; font-size:.95rem;">Click to upload or drag & drop</div>
+                            <div style="color:#64748b; font-size:.8rem; margin-top:4px;">Passport, Visa, or any valid ID</div>
+                            <div style="margin-top:10px; display:inline-block; background:#1a3a6b; color:#fff; padding:7px 20px; border-radius:8px; font-size:.82rem; font-weight:600;">Browse File</div>
+                        </div>
+                        <div id="filePreview" style="display:none; align-items:center; gap:12px; justify-content:center;">
+                            <div id="fileIcon" style="font-size:2rem;">📄</div>
+                            <div style="text-align:left;">
+                                <div id="fileName" style="font-weight:600; color:#1a3a6b; font-size:.9rem; word-break:break-all;"></div>
+                                <div id="fileSize" style="color:#64748b; font-size:.78rem; margin-top:2px;"></div>
+                                <div style="color:#16a34a; font-size:.78rem; margin-top:2px;">✓ File selected</div>
+                            </div>
+                            <button type="button" onclick="clearFile(event)" style="background:none; border:none; color:#ef4444; font-size:1.2rem; cursor:pointer; margin-left:8px;">✕</button>
+                        </div>
+                    </div>
+                    <small style="color:var(--mid); font-size:.78rem; display:block; margin-top:6px;">📋 Accepted: PDF, JPG, PNG &nbsp;·&nbsp; Max size: 5MB</small>
                 </div>
+
+                <script>
+                const dropZone = document.getElementById('dropZone');
+                dropZone.addEventListener('dragover', function(e){ e.preventDefault(); this.style.borderColor='#1a3a6b'; this.style.background='#eff6ff'; });
+                dropZone.addEventListener('dragleave', function(){ this.style.borderColor='#cbd5e1'; this.style.background='#f8fafc'; });
+                dropZone.addEventListener('drop', function(e){
+                    e.preventDefault(); this.style.borderColor='#cbd5e1'; this.style.background='#f8fafc';
+                    const file = e.dataTransfer.files[0];
+                    if(file){ document.getElementById('supporting_doc').files = e.dataTransfer.files; handleFileSelect(document.getElementById('supporting_doc')); }
+                });
+                function handleFileSelect(input){
+                    const file = input.files[0];
+                    if(!file) return;
+                    const allowed = ['application/pdf','image/jpeg','image/png'];
+                    if(!allowed.includes(file.type)){ alert('Only PDF, JPG, PNG files are allowed.'); input.value=''; return; }
+                    if(file.size > 5*1024*1024){ alert('File size must not exceed 5MB.'); input.value=''; return; }
+                    const icons = {'application/pdf':'📕','image/jpeg':'🖼️','image/png':'🖼️'};
+                    document.getElementById('fileIcon').textContent = icons[file.type] || '📄';
+                    document.getElementById('fileName').textContent = file.name;
+                    document.getElementById('fileSize').textContent = (file.size/1024 < 1024 ? (file.size/1024).toFixed(1)+' KB' : (file.size/1024/1024).toFixed(2)+' MB');
+                    document.getElementById('dropContent').style.display='none';
+                    document.getElementById('filePreview').style.display='flex';
+                    dropZone.style.borderColor='#16a34a';
+                    dropZone.style.background='#f0fdf4';
+                }
+                function clearFile(e){
+                    e.stopPropagation();
+                    document.getElementById('supporting_doc').value='';
+                    document.getElementById('dropContent').style.display='block';
+                    document.getElementById('filePreview').style.display='none';
+                    dropZone.style.borderColor='#cbd5e1';
+                    dropZone.style.background='#f8fafc';
+                }
+                </script>
 
                 <div class="form-row">
                     <div class="form-group">
@@ -342,6 +439,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         birthdateInput.addEventListener('change', calculateAge);
+
+        // Prevent future dates on birthdate
+        birthdateInput.addEventListener('change', function () {
+            const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD local
+            if (this.value > today) {
+                this.value = today;
+                alert('Birthdate cannot be a future date.');
+            }
+        });
+        // Set max to today
+        birthdateInput.max = new Date().toLocaleDateString('en-CA');
         window.addEventListener('DOMContentLoaded', calculateAge);
 
         // Sanitize string data transforms automatically
