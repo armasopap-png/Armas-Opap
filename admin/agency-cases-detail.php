@@ -22,6 +22,9 @@ $status   = $_GET['status'] ?? '';
 $type     = $_GET['type'] ?? '';
 $date_from = $_GET['date_from'] ?? '';
 $date_to   = $_GET['date_to'] ?? '';
+$today = date('Y-m-d');
+if ($date_from > $today) $date_from = $today;
+if ($date_to > $today)   $date_to   = $today;
 
 $where  = ["c.agency_id = ?"];
 $params = [$agency_id];
@@ -143,11 +146,11 @@ $stats = $stats->fetch();
                             </div>
                             <div class="form-group" style="margin:0;">
                                 <label class="form-label" style="font-size:0.8rem;">Date From</label>
-                                <input type="date" name="date_from" class="form-control" value="<?php echo htmlspecialchars($date_from); ?>">
+                                <input type="date" name="date_from" class="form-control" max="<?php echo date('Y-m-d'); ?>" value="<?php echo htmlspecialchars($date_from); ?>">
                             </div>
                             <div class="form-group" style="margin:0;">
                                 <label class="form-label" style="font-size:0.8rem;">Date To</label>
-                                <input type="date" name="date_to" class="form-control" value="<?php echo htmlspecialchars($date_to); ?>">
+                                <input type="date" name="date_to" class="form-control" max="<?php echo date('Y-m-d'); ?>" value="<?php echo htmlspecialchars($date_to); ?>">
                             </div>
                             <div style="display:flex; gap:8px;">
                                 <button type="submit" class="btn btn-primary btn-sm" style="white-space:nowrap;">Filter</button>
