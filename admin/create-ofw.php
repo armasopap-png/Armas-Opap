@@ -102,23 +102,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 /* ── Page layout ── */
 .create-ofw-layout {
     display: flex;
-    min-height: calc(100vh - 72px);
-    overflow-y: auto;
+    height: calc(100vh - 72px);
+    box-sizing: border-box;
     background: var(--light);
-    padding: 40px 24px;
-    justify-content: center;
-    align-items: flex-start;
+    padding: 24px;
 }
 .create-ofw-panel {
     width: 100%;
-    max-width: 720px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 .create-ofw-form-wrap {
+    flex: 1;
+    width: 100%;
+    height: 100%;
     background: #fff;
     border-radius: 16px;
     border: 1px solid var(--border);
     box-shadow: 0 4px 24px rgba(0,0,0,.06);
-    padding: 40px 48px;
+    padding: 32px 48px;
+    overflow-y: auto;
+    box-sizing: border-box;
 }
 .create-ofw-form-wrap h2 {
     font-size: 1.5rem;
@@ -140,21 +145,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 .form-control {
     width: 100%; padding: 11px 14px; font-size: .92rem;
     border: 2px solid var(--border); border-radius: var(--radius-md);
-    background: #fff; box-sizing: border-box; height: 46px;
+    background: #fff !important; box-sizing: border-box; height: 46px;
     font-family: inherit; transition: border-color .2s;
 }
 .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,58,107,.08); }
 
-/* Kill browser autofill yellow tint */
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-input:-webkit-autofill:active,
-textarea:-webkit-autofill,
-select:-webkit-autofill {
+/* Kill browser autofill yellow tint (Chrome/Edge/Safari + Firefox) */
+.form-control:-webkit-autofill,
+.form-control:-webkit-autofill:hover,
+.form-control:-webkit-autofill:focus,
+.form-control:-webkit-autofill:active {
     -webkit-box-shadow: 0 0 0 1000px #fff inset !important;
     box-shadow: 0 0 0 1000px #fff inset !important;
-    -webkit-text-fill-color: inherit !important;
+    -webkit-text-fill-color: var(--dark) !important;
+    caret-color: var(--dark) !important;
+    background-color: #fff !important;
+    transition: background-color 600000s 0s, box-shadow 600000s 0s;
+}
+.form-control:-moz-autofill,
+.form-control:-moz-autofill:hover,
+.form-control:-moz-autofill:focus {
+    background-color: #fff !important;
+    -moz-text-fill-color: var(--dark) !important;
+    filter: none !important;
+}
+.form-control:autofill {
     background-color: #fff !important;
 }
 
@@ -208,8 +223,8 @@ textarea.form-control { height: auto; min-height: 76px; resize: vertical; }
 .btn-create { width: 100%; padding: 13px; font-size: .98rem; font-weight: 600; margin-top: 8px; }
 
 @media (max-width: 900px) {
-    .create-ofw-layout { flex-direction: column; }
-    .create-ofw-panel { padding: 32px 20px; }
+    .create-ofw-layout { height: auto; padding: 16px; }
+    .create-ofw-form-wrap { padding: 28px 20px; height: auto; }
 }
 </style>
 
@@ -259,22 +274,22 @@ textarea.form-control { height: auto; min-height: 76px; resize: vertical; }
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Last Name <span class="req">*</span></label>
-                                <input type="text" name="last_name" class="form-control input-caps" data-alpha-only value="<?php echo isset($_POST['last_name']) ? htmlspecialchars($_POST['last_name']) : ''; ?>" required>
+                                <input type="text" name="last_name" class="form-control input-caps" data-alpha-only autocomplete="off" value="<?php echo isset($_POST['last_name']) ? htmlspecialchars($_POST['last_name']) : ''; ?>" required>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">First Name <span class="req">*</span></label>
-                                <input type="text" name="first_name" class="form-control input-caps" data-alpha-only value="<?php echo isset($_POST['first_name']) ? htmlspecialchars($_POST['first_name']) : ''; ?>" required>
+                                <input type="text" name="first_name" class="form-control input-caps" data-alpha-only autocomplete="off" value="<?php echo isset($_POST['first_name']) ? htmlspecialchars($_POST['first_name']) : ''; ?>" required>
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Middle Name <span style="font-weight:400;color:var(--mid);font-size:.8rem;">(Optional)</span></label>
-                                <input type="text" name="middle_name" class="form-control input-caps" data-alpha-only placeholder="Optional" value="<?php echo isset($_POST['middle_name']) ? htmlspecialchars($_POST['middle_name']) : ''; ?>">
+                                <input type="text" name="middle_name" class="form-control input-caps" data-alpha-only autocomplete="off" placeholder="Optional" value="<?php echo isset($_POST['middle_name']) ? htmlspecialchars($_POST['middle_name']) : ''; ?>">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Suffix <span style="font-weight:400;color:var(--mid);font-size:.8rem;">(Optional)</span></label>
-                                <input type="text" name="suffix" class="form-control input-caps" data-alpha-only placeholder="Jr., Sr., III" value="<?php echo isset($_POST['suffix']) ? htmlspecialchars($_POST['suffix']) : ''; ?>">
+                                <input type="text" name="suffix" class="form-control input-caps" data-alpha-only autocomplete="off" placeholder="Jr., Sr., III" value="<?php echo isset($_POST['suffix']) ? htmlspecialchars($_POST['suffix']) : ''; ?>">
                             </div>
                         </div>
 
@@ -312,13 +327,13 @@ textarea.form-control { height: auto; min-height: 76px; resize: vertical; }
 
                         <div class="form-group">
                             <label class="form-label">Email Address <span class="req">*</span></label>
-                            <input type="email" name="email" class="form-control" value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>" required>
+                            <input type="email" name="email" class="form-control" autocomplete="off" value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>" required>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Contact Number <span class="req">*</span></label>
-                                <input type="text" name="contact_number" class="form-control" data-numeric-only maxlength="11" placeholder="09XX XXX XXXX" value="<?php echo isset($_POST['contact_number']) ? htmlspecialchars($_POST['contact_number']) : ''; ?>" required>
+                                <input type="text" name="contact_number" class="form-control" data-numeric-only autocomplete="off" maxlength="11" placeholder="09XX XXX XXXX" value="<?php echo isset($_POST['contact_number']) ? htmlspecialchars($_POST['contact_number']) : ''; ?>" required>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Assign to Agency <span class="req">*</span></label>
@@ -335,7 +350,7 @@ textarea.form-control { height: auto; min-height: 76px; resize: vertical; }
 
                         <div class="form-group">
                             <label class="form-label">Home Address (Philippines) <span class="req">*</span></label>
-                            <textarea name="address" class="form-control input-caps" rows="2" required><?php echo isset($_POST['address']) ? htmlspecialchars($_POST['address']) : ''; ?></textarea>
+                            <textarea name="address" class="form-control input-caps" rows="2" autocomplete="off" required><?php echo isset($_POST['address']) ? htmlspecialchars($_POST['address']) : ''; ?></textarea>
                         </div>
 
                         <div class="form-section">Supporting Document <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:.78rem;color:var(--mid);">(Optional)</span></div>
@@ -367,7 +382,7 @@ textarea.form-control { height: auto; min-height: 76px; resize: vertical; }
                         <div class="form-group">
                             <label class="form-label">Temporary Password <span class="req">*</span></label>
                             <div style="position:relative;">
-                                <input type="password" name="temp_password" id="temp_password" class="form-control" placeholder="Min. 8 characters" required minlength="8">
+                                <input type="password" name="temp_password" id="temp_password" class="form-control" placeholder="Min. 8 characters" autocomplete="new-password" required minlength="8">
                                 <button type="button" onclick="togglePw()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--mid);">
                                     <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                 </button>
