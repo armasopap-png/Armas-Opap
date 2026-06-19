@@ -49,9 +49,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_ofw'])) {
 }
 
 $agencies = $pdo->query("SELECT id, name FROM agencies WHERE status='active' ORDER BY name")->fetchAll();
-$users = $pdo->query("SELECT u.id, u.email, u.status, u.created_at, o.first_name, o.last_name FROM users u JOIN ofws o ON u.id = o.user_id ORDER BY u.created_at DESC")->fetchAll();
-?><?php
+$users = $pdo->query("SELECT u.id, u.email, u.status, u.created_at, o.first_name, o.last_name, o.agency_id, o.ofw_type, ag.name AS agency_name
+                       FROM users u
+                       JOIN ofws o ON u.id = o.user_id
+                       LEFT JOIN agencies ag ON o.agency_id = ag.id
+                       ORDER BY ag.name ASC, u.created_at DESC")->fetchAll();
 
+// Group OFW users by agency
+$users_by_agency = [];
+foreach ($users as $u) {
+    $key = $u['agency_name'] ?? 'Unassigned';
+    $users_by_agency[$key][] = $u;
+}
+?>
+<?php
 $hide_navbar = true;
 include '../includes/header.php'; ?>
 <div class="dashboard-layout">
@@ -89,30 +100,95 @@ include '../includes/header.php'; ?>
             <?php if ($error): ?>
                 <div class="flash flash-error"><span><?php echo $error; ?></span><button class="flash-close" onclick="this.parentElement.style.display='none'">&times;</button></div>
             <?php endif; ?>
-            <div class="card">
-                <div class="card-body">
-                    <div class="table-container">
+            <div class="agency-search-wrap" style="position:relative; margin-bottom:20px; max-width:360px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); pointer-events:none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="agencySearch" class="form-control" placeholder="Search agency name..." oninput="filterAgencies(this.value)" autocomplete="off" style="padding-left:40px; border-radius:10px;">
+            </div>
+            <p id="noAgencyMatch" style="display:none; text-align:center; color:#666;">No agencies match your search.</p>
+            <?php if (empty($users_by_agency)): ?>
+                <div class="card">
+                    <div class="card-body">
+                        <p style="text-align:center; color:#666; margin:0;">No OFW users found.</p>
+                    </div>
+                </div>
+            <?php endif; ?>
+            <div class="agency-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:20px;">
+                <?php $agency_index = 0; ?>
+                <?php foreach ($users_by_agency as $agency_name => $agency_users): ?>
+                    <?php
+                        $agency_index++;
+                        $total_count    = count($agency_users);
+                        $active_count   = 0;
+                        $inactive_count = 0;
+                        $sea_count      = 0;
+                        $land_count     = 0;
+                        foreach ($agency_users as $au) {
+                            if ($au['status'] === 'active') { $active_count++; } else { $inactive_count++; }
+                            if (!empty($au['ofw_type']) && $au['ofw_type'] === 'sea-based') {
+                                $sea_count++;
+                            } else {
+                                $land_count++;
+                            }
+                        }
+                    ?>
+                    <div class="agency-card" data-agency-name="<?php echo htmlspecialchars(mb_strtolower($agency_name)); ?>" onclick="openAgencyModal(<?php echo $agency_index; ?>, '<?php echo htmlspecialchars($agency_name, ENT_QUOTES); ?>')" style="background:#fff; border:1px solid #e6e9ef; border-radius:14px; padding:20px; cursor:pointer; transition:box-shadow 0.15s, border-color 0.15s;" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.08)'" onmouseout="this.style.boxShadow='none'">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                            <span style="display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:8px; background:#eef2fb; color:#1a3a6b;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-4h6v4"/><rect x="9" y="9" width="2" height="2"/><rect x="13" y="9" width="2" height="2"/></svg>
+                            </span>
+                            <span style="background:#dff5e8; color:#1a8a4d; font-size:0.7rem; font-weight:700; letter-spacing:0.03em; padding:4px 10px; border-radius:20px;">ACTIVE</span>
+                        </div>
+                        <h3 style="margin:0 0 4px; font-size:1.02rem; color:#1a3a6b; line-height:1.3;"><?php echo htmlspecialchars($agency_name); ?></h3>
+                        <p style="margin:0 0 16px; font-size:0.82rem; color:#8a93a3;"><?php echo $total_count; ?> OFW<?php echo $total_count === 1 ? '' : 's'; ?> registered</p>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+                            <div style="background:#eef2fb; border-radius:10px; padding:10px; text-align:center;">
+                                <div style="font-size:1.3rem; font-weight:700; color:#1a3a6b;"><?php echo $total_count; ?></div>
+                                <div style="font-size:0.72rem; color:#6b7686;">Total</div>
+                            </div>
+                            <div style="background:#fdf3d8; border-radius:10px; padding:10px; text-align:center;">
+                                <div style="font-size:1.3rem; font-weight:700; color:#b8860b;"><?php echo $active_count; ?></div>
+                                <div style="font-size:0.72rem; color:#6b7686;">Active</div>
+                            </div>
+                            <div style="background:#e1f5ea; border-radius:10px; padding:10px; text-align:center;">
+                                <div style="font-size:1.3rem; font-weight:700; color:#1a8a4d;"><?php echo $sea_count; ?></div>
+                                <div style="font-size:0.72rem; color:#6b7686;">Sea-Based</div>
+                            </div>
+                            <div style="background:#e8f0fb; border-radius:10px; padding:10px; text-align:center;">
+                                <div style="font-size:1.3rem; font-weight:700; color:#1a3a6b;"><?php echo $land_count; ?></div>
+                                <div style="font-size:0.72rem; color:#6b7686;">Land-Based</div>
+                            </div>
+                            <div style="background:#fbe4e4; border-radius:10px; padding:10px; text-align:center; grid-column:span 2;">
+                                <div style="font-size:1.3rem; font-weight:700; color:#c0392b;"><?php echo $inactive_count; ?></div>
+                                <div style="font-size:0.72rem; color:#6b7686;">Inactive</div>
+                            </div>
+                        </div>
+                        <span style="font-size:0.85rem; font-weight:600; color:#1a3a6b;">View OFWs &rarr;</span>
+                    </div>
+
+                    <template id="agency-template-<?php echo $agency_index; ?>">
                         <table class="table">
                             <thead>
                                 <tr>
                                     <th>ID</th>
                                     <th>Name</th>
                                     <th>Email</th>
+                                    <th>Type</th>
                                     <th>Status</th>
                                     <th>Created</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($users as $u): ?>
+                                <?php foreach ($agency_users as $u): ?>
                                     <tr>
                                         <td><?php echo $u['id']; ?></td>
-                                        <td><?php echo $u['first_name'] . ' ' . $u['last_name']; ?></td>
-                                        <td><?php echo $u['email']; ?></td>
+                                        <td><?php echo htmlspecialchars($u['first_name'] . ' ' . $u['last_name']); ?></td>
+                                        <td><?php echo htmlspecialchars($u['email']); ?></td>
+                                        <td><?php echo ucfirst($u['ofw_type'] ?? '—'); ?></td>
                                         <td><?php echo get_status_badge($u['status']); ?></td>
                                         <td><?php echo date('M d, Y', strtotime($u['created_at'])); ?></td>
                                         <td style="text-align:center;">
-                                            <label class="toggle-switch" onclick="handleToggle(event, <?php echo $u['id']; ?>, '<?php echo $u['status']; ?>', '<?php echo htmlspecialchars($u['first_name'] . ' ' . $u['last_name']); ?>')">
+                                            <label class="toggle-switch" onclick="handleToggle(event, <?php echo $u['id']; ?>, '<?php echo $u['status']; ?>', '<?php echo htmlspecialchars($u['first_name'] . ' ' . $u['last_name'], ENT_QUOTES); ?>')">
                                                 <input type="checkbox" <?php echo $u['status'] === 'active' ? 'checked' : ''; ?> readonly>
                                                 <span class="toggle-slider"></span>
                                             </label>
@@ -121,11 +197,27 @@ include '../includes/header.php'; ?>
                                 <?php endforeach; ?>
                             </tbody>
                         </table>
-                    </div>
-                </div>
+                    </template>
+                <?php endforeach; ?>
             </div>
         </div>
     </main>
+</div>
+
+<!-- Agency OFW List Modal -->
+<div id="agencyOfwModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:12px; padding:28px; max-width:800px; width:92%; max-height:88vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-shrink:0;">
+            <h2 id="agencyOfwModalTitle" style="margin:0; color:#1a3a6b; font-size:1.15rem;"></h2>
+            <button onclick="closeAgencyModal()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#666;">&times;</button>
+        </div>
+        <div style="position:relative; margin-bottom:14px; flex-shrink:0;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); pointer-events:none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="ofwSearchInput" class="form-control" placeholder="Search OFW name or email..." oninput="filterOfwRows(this.value)" autocomplete="off" style="padding-left:36px; border-radius:8px;">
+        </div>
+        <p id="ofwNoMatch" style="display:none; text-align:center; color:#666; flex-shrink:0; margin:0 0 10px;">No OFWs match your search.</p>
+        <div id="agencyOfwModalBody" class="table-container" style="overflow-y:auto; flex:1;"></div>
+    </div>
 </div>
 
 <!-- Create OFW Modal -->
@@ -225,6 +317,46 @@ include '../includes/header.php'; ?>
 </style>
 
 <script>
+    function openAgencyModal(index, agencyName) {
+        const template = document.getElementById('agency-template-' + index);
+        document.getElementById('agencyOfwModalTitle').textContent = agencyName;
+        const body = document.getElementById('agencyOfwModalBody');
+        body.innerHTML = '';
+        body.appendChild(template.content.cloneNode(true));
+        document.getElementById('ofwSearchInput').value = '';
+        document.getElementById('ofwNoMatch').style.display = 'none';
+        document.getElementById('agencyOfwModal').style.display = 'flex';
+    }
+
+    function closeAgencyModal() {
+        document.getElementById('agencyOfwModal').style.display = 'none';
+    }
+
+    function filterOfwRows(query) {
+        const term = query.trim().toLowerCase();
+        const rows = document.querySelectorAll('#agencyOfwModalBody tbody tr');
+        let visible = 0;
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            const match = text.includes(term);
+            row.style.display = match ? '' : 'none';
+            if (match) visible++;
+        });
+        document.getElementById('ofwNoMatch').style.display = (visible === 0 && rows.length > 0) ? 'block' : 'none';
+    }
+
+    function filterAgencies(query) {
+        const term = query.trim().toLowerCase();
+        const cards = document.querySelectorAll('.agency-card');
+        let visibleCount = 0;
+        cards.forEach(card => {
+            const matches = card.getAttribute('data-agency-name').includes(term);
+            card.style.display = matches ? '' : 'none';
+            if (matches) visibleCount++;
+        });
+        document.getElementById('noAgencyMatch').style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+
     function handleToggle(e, userId, currentStatus, name) {
         e.preventDefault();
         const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
