@@ -482,22 +482,69 @@ include '../includes/header.php'; ?>
         }
 
         // ── OFW Location Capture ──────────────────────────────────────────
-        if ('geolocation' in navigator) {
-            navigator.geolocation.getCurrentPosition(
-                function (position) {
-                    fetch('/armas/api/update-location.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            latitude: position.coords.latitude,
-                            longitude: position.coords.longitude
-                        })
-                    });
-                },
-                function () { /* user denied — do nothing */ },
-                { enableHighAccuracy: true, timeout: 10000 }
-            );
-        }
+        // Captures location on every dashboard load (e.g. logging in on a new
+        // device) and keeps it fresh by re-capturing periodically while the
+        // OFW stays on this page. Retries on transient failure instead of
+        // silently giving up.
+        (function () {
+            if (!('geolocation' in navigator)) return;
+
+            var RETRY_DELAY_MS = 15000;   // retry after a failed/blocked attempt
+            var REFRESH_INTERVAL_MS = 5 * 60 * 1000; // re-capture every 5 minutes
+            var MAX_RETRIES = 3;
+            var retryCount = 0;
+
+            function sendLocation(position) {
+                fetch('/armas/api/update-location.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    })
+                }).then(function (res) {
+                    return res.json();
+                }).then(function (data) {
+                    if (!data || !data.success) {
+                        console.warn('ARMAS: location update rejected by server', data);
+                    }
+                }).catch(function (err) {
+                    console.warn('ARMAS: failed to send location to server', err);
+                });
+            }
+
+            function captureLocation() {
+                navigator.geolocation.getCurrentPosition(
+                    function (position) {
+                        retryCount = 0;
+                        sendLocation(position);
+                    },
+                    function (error) {
+                        console.warn('ARMAS: geolocation capture failed', error);
+                        // Retry a few times in case it's a transient device/GPS
+                        // issue rather than the user permanently denying access.
+                        if (error.code !== error.PERMISSION_DENIED && retryCount < MAX_RETRIES) {
+                            retryCount++;
+                            setTimeout(captureLocation, RETRY_DELAY_MS);
+                        }
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            }
+
+            // Capture immediately on page load/login.
+            captureLocation();
+
+            // Keep refreshing while the OFW stays on the dashboard, and also
+            // re-capture whenever the tab becomes visible again (e.g. user
+            // switches back to the app after moving locations).
+            setInterval(captureLocation, REFRESH_INTERVAL_MS);
+            document.addEventListener('visibilitychange', function () {
+                if (document.visibilityState === 'visible') {
+                    captureLocation();
+                }
+            });
+        })();
     });
 </script>
 
