@@ -49,7 +49,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_ofw'])) {
 }
 
 $agencies = $pdo->query("SELECT id, name FROM agencies WHERE status='active' ORDER BY name")->fetchAll();
-$users = $pdo->query("SELECT u.id, u.email, u.status, u.created_at, o.first_name, o.last_name, o.agency_id, o.ofw_type, ag.name AS agency_name
+$users = $pdo->query("SELECT u.id, u.email, u.status, u.created_at,
+                              o.first_name, o.last_name, o.middle_name, o.suffix,
+                              o.agency_id, o.ofw_type, o.address, o.contact_number,
+                              o.date_of_departure, o.end_of_contract,
+                              o.country, o.city, o.work_address,
+                              ag.name AS agency_name
                        FROM users u
                        JOIN ofws o ON u.id = o.user_id
                        LEFT JOIN agencies ag ON o.agency_id = ag.id
@@ -170,28 +175,63 @@ include '../includes/header.php'; ?>
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>Name</th>
+                                    <th>Full Name</th>
                                     <th>Email</th>
+                                    <th>Contact</th>
                                     <th>Type</th>
+                                    <th>Address</th>
+                                    <th>Country / City</th>
+                                    <th>Departure</th>
+                                    <th>End of Contract</th>
                                     <th>Status</th>
                                     <th>Created</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($agency_users as $u): ?>
+                                <?php foreach ($agency_users as $u):
+                                    $full_name = trim(htmlspecialchars($u['first_name'] . ' ' . ($u['middle_name'] ? $u['middle_name'].' ' : '') . $u['last_name'] . ($u['suffix'] ? ', '.$u['suffix'] : '')));
+                                    $country_city = trim(htmlspecialchars(($u['city'] ?? '') . ($u['city'] && $u['country'] ? ', ' : '') . ($u['country'] ?? '')));
+                                ?>
                                     <tr>
                                         <td><?php echo $u['id']; ?></td>
-                                        <td><?php echo htmlspecialchars($u['first_name'] . ' ' . $u['last_name']); ?></td>
+                                        <td style="white-space:nowrap;"><?php echo $full_name; ?></td>
                                         <td><?php echo htmlspecialchars($u['email']); ?></td>
-                                        <td><?php echo ucfirst($u['ofw_type'] ?? '—'); ?></td>
+                                        <td style="white-space:nowrap;"><?php echo htmlspecialchars($u['contact_number'] ?? '—'); ?></td>
+                                        <td style="white-space:nowrap;"><?php echo ucfirst($u['ofw_type'] ?? '—'); ?></td>
+                                        <td style="max-width:180px; white-space:normal; word-break:break-word;"><?php echo htmlspecialchars($u['address'] ?? '—'); ?></td>
+                                        <td style="white-space:nowrap;"><?php echo $country_city ?: '—'; ?></td>
+                                        <td style="white-space:nowrap;"><?php echo $u['date_of_departure'] ? date('M d, Y', strtotime($u['date_of_departure'])) : '—'; ?></td>
+                                        <td style="white-space:nowrap;"><?php echo $u['end_of_contract'] ? date('M d, Y', strtotime($u['end_of_contract'])) : '—'; ?></td>
                                         <td><?php echo get_status_badge($u['status']); ?></td>
-                                        <td><?php echo date('M d, Y', strtotime($u['created_at'])); ?></td>
-                                        <td style="text-align:center;">
-                                            <label class="toggle-switch" onclick="handleToggle(event, <?php echo $u['id']; ?>, '<?php echo $u['status']; ?>', '<?php echo htmlspecialchars($u['first_name'] . ' ' . $u['last_name'], ENT_QUOTES); ?>')">
-                                                <input type="checkbox" <?php echo $u['status'] === 'active' ? 'checked' : ''; ?> readonly>
-                                                <span class="toggle-slider"></span>
-                                            </label>
+                                        <td style="white-space:nowrap;"><?php echo date('M d, Y', strtotime($u['created_at'])); ?></td>
+                                        <td style="white-space:nowrap; text-align:center;">
+                                            <div style="display:flex; align-items:center; gap:8px; justify-content:center;">
+                                                <button type="button"
+                                                    onclick="openOfwDetail(<?php echo htmlspecialchars(json_encode([
+                                                        'id'               => $u['id'],
+                                                        'full_name'        => $full_name,
+                                                        'email'            => $u['email'],
+                                                        'contact_number'   => $u['contact_number'] ?? '',
+                                                        'ofw_type'         => $u['ofw_type'] ?? '',
+                                                        'address'          => $u['address'] ?? '',
+                                                        'work_address'     => $u['work_address'] ?? '',
+                                                        'city'             => $u['city'] ?? '',
+                                                        'country'          => $u['country'] ?? '',
+                                                        'date_of_departure'=> $u['date_of_departure'] ?? '',
+                                                        'end_of_contract'  => $u['end_of_contract'] ?? '',
+                                                        'status'           => $u['status'],
+                                                        'agency_name'      => $u['agency_name'] ?? '',
+                                                        'created_at'       => $u['created_at'],
+                                                    ]), ENT_QUOTES); ?>)"
+                                                    style="padding:4px 12px; border:1px solid #1a3a6b; border-radius:6px; background:#eef2fb; color:#1a3a6b; font-size:0.78rem; font-weight:600; cursor:pointer; line-height:1.4;">
+                                                    View
+                                                </button>
+                                                <label class="toggle-switch" onclick="handleToggle(event, <?php echo $u['id']; ?>, '<?php echo $u['status']; ?>', '<?php echo htmlspecialchars($u['first_name'] . ' ' . $u['last_name'], ENT_QUOTES); ?>')">
+                                                    <input type="checkbox" <?php echo $u['status'] === 'active' ? 'checked' : ''; ?> readonly>
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                            </div>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -205,20 +245,91 @@ include '../includes/header.php'; ?>
 </div>
 
 <!-- Agency OFW List Modal -->
-<div id="agencyOfwModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
-    <div style="background:#fff; border-radius:12px; padding:28px; max-width:800px; width:92%; max-height:88vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-shrink:0;">
-            <h2 id="agencyOfwModalTitle" style="margin:0; color:#1a3a6b; font-size:1.15rem;"></h2>
-            <button onclick="closeAgencyModal()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#666;">&times;</button>
+<div id="agencyOfwModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9999; align-items:center; justify-content:center; padding:16px; box-sizing:border-box;">
+    <div style="background:#fff; border-radius:14px; padding:28px 28px 20px; width:100%; max-width:1100px; max-height:calc(100vh - 32px); display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.3); box-sizing:border-box;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-shrink:0;">
+            <h2 id="agencyOfwModalTitle" style="margin:0; color:#1a3a6b; font-size:1.15rem; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:80%;"></h2>
+            <button onclick="closeAgencyModal()" style="background:none; border:none; font-size:1.6rem; cursor:pointer; color:#666; line-height:1; flex-shrink:0;">&times;</button>
         </div>
         <div style="position:relative; margin-bottom:14px; flex-shrink:0;">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); pointer-events:none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" id="ofwSearchInput" class="form-control" placeholder="Search OFW name or email..." oninput="filterOfwRows(this.value)" autocomplete="off" style="padding-left:36px; border-radius:8px;">
+            <input type="text" id="ofwSearchInput" class="form-control" placeholder="Search OFW name or email..." oninput="filterOfwRows(this.value)" autocomplete="off" style="padding-left:36px; border-radius:8px; width:100%; box-sizing:border-box;">
         </div>
         <p id="ofwNoMatch" style="display:none; text-align:center; color:#666; flex-shrink:0; margin:0 0 10px;">No OFWs match your search.</p>
-        <div id="agencyOfwModalBody" class="table-container" style="overflow-y:auto; flex:1;"></div>
+        <div id="agencyOfwModalBody" style="overflow:auto; flex:1; min-height:0;">
+            <style>
+                #agencyOfwModalBody table { width:100%; border-collapse:collapse; font-size:0.875rem; }
+                #agencyOfwModalBody thead th { background:#f4f6fb; color:#1a3a6b; font-weight:600; padding:10px 12px; text-align:left; white-space:nowrap; border-bottom:2px solid #e0e5f0; position:sticky; top:0; z-index:2; }
+                #agencyOfwModalBody tbody td { padding:10px 12px; border-bottom:1px solid #f0f2f7; color:#333; vertical-align:middle; }
+                #agencyOfwModalBody tbody tr:hover { background:#f8faff; }
+            </style>
+        </div>
     </div>
 </div>
+
+<!-- OFW Detail Modal -->
+<div id="ofwDetailModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:10000; align-items:center; justify-content:center; padding:16px; box-sizing:border-box;">
+    <div style="background:#fff; border-radius:14px; width:100%; max-width:620px; max-height:calc(100vh - 32px); display:flex; flex-direction:column; box-shadow:0 24px 64px rgba(0,0,0,0.35); box-sizing:border-box; overflow:hidden;">
+        <!-- Header -->
+        <div style="background:#1a3a6b; padding:20px 24px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0;">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:42px; height:42px; border-radius:50%; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                <div>
+                    <div id="detailName" style="color:#fff; font-size:1.05rem; font-weight:700; line-height:1.2;"></div>
+                    <div id="detailAgency" style="color:rgba(255,255,255,0.7); font-size:0.78rem; margin-top:2px;"></div>
+                </div>
+            </div>
+            <button onclick="closeOfwDetail()" style="background:rgba(255,255,255,0.15); border:none; border-radius:8px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#fff; font-size:1.2rem; line-height:1; flex-shrink:0;">&times;</button>
+        </div>
+        <!-- Body -->
+        <div style="overflow-y:auto; flex:1; padding:24px;">
+            <!-- Status + Type badges -->
+            <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+                <span id="detailStatus" style="display:inline-block; padding:5px 14px; border-radius:20px; font-size:0.78rem; font-weight:700; letter-spacing:0.03em;"></span>
+                <span id="detailType" style="display:inline-block; padding:5px 14px; border-radius:20px; font-size:0.78rem; font-weight:700; background:#eef2fb; color:#1a3a6b;"></span>
+            </div>
+
+            <!-- Section: Personal Info -->
+            <div style="margin-bottom:20px;">
+                <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#8a93a3; margin-bottom:10px;">Personal Information</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div class="detail-field"><div class="detail-label">Email</div><div id="detailEmail" class="detail-value"></div></div>
+                    <div class="detail-field"><div class="detail-label">Contact Number</div><div id="detailContact" class="detail-value"></div></div>
+                    <div class="detail-field" style="grid-column:span 2;"><div class="detail-label">Home Address</div><div id="detailAddress" class="detail-value"></div></div>
+                </div>
+            </div>
+
+            <!-- Section: Deployment Info -->
+            <div style="margin-bottom:20px;">
+                <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#8a93a3; margin-bottom:10px;">Deployment Information</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div class="detail-field"><div class="detail-label">Country</div><div id="detailCountry" class="detail-value"></div></div>
+                    <div class="detail-field"><div class="detail-label">City</div><div id="detailCity" class="detail-value"></div></div>
+                    <div class="detail-field" style="grid-column:span 2;"><div class="detail-label">Work Address</div><div id="detailWorkAddress" class="detail-value"></div></div>
+                    <div class="detail-field"><div class="detail-label">Date of Departure</div><div id="detailDeparture" class="detail-value"></div></div>
+                    <div class="detail-field"><div class="detail-label">End of Contract</div><div id="detailEndContract" class="detail-value"></div></div>
+                </div>
+            </div>
+
+            <!-- Section: Account Info -->
+            <div>
+                <div style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#8a93a3; margin-bottom:10px;">Account Information</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div class="detail-field"><div class="detail-label">User ID</div><div id="detailId" class="detail-value"></div></div>
+                    <div class="detail-field"><div class="detail-label">Date Registered</div><div id="detailCreated" class="detail-value"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .detail-field { background:#f8faff; border:1px solid #e8ecf5; border-radius:8px; padding:10px 14px; }
+    .detail-label { font-size:0.7rem; color:#8a93a3; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px; }
+    .detail-value { font-size:0.88rem; color:#1a2035; font-weight:500; word-break:break-word; }
+</style>
 
 <!-- Create OFW Modal -->
 <div id="createModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
@@ -330,6 +441,42 @@ include '../includes/header.php'; ?>
 
     function closeAgencyModal() {
         document.getElementById('agencyOfwModal').style.display = 'none';
+    }
+
+    function openOfwDetail(data) {
+        function fmt(val) { return val && val.trim() ? val : '—'; }
+        function fmtDate(val) {
+            if (!val) return '—';
+            const d = new Date(val);
+            return isNaN(d) ? val : d.toLocaleDateString('en-US', { month:'short', day:'2-digit', year:'numeric' });
+        }
+        document.getElementById('detailName').textContent        = fmt(data.full_name);
+        document.getElementById('detailAgency').textContent      = fmt(data.agency_name);
+        document.getElementById('detailEmail').textContent       = fmt(data.email);
+        document.getElementById('detailContact').textContent     = fmt(data.contact_number);
+        document.getElementById('detailAddress').textContent     = fmt(data.address);
+        document.getElementById('detailCountry').textContent     = fmt(data.country);
+        document.getElementById('detailCity').textContent        = fmt(data.city);
+        document.getElementById('detailWorkAddress').textContent = fmt(data.work_address);
+        document.getElementById('detailDeparture').textContent   = fmtDate(data.date_of_departure);
+        document.getElementById('detailEndContract').textContent = fmtDate(data.end_of_contract);
+        document.getElementById('detailId').textContent          = '#' + data.id;
+        document.getElementById('detailCreated').textContent     = fmtDate(data.created_at);
+
+        const typeEl = document.getElementById('detailType');
+        typeEl.textContent = data.ofw_type ? (data.ofw_type.charAt(0).toUpperCase() + data.ofw_type.slice(1)) : '—';
+
+        const statusEl = document.getElementById('detailStatus');
+        const isActive = data.status === 'active';
+        statusEl.textContent = isActive ? 'ACTIVE' : 'INACTIVE';
+        statusEl.style.background = isActive ? '#dff5e8' : '#fde8e8';
+        statusEl.style.color      = isActive ? '#1a8a4d' : '#c0392b';
+
+        document.getElementById('ofwDetailModal').style.display = 'flex';
+    }
+
+    function closeOfwDetail() {
+        document.getElementById('ofwDetailModal').style.display = 'none';
     }
 
     function filterOfwRows(query) {
