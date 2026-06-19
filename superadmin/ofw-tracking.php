@@ -142,7 +142,7 @@ include '../includes/header.php';
           <?php endforeach; ?>
         </div>
       </div>
-      <div class="tracking-map"><div id="map"></div></div>
+      <div class="tracking-map" style="position:relative"><div id="map"></div><div id="noLocationNotice" style="display:none;position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.75);color:#fff;padding:10px 20px;border-radius:8px;font-size:0.85rem;z-index:999;pointer-events:none;">📍 No GPS data for this OFW</div></div>
     </div>
   </main>
 </div>
@@ -199,16 +199,33 @@ ofwData.forEach(function(ofw, idx){
         <div>📍 <b>Location As Of:</b> ${locTime}</div>
         <div style="margin-top:5px;font-size:11px;color:#94a3b8">📌 ${ofw.lat.toFixed(5)}, ${ofw.lng.toFixed(5)}</div>
     </div>`;
-    const m = L.marker([ofw.lat, ofw.lng], {icon: makeIcon(ofw)}).addTo(map).bindPopup(popup, {maxWidth:270});
+    // Create marker but do NOT add to map yet
+    const m = L.marker([ofw.lat, ofw.lng], {icon: makeIcon(ofw)}).bindPopup(popup, {maxWidth:270});
     m.on('click', function(){ highlightCard(idx); });
     markers.push(m);
 });
+
+let activeMarker = null;
 
 function focusOfw(card){
     document.querySelectorAll('.ofw-card').forEach(c=>c.classList.remove('active'));
     card.classList.add('active');
     const idx = parseInt(card.dataset.idx);
-    if(markers[idx]){ map.setView(markers[idx].getLatLng(), 14); markers[idx].openPopup(); }
+
+    // Remove previous marker from map
+    if(activeMarker){ activeMarker.remove(); }
+
+    if(markers[idx]){
+        // Show only this OFW's marker with correct color (green=online, red=offline, gray=never)
+        markers[idx].addTo(map);
+        map.setView(markers[idx].getLatLng(), 14);
+        markers[idx].openPopup();
+        activeMarker = markers[idx];
+    } else {
+        activeMarker = null;
+        const notice = document.getElementById('noLocationNotice');
+        if(notice){ notice.style.display='block'; setTimeout(()=>{ notice.style.display='none'; }, 3000); }
+    }
 }
 function highlightCard(idx){
     const cards = document.querySelectorAll('.ofw-card');
