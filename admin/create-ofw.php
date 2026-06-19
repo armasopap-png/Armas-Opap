@@ -226,6 +226,47 @@ textarea.form-control { height: auto; min-height: 76px; resize: vertical; }
     .create-ofw-layout { height: auto; padding: 16px; }
     .create-ofw-form-wrap { padding: 28px 20px; height: auto; }
 }
+
+/* ── Agency searchable dropdown ── */
+.agency-search-wrap { position: relative; }
+.agency-search-input-wrap { position: relative; display: flex; align-items: center; }
+.agency-search-icon {
+    position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+    color: #94a3b8; pointer-events: none; flex-shrink: 0;
+}
+.agency-search-field { padding-left: 36px !important; padding-right: 36px !important; cursor: text; }
+.agency-search-field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,58,107,.08); }
+.agency-clear-btn {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer; color: #94a3b8;
+    display: flex; align-items: center; padding: 2px;
+    border-radius: 4px; transition: color 0.15s;
+}
+.agency-clear-btn:hover { color: #ef4444; }
+.agency-dropdown {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: #fff; border: 1.5px solid var(--primary);
+    border-radius: 10px; box-shadow: 0 8px 24px rgba(26,58,107,.13);
+    max-height: 220px; overflow-y: auto; z-index: 999;
+    list-style: none; margin: 0; padding: 6px 0;
+}
+.agency-dropdown::-webkit-scrollbar { width: 5px; }
+.agency-dropdown::-webkit-scrollbar-track { background: transparent; }
+.agency-dropdown::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+.agency-option {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 14px; cursor: pointer; font-size: .9rem;
+    color: #334155; transition: background 0.1s;
+}
+.agency-option:hover, .agency-option.highlighted { background: #eff6ff; color: #1a3a6b; }
+.agency-option.selected { background: #eff6ff; font-weight: 600; color: #1a3a6b; }
+.agency-option-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #dbeafe; color: #1e40af;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; flex-shrink: 0;
+}
+.agency-no-results { padding: 12px 14px; font-size: .88rem; color: #94a3b8; text-align: center; }
 </style>
 
 <div class="dashboard-layout">
@@ -337,14 +378,42 @@ textarea.form-control { height: auto; min-height: 76px; resize: vertical; }
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Assign to Agency <span class="req">*</span></label>
-                                <select name="agency_id" class="form-control enhanced-select" required>
-                                    <option value="">-- Select Agency --</option>
-                                    <?php foreach ($agencies as $a): ?>
-                                        <option value="<?php echo $a['id']; ?>" <?php echo (isset($_POST['agency_id']) && $_POST['agency_id'] == $a['id']) ? 'selected' : ''; ?>>
-                                            <?php echo htmlspecialchars($a['name']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
+
+                                <!-- Hidden real input submitted with the form -->
+                                <input type="hidden" name="agency_id" id="agency_id" value="<?php echo isset($_POST['agency_id']) ? (int)$_POST['agency_id'] : ''; ?>">
+
+                                <!-- Searchable dropdown widget -->
+                                <div class="agency-search-wrap" id="agencySearchWrap">
+                                    <div class="agency-search-input-wrap">
+                                        <svg class="agency-search-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                        <input
+                                            type="text"
+                                            id="agencySearchInput"
+                                            class="form-control agency-search-field"
+                                            placeholder="Search agency name..."
+                                            autocomplete="off"
+                                            value="<?php
+                                                if (isset($_POST['agency_id']) && $_POST['agency_id']) {
+                                                    foreach ($agencies as $a) {
+                                                        if ($a['id'] == $_POST['agency_id']) { echo htmlspecialchars($a['name']); break; }
+                                                    }
+                                                }
+                                            ?>"
+                                        >
+                                        <button type="button" id="agencyClearBtn" class="agency-clear-btn" style="display:none;" title="Clear selection">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                        </button>
+                                    </div>
+                                    <ul class="agency-dropdown" id="agencyDropdown" style="display:none;">
+                                        <?php foreach ($agencies as $a): ?>
+                                            <li class="agency-option" data-id="<?php echo $a['id']; ?>" data-name="<?php echo htmlspecialchars($a['name']); ?>">
+                                                <span class="agency-option-avatar"><?php echo strtoupper(substr($a['name'],0,2)); ?></span>
+                                                <?php echo htmlspecialchars($a['name']); ?>
+                                            </li>
+                                        <?php endforeach; ?>
+                                        <li class="agency-no-results" style="display:none;">No agencies found</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
 
@@ -477,6 +546,100 @@ document.querySelectorAll('[data-alpha-only]').forEach(input => {
         document.execCommand('insertText', false, cleaned);
     });
 });
+
+// ── Agency searchable dropdown ──
+(function() {
+    const searchInput  = document.getElementById('agencySearchInput');
+    const hiddenInput  = document.getElementById('agency_id');
+    const dropdown     = document.getElementById('agencyDropdown');
+    const clearBtn     = document.getElementById('agencyClearBtn');
+    const allOptions   = Array.from(document.querySelectorAll('.agency-option'));
+    const noResults    = document.querySelector('.agency-no-results');
+    let highlightIdx   = -1;
+
+    function openDropdown() {
+        dropdown.style.display = 'block';
+        filterOptions(searchInput.value);
+    }
+    function closeDropdown() {
+        dropdown.style.display = 'none';
+        highlightIdx = -1;
+    }
+    function filterOptions(query) {
+        const q = query.trim().toLowerCase();
+        let visible = 0;
+        allOptions.forEach(opt => {
+            const match = opt.dataset.name.toLowerCase().includes(q);
+            opt.style.display = match ? '' : 'none';
+            if (match) visible++;
+        });
+        noResults.style.display = visible === 0 ? 'block' : 'none';
+        highlightIdx = -1;
+    }
+    function selectOption(opt) {
+        hiddenInput.value = opt.dataset.id;
+        searchInput.value = opt.dataset.name;
+        allOptions.forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        clearBtn.style.display = 'flex';
+        closeDropdown();
+        searchInput.setCustomValidity('');
+    }
+    function clearSelection() {
+        hiddenInput.value = '';
+        searchInput.value = '';
+        allOptions.forEach(o => o.classList.remove('selected'));
+        clearBtn.style.display = 'none';
+        filterOptions('');
+    }
+    function moveHighlight(dir) {
+        const visible = allOptions.filter(o => o.style.display !== 'none');
+        if (!visible.length) return;
+        highlightIdx = (highlightIdx + dir + visible.length) % visible.length;
+        visible.forEach((o, i) => o.classList.toggle('highlighted', i === highlightIdx));
+        visible[highlightIdx]?.scrollIntoView({ block: 'nearest' });
+    }
+
+    searchInput.addEventListener('focus', openDropdown);
+    searchInput.addEventListener('input', function() {
+        filterOptions(this.value);
+        if (dropdown.style.display === 'none') openDropdown();
+        // clear hidden value while user is typing
+        if (hiddenInput.value) { hiddenInput.value = ''; clearBtn.style.display = 'none'; allOptions.forEach(o => o.classList.remove('selected')); }
+    });
+    searchInput.addEventListener('keydown', function(e) {
+        if (dropdown.style.display === 'none') { openDropdown(); return; }
+        if (e.key === 'ArrowDown') { e.preventDefault(); moveHighlight(1); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); moveHighlight(-1); }
+        else if (e.key === 'Enter') {
+            e.preventDefault();
+            const visible = allOptions.filter(o => o.style.display !== 'none');
+            if (highlightIdx >= 0 && visible[highlightIdx]) selectOption(visible[highlightIdx]);
+        }
+        else if (e.key === 'Escape') closeDropdown();
+    });
+    allOptions.forEach(opt => {
+        opt.addEventListener('mousedown', e => { e.preventDefault(); selectOption(opt); });
+    });
+    clearBtn.addEventListener('mousedown', e => { e.preventDefault(); clearSelection(); searchInput.focus(); });
+    document.addEventListener('mousedown', e => {
+        if (!document.getElementById('agencySearchWrap').contains(e.target)) closeDropdown();
+    });
+
+    // Show clear button if value pre-filled on page load (POST re-render)
+    if (hiddenInput.value) clearBtn.style.display = 'flex';
+
+    // HTML5 validation: require a selection from the list
+    searchInput.addEventListener('invalid', () => searchInput.setCustomValidity('Please select an agency from the list.'));
+    // Override form submit to validate hidden input
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (!hiddenInput.value) {
+            e.preventDefault();
+            searchInput.setCustomValidity('Please select an agency from the list.');
+            searchInput.reportValidity();
+        }
+    });
+})();
 </script>
 
 <?php include '../includes/footer.php'; ?>
