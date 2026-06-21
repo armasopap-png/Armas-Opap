@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 13, 2026 at 01:00 PM
+-- Generation Time: Jun 21, 2026 at 04:53 PM
 -- Server version: 10.4.32-MariaDB
--- PHP Version: 8.0.30
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -48,9 +48,9 @@ INSERT INTO `agencies` (`id`, `user_id`, `name`, `license_number`, `address`, `c
 (9, 3, 'Global Filipino Manpower Services', 'POEA-MNL-2020-0112', '456 EDSA, Quezon City, Metro Manila', '09281234567', 'active', 1, '2026-06-06 03:20:00'),
 (10, 4, 'OFW Bridge Recruitment Corp.', 'POEA-CEV-2019-0078', '789 Colon Street, Cebu City', '09391234567', 'active', 1, '2026-06-06 03:20:00'),
 (11, 5, 'Bagong Bayani Employment Agency', 'POEA-DAV-2022-0033', '321 Claveria Street, Davao City', '09451234567', 'active', 1, '2026-06-06 03:20:00'),
-(12, 6, 'Maharlika International Staffing', 'POEA-MNL-2018-0201', '654 Shaw Blvd, Mandaluyong City', '09561234567', '', 1, '2026-06-06 03:20:00'),
+(12, 6, 'Maharlika International Staffing', 'POEA-MNL-2018-0201', '654 Shaw Blvd, Mandaluyong City', '09561234567', 'active', 1, '2026-06-06 03:20:00'),
 (13, 7, 'Sunrise Overseas Placement Inc.', 'POEA-MNL-2023-0009', '987 Ortigas Ave, Pasig City', '09671234567', 'active', 1, '2026-06-06 03:20:00'),
-(14, 8, 'Kabayan Workers Alliance', 'POEA-ILO-2020-0055', '147 General Luna St, Iloilo City', '09781234567', '', 1, '2026-06-06 03:20:00');
+(14, 8, 'Kabayan Workers Alliance', 'POEA-ILO-2020-0055', '147 General Luna St, Iloilo City', '09781234567', 'active', 1, '2026-06-06 03:20:00');
 
 -- --------------------------------------------------------
 
@@ -223,7 +223,67 @@ INSERT INTO `audit_logs` (`id`, `actor_id`, `action`, `target_type`, `target_id`
 (148, 19, 'LOGIN', NULL, NULL, '::1', '2026-06-11 14:19:05'),
 (149, 19, 'LOGOUT', NULL, NULL, '::1', '2026-06-11 14:22:24'),
 (150, 4, 'LOGIN', NULL, NULL, '::1', '2026-06-11 14:23:16'),
-(151, 19, 'LOGIN', NULL, NULL, '::1', '2026-06-11 14:40:52');
+(151, 19, 'LOGIN', NULL, NULL, '::1', '2026-06-11 14:40:52'),
+(152, 21, 'LOGIN', NULL, NULL, '::1', '2026-06-20 03:37:21'),
+(153, 23, 'LOGIN', NULL, NULL, '::1', '2026-06-20 03:37:53'),
+(154, 21, 'LOGOUT', NULL, NULL, '::1', '2026-06-20 03:59:18'),
+(155, 1, 'LOGIN', NULL, NULL, '::1', '2026-06-20 03:59:23'),
+(156, 1, 'TOGGLE_STATUS_ACTIVE', 'users', 6, '::1', '2026-06-20 04:11:17'),
+(157, 1, 'TOGGLE_STATUS_ACTIVE', 'users', 8, '::1', '2026-06-20 04:11:19'),
+(158, 1, 'LOGOUT', NULL, NULL, '::1', '2026-06-20 04:47:36'),
+(159, 21, 'LOGIN', NULL, NULL, '::1', '2026-06-20 04:47:42'),
+(160, 23, 'LOGOUT', NULL, NULL, '::1', '2026-06-20 04:48:31'),
+(161, 21, 'LOGIN', NULL, NULL, '::1', '2026-06-20 04:49:17'),
+(162, 23, 'LOGIN', NULL, NULL, '::1', '2026-06-20 04:54:31'),
+(163, 21, 'LOGOUT', NULL, NULL, '::1', '2026-06-20 04:54:53'),
+(164, 1, 'LOGIN', NULL, NULL, '::1', '2026-06-20 04:54:59'),
+(165, 23, 'LOGOUT', NULL, NULL, '::1', '2026-06-20 04:55:31'),
+(166, 4, 'LOGIN', NULL, NULL, '::1', '2026-06-20 04:55:36'),
+(167, 4, 'LOGIN', NULL, NULL, '::1', '2026-06-20 06:32:09'),
+(168, 4, 'LOGIN', NULL, NULL, '::1', '2026-06-20 06:32:11'),
+(169, 4, 'LOGOUT', NULL, NULL, '::1', '2026-06-20 06:33:34'),
+(170, 4, 'LOGOUT', NULL, NULL, '::1', '2026-06-20 06:33:51'),
+(171, 21, 'LOGIN', NULL, NULL, '::1', '2026-06-20 06:33:56'),
+(172, 22, 'LOGIN', NULL, NULL, '::1', '2026-06-20 06:35:11'),
+(173, 21, 'LOGIN', NULL, NULL, '::1', '2026-06-20 06:35:58'),
+(174, 21, 'LOGOUT', NULL, NULL, '::1', '2026-06-20 06:36:50'),
+(175, 1, 'LOGIN', NULL, NULL, '::1', '2026-06-20 06:37:23'),
+(176, 21, 'LOGOUT', NULL, NULL, '::1', '2026-06-20 06:37:47'),
+(177, 1, 'LOGIN', NULL, NULL, '::1', '2026-06-20 06:38:01'),
+(178, 1, 'LOGOUT', NULL, NULL, '::1', '2026-06-20 06:38:38'),
+(179, 23, 'LOGIN', NULL, NULL, '::1', '2026-06-20 06:39:02'),
+(180, 22, 'LOGOUT', NULL, NULL, '::1', '2026-06-20 06:39:11'),
+(181, 23, 'LOGIN', NULL, NULL, '::1', '2026-06-20 06:49:52'),
+(182, 23, 'LOGIN', NULL, NULL, '::1', '2026-06-20 06:52:30'),
+(183, 23, 'LOGIN', NULL, NULL, '::1', '2026-06-20 06:53:10'),
+(184, 1, 'LOGIN', NULL, NULL, '::1', '2026-06-20 06:54:05'),
+(185, 23, 'LOGOUT', NULL, NULL, '::1', '2026-06-20 06:56:10'),
+(186, 23, 'LOGOUT', NULL, NULL, '::1', '2026-06-20 06:56:48'),
+(187, 23, 'LOGOUT', NULL, NULL, '::1', '2026-06-20 07:18:09'),
+(188, 4, 'LOGIN', NULL, NULL, '::1', '2026-06-20 07:19:03'),
+(189, 21, 'LOGIN', NULL, NULL, '::1', '2026-06-20 07:19:25'),
+(190, 23, 'LOGIN', NULL, NULL, '::1', '2026-06-20 07:19:52'),
+(191, 1, 'LOGIN', NULL, NULL, '::1', '2026-06-20 07:20:22'),
+(192, 23, 'LOGIN', NULL, NULL, '::1', '2026-06-20 07:21:06'),
+(193, 23, 'LOGOUT', NULL, NULL, '::1', '2026-06-20 07:21:32'),
+(194, 21, 'LOGIN', NULL, NULL, '::1', '2026-06-20 07:21:48'),
+(195, 1, 'LOGIN', NULL, NULL, '::1', '2026-06-20 07:22:04'),
+(196, 1, 'LOGIN', NULL, NULL, '::1', '2026-06-20 07:22:14'),
+(197, 1, 'LOGIN', NULL, NULL, '::1', '2026-06-20 07:22:48'),
+(198, 1, 'LOGOUT', NULL, NULL, '::1', '2026-06-20 07:23:36'),
+(199, 21, 'LOGOUT', NULL, NULL, '::1', '2026-06-20 07:29:41'),
+(200, 4, 'LOGIN', NULL, NULL, '::1', '2026-06-20 07:29:52'),
+(201, 1, 'LOGIN', NULL, NULL, '::1', '2026-06-20 15:35:40'),
+(202, 1, 'LOGOUT', NULL, NULL, '::1', '2026-06-20 15:43:06'),
+(203, 23, 'PASSWORD_RESET_REQUESTED', NULL, NULL, '::1', '2026-06-21 09:50:16'),
+(204, 23, 'PASSWORD_RESET_REQUESTED', NULL, NULL, '::1', '2026-06-21 09:50:20'),
+(205, 23, 'PASSWORD_RESET', NULL, NULL, '::1', '2026-06-21 09:51:25'),
+(206, 23, 'LOGIN', NULL, NULL, '::1', '2026-06-21 09:51:42'),
+(207, 23, 'LOGOUT', NULL, NULL, '::1', '2026-06-21 10:29:35'),
+(208, 22, 'PASSWORD_RESET_REQUESTED', NULL, NULL, '::1', '2026-06-21 14:48:26'),
+(209, 22, 'PASSWORD_RESET_REQUESTED', NULL, NULL, '::1', '2026-06-21 14:48:40'),
+(210, 22, 'PASSWORD_RESET_REQUESTED', NULL, NULL, '::1', '2026-06-21 14:48:52'),
+(211, 4, 'LOGIN', NULL, NULL, '::1', '2026-06-21 14:50:45');
 
 -- --------------------------------------------------------
 
@@ -328,6 +388,9 @@ CREATE TABLE `ofws` (
   `suffix` varchar(20) DEFAULT NULL,
   `agency_id` int(11) NOT NULL,
   `ofw_type` enum('land-based','sea-based') NOT NULL DEFAULT 'land-based',
+  `work_category` varchar(100) NOT NULL DEFAULT '',
+  `work_type` varchar(150) NOT NULL DEFAULT '',
+  `document_type` varchar(20) NOT NULL DEFAULT '',
   `address` text DEFAULT NULL,
   `contact_number` varchar(20) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -335,18 +398,21 @@ CREATE TABLE `ofws` (
   `end_of_contract` date DEFAULT NULL,
   `country` varchar(100) DEFAULT NULL,
   `city` varchar(100) DEFAULT NULL,
-  `work_address` text DEFAULT NULL
+  `work_address` text DEFAULT NULL,
+  `latitude` decimal(10,8) DEFAULT NULL,
+  `longitude` decimal(11,8) DEFAULT NULL,
+  `location_updated_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `ofws`
 --
 
-INSERT INTO `ofws` (`id`, `user_id`, `last_name`, `first_name`, `middle_name`, `suffix`, `agency_id`, `ofw_type`, `address`, `contact_number`, `created_at`, `date_of_departure`, `end_of_contract`, `country`, `city`, `work_address`) VALUES
-(11, 19, 'BANTA', 'JOHN REANAN', 'LEGASPI', '', 13, 'land-based', '780 KAGANDAHAN ST', '09619878435', '2026-06-06 04:00:04', NULL, NULL, NULL, NULL, NULL),
-(12, 20, 'AQUINO', 'IAN LAURENCE', 'TOMAS', '', 10, 'land-based', '555 PALTOC SAMPALOC MANILA', '09617244155', '2026-06-06 04:51:44', NULL, NULL, NULL, NULL, NULL),
-(13, 22, 'PANALIGAN', 'ROBIN', 'E.', '', 9, 'sea-based', '661 MARY ANN ST. GAGALANGIN TONDO MANILA', '', '2026-06-07 05:04:12', NULL, NULL, NULL, NULL, NULL),
-(14, 23, 'ALBA', 'LAWRENCE', 'MADEJA', '', 10, 'sea-based', '', '231332766787', '2026-06-07 05:04:31', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `ofws` (`id`, `user_id`, `last_name`, `first_name`, `middle_name`, `suffix`, `agency_id`, `ofw_type`, `work_category`, `work_type`, `document_type`, `address`, `contact_number`, `created_at`, `date_of_departure`, `end_of_contract`, `country`, `city`, `work_address`, `latitude`, `longitude`, `location_updated_at`) VALUES
+(11, 19, 'BANTA', 'JOHN REANAN', 'LEGASPI', '', 13, 'land-based', '', '', '', '780 KAGANDAHAN ST', '09619878435', '2026-06-06 04:00:04', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(12, 20, 'AQUINO', 'IAN LAURENCE', 'TOMAS', '', 10, 'land-based', '', '', '', '555 PALTOC SAMPALOC MANILA', '09617244155', '2026-06-06 04:51:44', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(13, 22, 'PANALIGAN', 'ROBIN', 'E.', '', 9, 'sea-based', '', '', '', '661 MARY ANN ST. GAGALANGIN TONDO MANILA', '', '2026-06-07 05:04:12', NULL, NULL, NULL, NULL, NULL, 14.32072391, 120.97126205, '2026-06-20 08:35:20'),
+(14, 23, 'ALBA', 'LAWRENCE', 'MADEJA', '', 10, 'land-based', 'Retail & Sales', 'Salesperson / Sales Associate', '', '', '231332766787', '2026-06-07 05:04:31', NULL, NULL, NULL, NULL, NULL, 14.60352866, 121.00478583, '2026-06-21 12:29:23');
 
 -- --------------------------------------------------------
 
@@ -376,6 +442,32 @@ INSERT INTO `otp_codes` (`id`, `user_id`, `code_hash`, `expires_at`, `used`, `cr
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `password_resets`
+--
+
+CREATE TABLE `password_resets` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `token_hash` varchar(255) NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `used` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `password_resets`
+--
+
+INSERT INTO `password_resets` (`id`, `user_id`, `token_hash`, `expires_at`, `used`, `created_at`) VALUES
+(1, 23, '31ba3b51087d496f80a3f59d0ca3e11333b6c4d53891569df838162f31661f37', '2026-06-21 12:20:12', 1, '2026-06-21 09:50:12'),
+(2, 23, '4b79a14baddb68b486b8f3cf98701783f134db84d5780e1f73aa7a6459792fd8', '2026-06-21 12:20:16', 0, '2026-06-21 09:50:16'),
+(3, 22, 'e92f2e82171414329e07eb50c4cec860fc0bcac35615b69e7fb1bd737c329ae5', '2026-06-21 17:18:20', 0, '2026-06-21 14:48:20'),
+(4, 22, 'fee0d7253b574858014135dffa50d21f312d42a1a8fdb92391f467dd91691ba8', '2026-06-21 17:18:35', 0, '2026-06-21 14:48:35'),
+(5, 22, '5cf350d7bd9a2ebc46a2b3bb25c00f5b435f9153aa2b1884051e07f11e0a2701', '2026-06-21 17:18:47', 0, '2026-06-21 14:48:47');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `users`
 --
 
@@ -388,27 +480,29 @@ CREATE TABLE `users` (
   `login_attempts` int(11) DEFAULT 0,
   `locked_until` datetime DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `last_login` datetime DEFAULT NULL,
+  `last_login_ip` varchar(45) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `email`, `password_hash`, `role`, `status`, `login_attempts`, `locked_until`, `created_at`, `updated_at`) VALUES
-(1, 'admin@armas.gov.ph', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 'active', 0, NULL, '2026-06-06 03:19:48', '2026-06-07 07:23:07'),
-(2, 'agency1@filworkers.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'agency', 'active', 0, NULL, '2026-06-06 03:19:48', '2026-06-07 06:58:52'),
-(3, 'agency2@globalfilipino.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'agency', 'active', 0, NULL, '2026-06-06 03:19:48', '2026-06-07 03:27:42'),
-(4, 'agency3@ofwbridge.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'agency', 'active', 0, NULL, '2026-06-06 03:19:48', '2026-06-07 03:27:42'),
-(5, 'agency4@bagongbayani.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'agency', 'active', 0, NULL, '2026-06-06 03:19:48', '2026-06-07 03:27:42'),
-(6, 'agency5@maharlika.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'agency', 'pending', 0, NULL, '2026-06-06 03:19:48', '2026-06-07 03:27:42'),
-(7, 'agency6@sunrise.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'agency', 'active', 0, NULL, '2026-06-06 03:19:48', '2026-06-07 03:27:42'),
-(8, 'agency7@kabayan.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'agency', '', 0, NULL, '2026-06-06 03:19:48', '2026-06-07 03:27:42'),
-(19, 'reananbanta@gmail.com', '$2y$10$y9snz8g93RPLM2s/qaQZ7.LVFTwpaygiRiA5cUQEvW0SBosoJmsz.', 'ofw', 'active', 0, NULL, '2026-06-06 04:00:04', '2026-06-08 03:43:52'),
-(20, 'ianaquino0208@gmail.com', '$2y$10$SVKYD6qHCFcH.ABizUr2uOLPBeOR6aqIm4bsDM9VbUtrOEVKcngjW', 'ofw', 'active', 0, NULL, '2026-06-06 04:51:44', '2026-06-06 04:52:34'),
-(21, 'superadmin@armas.gov.ph', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'superadmin', 'active', 0, NULL, '2026-06-07 04:01:25', '2026-06-07 04:01:25'),
-(22, 'panaliganrobin48@gmail.com', '$2y$10$ZR9dz7ROeIRxhnKYjQJLxu1vFiIaCvZ5utb6aesePy2gRUIfnJpYS', 'ofw', 'active', 0, NULL, '2026-06-07 05:04:12', '2026-06-07 16:35:06'),
-(23, 'opaparmas@gmail.com', '$2y$10$rNyzrgKwGzXoHAqP5QJW5.L26TKq/Aps9uPKtT/6QAu2xRc0ufwvC', 'ofw', 'active', 0, NULL, '2026-06-07 05:04:31', '2026-06-07 06:52:53');
+INSERT INTO `users` (`id`, `email`, `password_hash`, `role`, `status`, `login_attempts`, `locked_until`, `created_at`, `updated_at`, `last_login`, `last_login_ip`) VALUES
+(1, 'admin@armas.gov.ph', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 'active', 0, NULL, '2026-06-06 03:19:48', '2026-06-20 15:35:40', '2026-06-20 17:35:40', '::1'),
+(2, 'agency1@filworkers.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'agency', 'active', 0, NULL, '2026-06-06 03:19:48', '2026-06-07 06:58:52', NULL, NULL),
+(3, 'agency2@globalfilipino.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'agency', 'active', 0, NULL, '2026-06-06 03:19:48', '2026-06-07 03:27:42', NULL, NULL),
+(4, 'agency3@ofwbridge.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'agency', 'active', 0, NULL, '2026-06-06 03:19:48', '2026-06-21 14:50:45', '2026-06-21 16:50:45', '::1'),
+(5, 'agency4@bagongbayani.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'agency', 'active', 0, NULL, '2026-06-06 03:19:48', '2026-06-07 03:27:42', NULL, NULL),
+(6, 'agency5@maharlika.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'agency', 'active', 0, NULL, '2026-06-06 03:19:48', '2026-06-20 04:11:17', NULL, NULL),
+(7, 'agency6@sunrise.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'agency', 'active', 0, NULL, '2026-06-06 03:19:48', '2026-06-07 03:27:42', NULL, NULL),
+(8, 'agency7@kabayan.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'agency', 'active', 0, NULL, '2026-06-06 03:19:48', '2026-06-20 04:11:19', NULL, NULL),
+(19, 'reananbanta@gmail.com', '$2y$10$y9snz8g93RPLM2s/qaQZ7.LVFTwpaygiRiA5cUQEvW0SBosoJmsz.', 'ofw', 'active', 0, NULL, '2026-06-06 04:00:04', '2026-06-08 03:43:52', NULL, NULL),
+(20, 'ianaquino0208@gmail.com', '$2y$10$SVKYD6qHCFcH.ABizUr2uOLPBeOR6aqIm4bsDM9VbUtrOEVKcngjW', 'ofw', 'active', 0, NULL, '2026-06-06 04:51:44', '2026-06-06 04:52:34', NULL, NULL),
+(21, 'superadmin@armas.gov.ph', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'superadmin', 'active', 0, NULL, '2026-06-07 04:01:25', '2026-06-20 07:21:48', '2026-06-20 09:21:48', '::1'),
+(22, 'panaliganrobin48@gmail.com', '$2y$10$ZR9dz7ROeIRxhnKYjQJLxu1vFiIaCvZ5utb6aesePy2gRUIfnJpYS', 'ofw', 'active', 0, NULL, '2026-06-07 05:04:12', '2026-06-20 06:35:11', '2026-06-20 08:35:11', '::1'),
+(23, 'opaparmas@gmail.com', '$2y$10$ohaUpGKcIKIOA7AeM27MbuKRM5QiOwDbMrL5GYfCt9yuC4I0JZZUm', 'ofw', 'active', 0, NULL, '2026-06-07 05:04:31', '2026-06-21 09:51:42', '2026-06-21 11:51:42', '::1');
 
 --
 -- Indexes for dumped tables
@@ -467,6 +561,14 @@ ALTER TABLE `otp_codes`
   ADD KEY `user_id` (`user_id`);
 
 --
+-- Indexes for table `password_resets`
+--
+ALTER TABLE `password_resets`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `token_hash` (`token_hash`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -487,7 +589,7 @@ ALTER TABLE `agencies`
 -- AUTO_INCREMENT for table `audit_logs`
 --
 ALTER TABLE `audit_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=152;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=212;
 
 --
 -- AUTO_INCREMENT for table `cases`
@@ -520,10 +622,16 @@ ALTER TABLE `otp_codes`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
+-- AUTO_INCREMENT for table `password_resets`
+--
+ALTER TABLE `password_resets`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- Constraints for dumped tables
@@ -572,6 +680,12 @@ ALTER TABLE `ofws`
 --
 ALTER TABLE `otp_codes`
   ADD CONSTRAINT `otp_codes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `password_resets`
+--
+ALTER TABLE `password_resets`
+  ADD CONSTRAINT `password_resets_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

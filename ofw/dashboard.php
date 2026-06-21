@@ -97,7 +97,6 @@ include '../includes/header.php'; ?>
         margin-left: var(--sidebar-width);
         width: calc(100% - var(--sidebar-width));
         transition: var(--layout-transition);
-        /* Generous horizontal and vertical padding to prevent sidebar crowding */
         padding: 30px 45px; 
         box-sizing: border-box;
     }
@@ -226,7 +225,7 @@ include '../includes/header.php'; ?>
         .main-content {
             margin-left: 0 !important;
             width: 100% !important;
-            padding: 24px 20px !important;
+            padding: 16px 16px !important;
         }
 
         .dashboard-layout.mobile-open .sidebar {
@@ -237,23 +236,32 @@ include '../includes/header.php'; ?>
             display: block;
         }
 
+        /* Cleaned Header for Mobile View */
         .main-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 14px 16px !important;
+            margin-top: 4px !important;
+            margin-bottom: 16px !important;
         }
         
-        .main-header-actions {
-            margin-left: 0 !important;
+        .main-header-title h1 {
+            font-size: 1.3rem !important;
+        }
+
+        .main-header-actions .user-details {
+            display: none !important; /* Hide details on mobile to keep row elegant */
         }
 
         .stats-grid {
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
             gap: 12px !important;
         }
 
         .quick-actions {
             grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
         }
     }
 </style>
@@ -351,15 +359,13 @@ include '../includes/header.php'; ?>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <main class="main-content">
-        <!-- 🔥 BAGONG CODE: May dagdag na padding sa gilid at margin sa itaas -->
-<!-- 🔥 BAGONG CODE: Rounded, may background, at may gap sa gilid -->
-<header class="main-header" style="display: flex; align-items: center; justify-content: space-between; background-color: #fff; padding: 20px 24px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-top: 10px; margin-bottom: 24px;">
+        <header class="main-header" style="display: flex; align-items: center; justify-content: space-between; background-color: #fff; padding: 20px 24px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-top: 10px; margin-bottom: 24px;">
             <div class="main-header-title">
                 <h1 style="margin: 0; font-size: 1.75rem; color: #1a2e5c;">Welcome, <?php echo htmlspecialchars($ofw['first_name']); ?>!</h1>
             </div>
             <div class="main-header-actions">
                 <div class="user-info" style="display: flex; align-items: center; gap: 12px;">
-                    <div class="user-avatar" style="width: 40px; height: 40px; background-color: #e2e8f0; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; color: #1e293b;"><?php echo substr($ofw['first_name'], 0, 1); ?></div>
+                    <div class="user-avatar" style="width: 40px; height: 40px; background-color: #e2e8f0; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; color: #1e293b; flex-shrink: 0;"><?php echo substr($ofw['first_name'], 0, 1); ?></div>
                     <div class="user-details">
                         <div class="user-name" style="font-weight: 600; color: #1e293b;"><?php echo htmlspecialchars($ofw['first_name'] . ' ' . $ofw['last_name']); ?></div>
                         <div class="user-role" style="font-size: 0.85rem; color: #64748b;">OFW</div>
@@ -481,7 +487,6 @@ include '../includes/header.php'; ?>
             });
         }
 
-        // ── OFW Location Capture ──────────────────────────────────────────
         if ('geolocation' in navigator) {
             navigator.geolocation.getCurrentPosition(
                 function (position) {
@@ -494,7 +499,7 @@ include '../includes/header.php'; ?>
                         })
                     });
                 },
-                function () { /* user denied — do nothing */ },
+                function () { },
                 { enableHighAccuracy: true, timeout: 10000 }
             );
         }
