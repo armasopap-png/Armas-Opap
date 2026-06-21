@@ -128,9 +128,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (move_uploaded_file($file['tmp_name'], $destination)) {
                 // Save OFW Profile details
-                $pdo->prepare("INSERT INTO ofws (user_id, last_name, first_name, middle_name, suffix, sex, birthdate, address, contact_number, ofw_type, work_category, work_type, document_type, supporting_document)
-                               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
-                    ->execute([$user_id, $last_name, $first_name, $middle_name, $suffix, $sex, $birthdate, $address, $contact, $ofw_type, $work_category, $work_type, $document_type, $destination]);
+                $pdo->prepare("INSERT INTO ofws (user_id, last_name, first_name, middle_name, suffix, address, contact_number, ofw_type, work_category, work_type, document_type, agency_id)
+                               VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")
+                    ->execute([$user_id, $last_name, $first_name, $middle_name, $suffix, $address, $contact, $ofw_type, $work_category, $work_type, $document_type, 0]);
 
                 // Generate OTP Verification Codes
                 $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
