@@ -188,4 +188,47 @@ function send_case_notification($email, $ofw_name, $case_number, $status)
     ";
     return send_email($email, $ofw_name, $subject, $body);
 }
+
+function send_password_reset_email($email, $name, $reset_link)
+{
+    $subject = 'ARMAS — Reset Your Password';
+    $body = "
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body { font-family: 'DM Sans', Arial, sans-serif; background: #f5f6fa; padding: 20px; }
+            .container { max-width: 500px; margin: 0 auto; background: white; border-radius: 10px; padding: 30px; }
+            .logo { text-align: center; margin-bottom: 20px; }
+            .logo-text { font-family: 'Playfair Display', serif; font-size: 24px; color: #1A3A6B; font-weight: bold; }
+            h2 { color: #1A3A6B; margin-bottom: 20px; }
+            .btn-reset { display: inline-block; background: #1A3A6B; color: #ffffff !important; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; margin: 10px 0; }
+            .link-fallback { word-break: break-all; font-size: 12px; color: #6B7280; margin-top: 16px; }
+            .footer { margin-top: 30px; text-align: center; color: #6B7280; font-size: 12px; }
+        </style>
+    </head>
+    <body>
+        <div class='container'>
+            <div class='logo'>
+                <span class='logo-text'>ARMAS</span>
+            </div>
+            <h2>Reset Your Password</h2>
+            <p>Dear $name,</p>
+            <p>We received a request to reset your ARMAS account password. Click the button below to choose a new password:</p>
+            <p style='text-align:center;'>
+                <a href='$reset_link' class='btn-reset'>Reset Password</a>
+            </p>
+            <p>This link expires in 30 minutes.</p>
+            <p>If you did not request a password reset, you can safely ignore this email — your password will remain unchanged.</p>
+            <p class='link-fallback'>If the button doesn't work, copy and paste this link into your browser:<br>$reset_link</p>
+            <div class='footer'>
+                <p>Protecting Every Filipino, Every Mile Away</p>
+                <p>&copy; 2025 ARMAS — Assistance and Repatriation Management and Action System</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    ";
+    return send_email($email, $name, $subject, $body);
+}
 ?>

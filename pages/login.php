@@ -244,6 +244,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             <?php endif; ?>
 
+            <?php if (isset($_GET['success']) && $_GET['success'] === 'reset'): ?>
+                <div class="alert-success">
+                    ✓ Password reset successfully! Please log in with your new password.
+                </div>
+            <?php endif; ?>
+
             <?php if (isset($_GET['error']) && $_GET['error'] === 'inactive'): ?>
                 <div class="alert-error">
                     <span>⚠️</span> Your account has been deactivated. Please contact support.
@@ -264,6 +270,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <button type="button" class="toggle-password"
                             onclick="this.previousElementSibling.type = this.previousElementSibling.type === 'password' ? 'text' : 'password'; this.textContent = this.previousElementSibling.type === 'password' ? '👁' : '🙈'">👁</button>
                     </div>
+                    <p style="text-align:right; margin-top:8px;"><a href="/armas/pages/forgot-password.php" style="color:var(--primary); font-size:0.85rem; font-weight:600;">Forgot Password?</a></p>
                 </div>
 
                 <button type="submit" class="btn btn-primary">Sign In</button>
