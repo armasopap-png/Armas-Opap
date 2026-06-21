@@ -25,10 +25,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $address = strtoupper(trim(htmlspecialchars($_POST['address'])));
     $contact = htmlspecialchars($_POST['contact_number']);
     $ofw_type = $_POST['ofw_type'] ?? '';
+    $work_category = trim($_POST['work_category'] ?? '');
+    $work_type = trim($_POST['work_type'] ?? '');
 
     // Validations
     if (empty($ofw_type) || !in_array($ofw_type, ['land-based', 'sea-based'])) {
         $errors[] = 'Please select OFW type.';
+    }
+    if (empty($work_category)) {
+        $errors[] = 'Please select a work category.';
+    }
+    if (empty($work_type)) {
+        $errors[] = 'Please select a specific work/position.';
     }
     if (empty($last_name) || empty($first_name)) {
         $errors[] = 'Last name and first name are required.';
@@ -72,6 +80,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Supporting Document Validation
+    $document_type = trim($_POST['document_type'] ?? '');
+    if (empty($document_type) || !in_array($document_type, ['Passport', 'Visa'])) {
+        $errors[] = 'Please select a document type (Passport or Visa).';
+    }
     if (!isset($_FILES['supporting_doc']) || $_FILES['supporting_doc']['error'] === UPLOAD_ERR_NO_FILE) {
         $errors[] = 'Supporting document (e.g., Passport or Visa) is required.';
     } else {
@@ -116,9 +128,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (move_uploaded_file($file['tmp_name'], $destination)) {
                 // Save OFW Profile details
-                $pdo->prepare("INSERT INTO ofws (user_id, last_name, first_name, middle_name, suffix, sex, birthdate, address, contact_number, ofw_type, supporting_document)
-                               VALUES (?,?,?,?,?,?,?,?,?,?,?)")
-                    ->execute([$user_id, $last_name, $first_name, $middle_name, $suffix, $sex, $birthdate, $address, $contact, $ofw_type, $destination]);
+                $pdo->prepare("INSERT INTO ofws (user_id, last_name, first_name, middle_name, suffix, sex, birthdate, address, contact_number, ofw_type, work_category, work_type, document_type, supporting_document)
+                               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+                    ->execute([$user_id, $last_name, $first_name, $middle_name, $suffix, $sex, $birthdate, $address, $contact, $ofw_type, $work_category, $work_type, $document_type, $destination]);
 
                 // Generate OTP Verification Codes
                 $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -313,6 +325,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
+                <!-- Work Category (shown based on OFW type) -->
+                <div class="form-group" id="work-category-group" style="display:none;">
+                    <label class="form-label">Work Category <span style="color:#dc2626">*</span></label>
+                    <select name="work_category" id="work_category" class="form-control enhanced-select">
+                        <option value="">-- Select Work Category --</option>
+                    </select>
+                </div>
+
+                <!-- Specific Work/Position (shown after category is selected) -->
+                <div class="form-group" id="work-type-group" style="display:none;">
+                    <label class="form-label">Specific Work / Position <span style="color:#dc2626">*</span></label>
+                    <select name="work_type" id="work_type" class="form-control enhanced-select">
+                        <option value="">-- Select Position --</option>
+                    </select>
+                </div>
+
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Birthdate</label>
@@ -341,12 +369,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <div class="form-group">
                     <label class="form-label">Supporting Document <span style="color:#dc2626">*</span></label>
+
+                    <!-- Document Type Selection -->
+                    <div style="display:flex; gap:16px; margin-bottom:14px;">
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; background:#f8fafc; border:2px solid #cbd5e1; border-radius:10px; padding:10px 20px; font-weight:600; color:#1a3a6b; transition:all .2s;"
+                            id="label-passport"
+                            onclick="selectDocType('Passport')">
+                            <input type="radio" name="document_type" value="Passport" id="doc-passport" style="accent-color:#1a3a6b;"
+                                <?php echo (($_POST['document_type'] ?? '') === 'Passport') ? 'checked' : ''; ?>>
+                            Passport
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; background:#f8fafc; border:2px solid #cbd5e1; border-radius:10px; padding:10px 20px; font-weight:600; color:#1a3a6b; transition:all .2s;"
+                            id="label-visa"
+                            onclick="selectDocType('Visa')">
+                            <input type="radio" name="document_type" value="Visa" id="doc-visa" style="accent-color:#1a3a6b;"
+                                <?php echo (($_POST['document_type'] ?? '') === 'Visa') ? 'checked' : ''; ?>>
+                            Visa
+                        </label>
+                    </div>
+
                     <div id="dropZone" onclick="document.getElementById('supporting_doc').click()" style="border:2px dashed #cbd5e1; border-radius:12px; padding:28px 20px; text-align:center; cursor:pointer; transition:all .2s; background:#f8fafc; position:relative;">
                         <input type="file" id="supporting_doc" name="supporting_doc" accept=".pdf,.jpg,.jpeg,.png" required style="display:none;" onchange="handleFileSelect(this)">
                         <div id="dropContent">
                             <div style="margin-bottom:10px;"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#1a3a6b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
                             <div style="font-weight:600; color:#1a3a6b; font-size:.95rem;">Click to upload or drag & drop</div>
-                            <div style="color:#64748b; font-size:.8rem; margin-top:4px;">Passport, Visa, or any valid ID</div>
+                            <div style="color:#64748b; font-size:.8rem; margin-top:4px;">Upload your Passport or Visa</div>
                             <div style="margin-top:10px; display:inline-block; background:#1a3a6b; color:#fff; padding:7px 20px; border-radius:8px; font-size:.82rem; font-weight:600;">Browse File</div>
                         </div>
                         <div id="filePreview" style="display:none; align-items:center; gap:12px; justify-content:center;">
@@ -363,6 +410,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <script>
+                // Document type radio highlight
+                function selectDocType(type) {
+                    document.getElementById('label-passport').style.borderColor = type === 'Passport' ? '#1a3a6b' : '#cbd5e1';
+                    document.getElementById('label-passport').style.background  = type === 'Passport' ? '#e8eef7' : '#f8fafc';
+                    document.getElementById('label-visa').style.borderColor     = type === 'Visa'     ? '#1a3a6b' : '#cbd5e1';
+                    document.getElementById('label-visa').style.background      = type === 'Visa'     ? '#e8eef7' : '#f8fafc';
+                }
+                // Restore on page reload (after validation error)
+                (function(){
+                    const checked = document.querySelector('input[name="document_type"]:checked');
+                    if (checked) selectDocType(checked.value);
+                })();
+
                 const dropZone = document.getElementById('dropZone');
                 dropZone.addEventListener('dragover', function(e){ e.preventDefault(); this.style.borderColor='#1a3a6b'; this.style.background='#eff6ff'; });
                 dropZone.addEventListener('dragleave', function(){ this.style.borderColor='#cbd5e1'; this.style.background='#f8fafc'; });
@@ -443,6 +503,210 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <script>
+        // Work Category & Specific Work dynamic dropdowns based on OFW Type
+        (function() {
+            const workData = {
+                'land-based': {
+                    'Domestic & Household Services': [
+                        'Domestic Helper / Household Service Worker (HSW)',
+                        'Domestic Housekeeper',
+                        'Caregiver (elderly/children/disabled)',
+                        'Babysitter / Nanny',
+                        'Laundry Worker'
+                    ],
+                    'Healthcare & Medical': [
+                        'Registered Nurse',
+                        'Physical Therapist',
+                        'Medical Technologist / Laboratory Technician',
+                        'Radiologic Technologist',
+                        'Caregiver / Nursing Aide',
+                        'Midwife',
+                        'Pharmacist',
+                        'Dentist',
+                        'Doctor / Physician'
+                    ],
+                    'Construction & Skilled Trades': [
+                        'Construction Worker / Laborer',
+                        'Carpenter',
+                        'Mason / Bricklayer',
+                        'Welder',
+                        'Plumber',
+                        'Electrician',
+                        'Pipefitter',
+                        'Steel Worker / Scaffolder',
+                        'Painter'
+                    ],
+                    'Manufacturing & Factory': [
+                        'Factory / Manufacturing Laborer',
+                        'Machine Operator / Assembler',
+                        'Quality Control Inspector',
+                        'Packer / Sorter'
+                    ],
+                    'Hospitality & Food Service': [
+                        'Hotel Staff - Front Desk',
+                        'Hotel Staff - Concierge',
+                        'Hotel Staff - Housekeeping',
+                        'Cook / Chef',
+                        'Restaurant Server / Waiter',
+                        'Food Preparer / Kitchen Staff',
+                        'Bartender',
+                        'Dishwasher'
+                    ],
+                    'Security & Safety': [
+                        'Security Guard',
+                        'Fire Safety Officer'
+                    ],
+                    'Transportation & Driving': [
+                        'Driver (private, taxi, truck)',
+                        'Delivery Driver',
+                        'Heavy Equipment Operator'
+                    ],
+                    'Professional & Office-Based': [
+                        'Accountant / Auditor',
+                        'IT Professional / Software Developer',
+                        'BPO Worker',
+                        'Administrative Staff / Secretary',
+                        'Civil Engineer',
+                        'Mechanical Engineer',
+                        'Electrical Engineer',
+                        'Architect',
+                        'Teacher / Tutor',
+                        'Financial Analyst'
+                    ],
+                    'Cleaning & Janitorial': [
+                        'Cleaner / Helper in Offices',
+                        'Cleaner / Helper in Hotels',
+                        'Cleaner / Helper in Establishments',
+                        'Janitor / Sanitation Worker'
+                    ],
+                    'Agriculture & Farming': [
+                        'Farm Worker / Agricultural Laborer',
+                        'Harvester',
+                        'Livestock Worker'
+                    ],
+                    'Retail & Sales': [
+                        'Salesperson / Sales Associate',
+                        'Cashier',
+                        'Store Merchandiser'
+                    ],
+                    'Beauty & Wellness': [
+                        'Beautician / Hairdresser',
+                        'Massage Therapist / Spa Attendant',
+                        'Nail Technician'
+                    ],
+                    'Education': [
+                        'English Language Teacher',
+                        'Academic Tutor',
+                        'Special Education Teacher'
+                    ]
+                },
+                'sea-based': {
+                    'Deck Department — Officers': [
+                        'Master / Captain',
+                        'Chief Officer / Chief Mate',
+                        'Second Officer / Second Mate',
+                        'Third Officer / Third Mate',
+                        'Deck Cadet (Trainee Officer)'
+                    ],
+                    'Deck Department — Ratings': [
+                        'Bosun (Boatswain)',
+                        'Able Seaman (AB)',
+                        'Ordinary Seaman (OS)',
+                        'Deck Fitter',
+                        'Pumpman'
+                    ],
+                    'Engine Department — Officers': [
+                        'Chief Engineer',
+                        'Second Engineer',
+                        'Third Engineer',
+                        'Fourth Engineer',
+                        'Electro-Technical Officer (ETO)',
+                        'Engine Cadet (Trainee Engineer)'
+                    ],
+                    'Engine Department — Ratings': [
+                        'Motorman / Oiler',
+                        'Fitter / Engine Fitter',
+                        'Wiper',
+                        'Electrician'
+                    ],
+                    "Catering / Steward's Department": [
+                        'Chief Steward',
+                        'Chief Cook',
+                        'Steward',
+                        'Assistant Cook / Cook\'s Helper',
+                        'Messman',
+                        'Room Steward / Cabin Steward',
+                        'Galley Utility'
+                    ],
+                    'Cruise / Passenger Ships (Additional Roles)': [
+                        'Guest Relations Officer',
+                        'Shore Excursion Staff',
+                        'Entertainment Staff',
+                        'Nurse / Medical Officer',
+                        'Spa Therapist',
+                        'Casino Dealer',
+                        'Retail Shop Staff'
+                    ]
+                }
+            };
+
+            const ofwTypeSelect  = document.querySelector('select[name="ofw_type"]');
+            const categoryGroup  = document.getElementById('work-category-group');
+            const categorySelect = document.getElementById('work_category');
+            const workTypeGroup  = document.getElementById('work-type-group');
+            const workTypeSelect = document.getElementById('work_type');
+            const savedCategory  = <?php echo json_encode($_POST['work_category'] ?? ''); ?>;
+            const savedWorkType  = <?php echo json_encode($_POST['work_type'] ?? ''); ?>;
+
+            function populateCategories() {
+                const type = ofwTypeSelect.value;
+                categorySelect.innerHTML = '<option value="">-- Select Work Category --</option>';
+                workTypeSelect.innerHTML = '<option value="">-- Select Position --</option>';
+                workTypeGroup.style.display = 'none';
+
+                if (type === 'land-based' || type === 'sea-based') {
+                    Object.keys(workData[type]).forEach(function(cat) {
+                        const opt = document.createElement('option');
+                        opt.value = cat;
+                        opt.textContent = cat;
+                        if (savedCategory === cat) opt.selected = true;
+                        categorySelect.appendChild(opt);
+                    });
+                    categoryGroup.style.display = 'block';
+                    if (savedCategory && workData[type][savedCategory]) {
+                        populateWorkTypes(type, savedCategory);
+                    }
+                } else {
+                    categoryGroup.style.display = 'none';
+                }
+            }
+
+            function populateWorkTypes(type, category) {
+                workTypeSelect.innerHTML = '<option value="">-- Select Position --</option>';
+                const works = workData[type] && workData[type][category] ? workData[type][category] : [];
+                works.forEach(function(work) {
+                    const opt = document.createElement('option');
+                    opt.value = work;
+                    opt.textContent = work;
+                    if (savedWorkType === work) opt.selected = true;
+                    workTypeSelect.appendChild(opt);
+                });
+                workTypeGroup.style.display = works.length > 0 ? 'block' : 'none';
+            }
+
+            ofwTypeSelect.addEventListener('change', function() {
+                populateCategories();
+            });
+
+            categorySelect.addEventListener('change', function() {
+                const type = ofwTypeSelect.value;
+                populateWorkTypes(type, this.value);
+            });
+
+            // Restore state on page load (after validation error)
+            if (ofwTypeSelect.value) populateCategories();
+        })();
+
         // Automatic Realtime Age Calculation Mechanics
         const birthdateInput = document.getElementById('birthdate');
         const ageInput = document.getElementById('age');
