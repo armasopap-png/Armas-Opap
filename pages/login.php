@@ -244,6 +244,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             <?php endif; ?>
 
+            <?php if (isset($_GET['success']) && $_GET['success'] === 'reset'): ?>
+                <div class="alert-success">
+                    ✓ Password reset successfully! Please log in with your new password.
+                </div>
+            <?php endif; ?>
+
             <?php if (isset($_GET['error']) && $_GET['error'] === 'inactive'): ?>
                 <div class="alert-error">
                     <span>⚠️</span> Your account has been deactivated. Please contact support.
@@ -264,6 +270,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <button type="button" class="toggle-password"
                             onclick="this.previousElementSibling.type = this.previousElementSibling.type === 'password' ? 'text' : 'password'; this.textContent = this.previousElementSibling.type === 'password' ? '👁' : '🙈'">👁</button>
                     </div>
+                    <p style="text-align:right; margin-top:8px;"><a href="/armas/pages/forgot-password.php" style="color:var(--primary); font-size:0.85rem; font-weight:600;">Forgot Password?</a></p>
                 </div>
 
                 <button type="submit" class="btn btn-primary">Sign In</button>
@@ -271,10 +278,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="auth-footer">
                 <p>Don't have an account? <a href="/armas/pages/register.php">Register as OFW</a></p>
+                <p style="margin-top: 10px;"><a href="#" onclick="document.getElementById('tcModal').style.display='flex'; return false;" style="color:var(--primary); font-weight:600;">Terms and Conditions</a></p>
                 <p style="margin-top: 12px;"><a href="/armas/pages/landing.php">← Back to Home</a></p>
             </div>
         </div>
     </div>
+
+<!-- Terms and Conditions Modal -->
+<div id="tcModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:9999; align-items:center; justify-content:center; padding:20px;">
+    <div style="background:#fff; border-radius:16px; width:100%; max-width:600px; max-height:85vh; display:flex; flex-direction:column; box-shadow:0 25px 60px rgba(0,0,0,0.3);">
+        <div style="padding:24px 28px 16px; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; justify-content:space-between; flex-shrink:0;">
+            <div>
+                <h2 style="font-size:1.2rem; font-weight:700; color:#1a3a6b; margin:0;">Terms and Conditions</h2>
+                <p style="font-size:0.78rem; color:#64748b; margin:4px 0 0;">ARMAS — Assistance and Resource Management for Abused OFWs</p>
+            </div>
+            <button onclick="document.getElementById('tcModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#94a3b8; line-height:1;">&#x2715;</button>
+        </div>
+        <div style="padding:24px 28px; overflow-y:auto; flex:1; font-size:0.88rem; color:#374151; line-height:1.8;">
+            <p style="margin-bottom:16px;">Welcome to <strong>ARMAS</strong>. By accessing or using this system, you agree to be bound by the following terms and conditions. Please read them carefully.</p>
+
+            <h3 style="font-size:.95rem; color:#1a3a6b; margin:20px 0 8px;">1. Acceptance of Terms</h3>
+            <p>By logging in or registering, you confirm that you have read, understood, and agree to comply with these Terms and Conditions and all applicable laws and regulations of the Republic of the Philippines.</p>
+
+            <h3 style="font-size:.95rem; color:#1a3a6b; margin:20px 0 8px;">2. Purpose of the System</h3>
+            <p>ARMAS is a case management and monitoring platform designed to assist Overseas Filipino Workers (OFWs) who have experienced abuse, exploitation, or legal issues abroad. The system facilitates coordination between OFWs, their accredited agencies, and government administrators.</p>
+
+            <h3 style="font-size:.95rem; color:#1a3a6b; margin:20px 0 8px;">3. User Accounts</h3>
+            <p>You are responsible for maintaining the confidentiality of your login credentials. You must not share your account with any other person. Any activity that occurs under your account is your responsibility. You agree to notify us immediately of any unauthorized use of your account.</p>
+
+            <h3 style="font-size:.95rem; color:#1a3a6b; margin:20px 0 8px;">4. Privacy and Data Protection</h3>
+            <p>ARMAS collects personal information including your name, contact details, location data, and case information in compliance with the <strong>Data Privacy Act of 2012 (Republic Act No. 10173)</strong>. Your data is used solely for case management and OFW welfare monitoring purposes and will not be shared with unauthorized third parties.</p>
+
+            <h3 style="font-size:.95rem; color:#1a3a6b; margin:20px 0 8px;">5. Location Tracking</h3>
+            <p>OFW users may be asked to share their device location. This data is used exclusively by authorized agency personnel and administrators to monitor OFW safety and welfare. Location sharing is voluntary but may be required for active case monitoring.</p>
+
+            <h3 style="font-size:.95rem; color:#1a3a6b; margin:20px 0 8px;">6. Prohibited Activities</h3>
+            <p>Users must not: (a) provide false or misleading information; (b) use the system for any unlawful purpose; (c) attempt to gain unauthorized access to other accounts or system data; (d) upload malicious content or interfere with system operations.</p>
+
+            <h3 style="font-size:.95rem; color:#1a3a6b; margin:20px 0 8px;">7. Account Suspension</h3>
+            <p>ARMAS administrators reserve the right to suspend or terminate any account found to be in violation of these terms, or if the account is deemed inactive for an extended period.</p>
+
+            <h3 style="font-size:.95rem; color:#1a3a6b; margin:20px 0 8px;">8. Limitation of Liability</h3>
+            <p>ARMAS and its administrators shall not be held liable for any indirect, incidental, or consequential damages arising from the use or inability to use this system, including loss of data or service interruptions.</p>
+
+            <h3 style="font-size:.95rem; color:#1a3a6b; margin:20px 0 8px;">9. Changes to Terms</h3>
+            <p>These terms may be updated from time to time. Continued use of the system after changes are made constitutes your acceptance of the revised terms.</p>
+
+            <h3 style="font-size:.95rem; color:#1a3a6b; margin:20px 0 8px;">10. Governing Law</h3>
+            <p>These Terms and Conditions are governed by the laws of the Republic of the Philippines. Any disputes shall be resolved in accordance with applicable Philippine law.</p>
+
+            <p style="margin-top:24px; padding:16px; background:#f0f4ff; border-radius:10px; font-size:0.82rem; color:#1a3a6b;">
+                <strong>Last Updated:</strong> <?php echo date('F Y'); ?><br>
+                For questions or concerns, please contact your assigned agency or system administrator.
+            </p>
+        </div>
+        <div style="padding:16px 28px; border-top:1px solid #e2e8f0; flex-shrink:0; text-align:right;">
+            <button onclick="document.getElementById('tcModal').style.display='none'" style="background:#1a3a6b; color:#fff; border:none; padding:10px 28px; border-radius:8px; font-size:.9rem; font-weight:600; cursor:pointer;">I Understand</button>
+        </div>
+    </div>
+</div>
 
 </body>
 

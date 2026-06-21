@@ -25,10 +25,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $address = strtoupper(trim(htmlspecialchars($_POST['address'])));
     $contact = htmlspecialchars($_POST['contact_number']);
     $ofw_type = $_POST['ofw_type'] ?? '';
+    $work_category = trim($_POST['work_category'] ?? '');
+    $work_type = trim($_POST['work_type'] ?? '');
 
     // Validations
     if (empty($ofw_type) || !in_array($ofw_type, ['land-based', 'sea-based'])) {
         $errors[] = 'Please select OFW type.';
+    }
+    if (empty($work_category)) {
+        $errors[] = 'Please select a work category.';
+    }
+    if (empty($work_type)) {
+        $errors[] = 'Please select a specific work/position.';
     }
     if (empty($last_name) || empty($first_name)) {
         $errors[] = 'Last name and first name are required.';
@@ -38,9 +46,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if (!empty($first_name) && !preg_match('/^[A-Za-z\s\-\.]+$/', $first_name)) {
         $errors[] = 'First name must contain letters only (no numbers or special characters).';
-    }
-    if (empty($middle_name)) {
-        $errors[] = 'Middle name is required.';
     }
     if (!empty($middle_name) && !preg_match('/^[A-Za-z\s\-\.]+$/', $middle_name)) {
         $errors[] = 'Middle name must contain letters only (no numbers or special characters).';
@@ -53,6 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if (empty($birthdate)) {
         $errors[] = 'Birthdate is required.';
+    } elseif ($birthdate > date('Y-m-d')) {
+        $errors[] = 'Birthdate cannot be a future date.';
     }
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = 'Invalid email address.';
@@ -73,6 +80,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Supporting Document Validation
+    $document_type = trim($_POST['document_type'] ?? '');
+    if (empty($document_type) || !in_array($document_type, ['Passport', 'Visa'])) {
+        $errors[] = 'Please select a document type (Passport or Visa).';
+    }
     if (!isset($_FILES['supporting_doc']) || $_FILES['supporting_doc']['error'] === UPLOAD_ERR_NO_FILE) {
         $errors[] = 'Supporting document (e.g., Passport or Visa) is required.';
     } else {
@@ -117,9 +128,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (move_uploaded_file($file['tmp_name'], $destination)) {
                 // Save OFW Profile details
-                $pdo->prepare("INSERT INTO ofws (user_id, last_name, first_name, middle_name, suffix, sex, birthdate, address, contact_number, ofw_type, supporting_document)
-                               VALUES (?,?,?,?,?,?,?,?,?,?,?)")
-                    ->execute([$user_id, $last_name, $first_name, $middle_name, $suffix, $sex, $birthdate, $address, $contact, $ofw_type, $destination]);
+                $pdo->prepare("INSERT INTO ofws (user_id, last_name, first_name, middle_name, suffix, sex, birthdate, address, contact_number, ofw_type, work_category, work_type, document_type, supporting_document)
+                               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+                    ->execute([$user_id, $last_name, $first_name, $middle_name, $suffix, $sex, $birthdate, $address, $contact, $ofw_type, $work_category, $work_type, $document_type, $destination]);
 
                 // Generate OTP Verification Codes
                 $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -239,38 +250,101 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label">Middle Name</label>
-                        <input type="text" name="middle_name" class="form-control input-caps" data-alpha-only value="<?php echo isset($_POST['middle_name']) ? htmlspecialchars($_POST['middle_name']) : ''; ?>" required>
+                        <label class="form-label">Middle Name <span style="font-weight:400; color:var(--mid); font-size:0.82rem;">(Optional)</span></label>
+                        <input type="text" name="middle_name" class="form-control input-caps" data-alpha-only value="<?php echo isset($_POST['middle_name']) ? htmlspecialchars($_POST['middle_name']) : ''; ?>" placeholder="Optional">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Suffix (Jr., Sr., III)</label>
-                        <input type="text" name="suffix" class="form-control input-caps" data-alpha-only value="<?php echo isset($_POST['suffix']) ? htmlspecialchars($_POST['suffix']) : ''; ?>">
+                        <label class="form-label">Suffix <span style="font-weight:400; color:var(--mid); font-size:0.82rem;">(Optional)</span></label>
+                        <input type="text" name="suffix" class="form-control input-caps" data-alpha-only placeholder="Jr., Sr., III — Optional" value="<?php echo isset($_POST['suffix']) ? htmlspecialchars($_POST['suffix']) : ''; ?>">
                     </div>
                 </div>
 
+                <!-- Sex & OFW Type -->
+                <style>
+                .pill-selector { display:flex; gap:10px; }
+                .pill-option { flex:1; }
+                .pill-option input[type=radio] { display:none; }
+                .pill-option label {
+                    display:flex; align-items:center; justify-content:center; gap:8px;
+                    padding:12px 10px; border:2px solid #e2e8f0; border-radius:10px;
+                    cursor:pointer; font-size:.9rem; font-weight:500; color:#475569;
+                    background:#f8fafc; transition:all .18s; user-select:none;
+                }
+                .pill-option label:hover { border-color:#1a3a6b; background:#eff6ff; color:#1a3a6b; }
+                .pill-option input[type=radio]:checked + label {
+                    border-color:#1a3a6b; background:#1a3a6b; color:#fff; font-weight:600;
+                }
+                .pill-icon { font-size:1.2rem; }
+                </style>
+                <style>
+                .enhanced-select {
+                    appearance: none;
+                    -webkit-appearance: none;
+                    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231a3a6b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+                    background-repeat: no-repeat;
+                    background-position: right 14px center;
+                    background-size: 18px;
+                    padding-right: 42px !important;
+                    border: 2px solid #e2e8f0;
+                    border-radius: 10px;
+                    font-size: .92rem;
+                    color: #1e293b;
+                    cursor: pointer;
+                    transition: border-color .2s, box-shadow .2s;
+                }
+                .enhanced-select:focus {
+                    outline: none;
+                    border-color: #1a3a6b;
+                    box-shadow: 0 0 0 3px rgba(26,58,107,.1);
+                }
+                .enhanced-select:hover {
+                    border-color: #1a3a6b;
+                }
+                .enhanced-select option {
+                    color: #1e293b;
+                    font-size: .92rem;
+                }
+                </style>
+
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label">Sex</label>
-                        <select name="sex" class="form-control" required>
+                        <label class="form-label">Sex <span style="color:#dc2626">*</span></label>
+                        <select name="sex" class="form-control enhanced-select" required>
                             <option value="">-- Select Sex --</option>
-                            <option value="MALE" <?php echo (isset($_POST['sex']) && $_POST['sex'] === 'MALE') ? 'selected' : ''; ?>>Male</option>
-                            <option value="FEMALE" <?php echo (isset($_POST['sex']) && $_POST['sex'] === 'FEMALE') ? 'selected' : ''; ?>>Female</option>
+                            <option value="MALE" <?php echo (isset($_POST['sex']) && $_POST['sex']==='MALE') ? 'selected' : ''; ?>>Male</option>
+                            <option value="FEMALE" <?php echo (isset($_POST['sex']) && $_POST['sex']==='FEMALE') ? 'selected' : ''; ?>>Female</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">OFW Type</label>
-                        <select name="ofw_type" class="form-control" required>
-                            <option value="">-- Select Type --</option>
-                            <option value="land-based" <?php echo (isset($_POST['ofw_type']) && $_POST['ofw_type'] === 'land-based') ? 'selected' : ''; ?>>🏗️ Land-Based</option>
-                            <option value="sea-based" <?php echo (isset($_POST['ofw_type']) && $_POST['ofw_type'] === 'sea-based') ? 'selected' : ''; ?>>⚓ Sea-Based</option>
+                        <label class="form-label">OFW Type <span style="color:#dc2626">*</span></label>
+                        <select name="ofw_type" class="form-control enhanced-select" required>
+                            <option value="">-- Select OFW Type --</option>
+                            <option value="land-based" <?php echo (isset($_POST['ofw_type']) && $_POST['ofw_type']==='land-based') ? 'selected' : ''; ?>>🏗️ Land-Based</option>
+                            <option value="sea-based" <?php echo (isset($_POST['ofw_type']) && $_POST['ofw_type']==='sea-based') ? 'selected' : ''; ?>>⚓ Sea-Based</option>
                         </select>
                     </div>
+                </div>
+
+                <!-- Work Category (shown based on OFW type) -->
+                <div class="form-group" id="work-category-group" style="display:none;">
+                    <label class="form-label">Work Category <span style="color:#dc2626">*</span></label>
+                    <select name="work_category" id="work_category" class="form-control enhanced-select">
+                        <option value="">-- Select Work Category --</option>
+                    </select>
+                </div>
+
+                <!-- Specific Work/Position (shown after category is selected) -->
+                <div class="form-group" id="work-type-group" style="display:none;">
+                    <label class="form-label">Specific Work / Position <span style="color:#dc2626">*</span></label>
+                    <select name="work_type" id="work_type" class="form-control enhanced-select">
+                        <option value="">-- Select Position --</option>
+                    </select>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Birthdate</label>
-                        <input type="date" name="birthdate" id="birthdate" class="form-control" value="<?php echo isset($_POST['birthdate']) ? htmlspecialchars($_POST['birthdate']) : ''; ?>" required>
+                        <input type="date" name="birthdate" id="birthdate" class="form-control" value="<?php echo isset($_POST['birthdate']) ? htmlspecialchars($_POST['birthdate']) : ''; ?>" max="<?php echo date('Y-m-d'); ?>" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Age</label>
@@ -294,10 +368,93 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Supporting Document (Passport / Visa)</label>
-                    <input type="file" name="supporting_doc" class="form-control" accept=".pdf, .jpg, .jpeg, .png" required style="padding: 8px 12px;">
-                    <small style="color: var(--mid); font-size: 0.8rem; display: block; margin-top: 4px;">Accepting verification credentials. (Max 5MB: PDF, JPG, PNG)</small>
+                    <label class="form-label">Supporting Document <span style="color:#dc2626">*</span></label>
+
+                    <!-- Document Type Selection -->
+                    <div style="display:flex; gap:16px; margin-bottom:14px;">
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; background:#f8fafc; border:2px solid #cbd5e1; border-radius:10px; padding:10px 20px; font-weight:600; color:#1a3a6b; transition:all .2s;"
+                            id="label-passport"
+                            onclick="selectDocType('Passport')">
+                            <input type="radio" name="document_type" value="Passport" id="doc-passport" style="accent-color:#1a3a6b;"
+                                <?php echo (($_POST['document_type'] ?? '') === 'Passport') ? 'checked' : ''; ?>>
+                            Passport
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; background:#f8fafc; border:2px solid #cbd5e1; border-radius:10px; padding:10px 20px; font-weight:600; color:#1a3a6b; transition:all .2s;"
+                            id="label-visa"
+                            onclick="selectDocType('Visa')">
+                            <input type="radio" name="document_type" value="Visa" id="doc-visa" style="accent-color:#1a3a6b;"
+                                <?php echo (($_POST['document_type'] ?? '') === 'Visa') ? 'checked' : ''; ?>>
+                            Visa
+                        </label>
+                    </div>
+
+                    <div id="dropZone" onclick="document.getElementById('supporting_doc').click()" style="border:2px dashed #cbd5e1; border-radius:12px; padding:28px 20px; text-align:center; cursor:pointer; transition:all .2s; background:#f8fafc; position:relative;">
+                        <input type="file" id="supporting_doc" name="supporting_doc" accept=".pdf,.jpg,.jpeg,.png" required style="display:none;" onchange="handleFileSelect(this)">
+                        <div id="dropContent">
+                            <div style="margin-bottom:10px;"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#1a3a6b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
+                            <div style="font-weight:600; color:#1a3a6b; font-size:.95rem;">Click to upload or drag & drop</div>
+                            <div style="color:#64748b; font-size:.8rem; margin-top:4px;">Upload your Passport or Visa</div>
+                            <div style="margin-top:10px; display:inline-block; background:#1a3a6b; color:#fff; padding:7px 20px; border-radius:8px; font-size:.82rem; font-weight:600;">Browse File</div>
+                        </div>
+                        <div id="filePreview" style="display:none; align-items:center; gap:12px; justify-content:center;">
+                            <div id="fileIcon" style="font-size:2rem;">📄</div>
+                            <div style="text-align:left;">
+                                <div id="fileName" style="font-weight:600; color:#1a3a6b; font-size:.9rem; word-break:break-all;"></div>
+                                <div id="fileSize" style="color:#64748b; font-size:.78rem; margin-top:2px;"></div>
+                                <div style="color:#16a34a; font-size:.78rem; margin-top:2px;">✓ File selected</div>
+                            </div>
+                            <button type="button" onclick="clearFile(event)" style="background:none; border:none; color:#ef4444; font-size:1.2rem; cursor:pointer; margin-left:8px;">✕</button>
+                        </div>
+                    </div>
+                    <small style="color:var(--mid); font-size:.78rem; display:block; margin-top:6px;">📋 Accepted: PDF, JPG, PNG &nbsp;·&nbsp; Max size: 5MB</small>
                 </div>
+
+                <script>
+                // Document type radio highlight
+                function selectDocType(type) {
+                    document.getElementById('label-passport').style.borderColor = type === 'Passport' ? '#1a3a6b' : '#cbd5e1';
+                    document.getElementById('label-passport').style.background  = type === 'Passport' ? '#e8eef7' : '#f8fafc';
+                    document.getElementById('label-visa').style.borderColor     = type === 'Visa'     ? '#1a3a6b' : '#cbd5e1';
+                    document.getElementById('label-visa').style.background      = type === 'Visa'     ? '#e8eef7' : '#f8fafc';
+                }
+                // Restore on page reload (after validation error)
+                (function(){
+                    const checked = document.querySelector('input[name="document_type"]:checked');
+                    if (checked) selectDocType(checked.value);
+                })();
+
+                const dropZone = document.getElementById('dropZone');
+                dropZone.addEventListener('dragover', function(e){ e.preventDefault(); this.style.borderColor='#1a3a6b'; this.style.background='#eff6ff'; });
+                dropZone.addEventListener('dragleave', function(){ this.style.borderColor='#cbd5e1'; this.style.background='#f8fafc'; });
+                dropZone.addEventListener('drop', function(e){
+                    e.preventDefault(); this.style.borderColor='#cbd5e1'; this.style.background='#f8fafc';
+                    const file = e.dataTransfer.files[0];
+                    if(file){ document.getElementById('supporting_doc').files = e.dataTransfer.files; handleFileSelect(document.getElementById('supporting_doc')); }
+                });
+                function handleFileSelect(input){
+                    const file = input.files[0];
+                    if(!file) return;
+                    const allowed = ['application/pdf','image/jpeg','image/png'];
+                    if(!allowed.includes(file.type)){ alert('Only PDF, JPG, PNG files are allowed.'); input.value=''; return; }
+                    if(file.size > 5*1024*1024){ alert('File size must not exceed 5MB.'); input.value=''; return; }
+                    const icons = {'application/pdf':'📕','image/jpeg':'🖼️','image/png':'🖼️'};
+                    document.getElementById('fileIcon').textContent = icons[file.type] || '📄';
+                    document.getElementById('fileName').textContent = file.name;
+                    document.getElementById('fileSize').textContent = (file.size/1024 < 1024 ? (file.size/1024).toFixed(1)+' KB' : (file.size/1024/1024).toFixed(2)+' MB');
+                    document.getElementById('dropContent').style.display='none';
+                    document.getElementById('filePreview').style.display='flex';
+                    dropZone.style.borderColor='#16a34a';
+                    dropZone.style.background='#f0fdf4';
+                }
+                function clearFile(e){
+                    e.stopPropagation();
+                    document.getElementById('supporting_doc').value='';
+                    document.getElementById('dropContent').style.display='block';
+                    document.getElementById('filePreview').style.display='none';
+                    dropZone.style.borderColor='#cbd5e1';
+                    dropZone.style.background='#f8fafc';
+                }
+                </script>
 
                 <div class="form-row">
                     <div class="form-group">
@@ -307,12 +464,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <button type="button" class="toggle-password" onclick="this.previousElementSibling.type = this.previousElementSibling.type === 'password' ? 'text' : 'password';">👁</button>
                         </div>
                         <div id="strength-bar"></div>
+                        <!-- Password Criteria Checklist -->
+                        <div id="pw-criteria" style="margin-top:10px; background:#f0f4fa; border:1px solid #dce6f5; border-radius:10px; padding:12px 14px; display:none;">
+                            <div style="font-size:.78rem; color:#475569; font-weight:600; margin-bottom:8px;">Password must contain:</div>
+                            <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:5px;">
+                                <li id="crit-length"  class="pw-crit"><span class="crit-icon">○</span> <span>Number of characters (8–20)</span></li>
+                                <li id="crit-lower"   class="pw-crit"><span class="crit-icon">○</span> <span>Lowercase letter</span></li>
+                                <li id="crit-upper"   class="pw-crit"><span class="crit-icon">○</span> <span>Capital letter</span></li>
+                                <li id="crit-number"  class="pw-crit"><span class="crit-icon">○</span> <span>Number</span></li>
+                                <li id="crit-special" class="pw-crit"><span class="crit-icon">○</span> <span>Special character</span></li>
+                            </ul>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Confirm Password</label>
-                        <input type="password" name="confirm_password" class="form-control" placeholder="Confirm password" required>
+                        <div class="password-wrapper">
+                            <input type="password" name="confirm_password" id="confirm_password" class="form-control" placeholder="Confirm password" required>
+                            <button type="button" class="toggle-password" onclick="this.previousElementSibling.type = this.previousElementSibling.type === 'password' ? 'text' : 'password';">👁</button>
+                        </div>
+                        <div id="confirm-match-msg" style="font-size:.78rem; margin-top:5px;"></div>
                     </div>
                 </div>
+
+                <style>
+                .pw-crit { display:flex; align-items:center; gap:8px; font-size:.82rem; color:#94a3b8; transition:color .2s; }
+                .pw-crit .crit-icon { font-size:.9rem; width:16px; text-align:center; }
+                .pw-crit.met { color:#16a34a; }
+                </style>
 
                 <button type="submit" class="btn btn-primary">Create Account</button>
             </form>
@@ -325,6 +503,210 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <script>
+        // Work Category & Specific Work dynamic dropdowns based on OFW Type
+        (function() {
+            const workData = {
+                'land-based': {
+                    'Domestic & Household Services': [
+                        'Domestic Helper / Household Service Worker (HSW)',
+                        'Domestic Housekeeper',
+                        'Caregiver (elderly/children/disabled)',
+                        'Babysitter / Nanny',
+                        'Laundry Worker'
+                    ],
+                    'Healthcare & Medical': [
+                        'Registered Nurse',
+                        'Physical Therapist',
+                        'Medical Technologist / Laboratory Technician',
+                        'Radiologic Technologist',
+                        'Caregiver / Nursing Aide',
+                        'Midwife',
+                        'Pharmacist',
+                        'Dentist',
+                        'Doctor / Physician'
+                    ],
+                    'Construction & Skilled Trades': [
+                        'Construction Worker / Laborer',
+                        'Carpenter',
+                        'Mason / Bricklayer',
+                        'Welder',
+                        'Plumber',
+                        'Electrician',
+                        'Pipefitter',
+                        'Steel Worker / Scaffolder',
+                        'Painter'
+                    ],
+                    'Manufacturing & Factory': [
+                        'Factory / Manufacturing Laborer',
+                        'Machine Operator / Assembler',
+                        'Quality Control Inspector',
+                        'Packer / Sorter'
+                    ],
+                    'Hospitality & Food Service': [
+                        'Hotel Staff - Front Desk',
+                        'Hotel Staff - Concierge',
+                        'Hotel Staff - Housekeeping',
+                        'Cook / Chef',
+                        'Restaurant Server / Waiter',
+                        'Food Preparer / Kitchen Staff',
+                        'Bartender',
+                        'Dishwasher'
+                    ],
+                    'Security & Safety': [
+                        'Security Guard',
+                        'Fire Safety Officer'
+                    ],
+                    'Transportation & Driving': [
+                        'Driver (private, taxi, truck)',
+                        'Delivery Driver',
+                        'Heavy Equipment Operator'
+                    ],
+                    'Professional & Office-Based': [
+                        'Accountant / Auditor',
+                        'IT Professional / Software Developer',
+                        'BPO Worker',
+                        'Administrative Staff / Secretary',
+                        'Civil Engineer',
+                        'Mechanical Engineer',
+                        'Electrical Engineer',
+                        'Architect',
+                        'Teacher / Tutor',
+                        'Financial Analyst'
+                    ],
+                    'Cleaning & Janitorial': [
+                        'Cleaner / Helper in Offices',
+                        'Cleaner / Helper in Hotels',
+                        'Cleaner / Helper in Establishments',
+                        'Janitor / Sanitation Worker'
+                    ],
+                    'Agriculture & Farming': [
+                        'Farm Worker / Agricultural Laborer',
+                        'Harvester',
+                        'Livestock Worker'
+                    ],
+                    'Retail & Sales': [
+                        'Salesperson / Sales Associate',
+                        'Cashier',
+                        'Store Merchandiser'
+                    ],
+                    'Beauty & Wellness': [
+                        'Beautician / Hairdresser',
+                        'Massage Therapist / Spa Attendant',
+                        'Nail Technician'
+                    ],
+                    'Education': [
+                        'English Language Teacher',
+                        'Academic Tutor',
+                        'Special Education Teacher'
+                    ]
+                },
+                'sea-based': {
+                    'Deck Department — Officers': [
+                        'Master / Captain',
+                        'Chief Officer / Chief Mate',
+                        'Second Officer / Second Mate',
+                        'Third Officer / Third Mate',
+                        'Deck Cadet (Trainee Officer)'
+                    ],
+                    'Deck Department — Ratings': [
+                        'Bosun (Boatswain)',
+                        'Able Seaman (AB)',
+                        'Ordinary Seaman (OS)',
+                        'Deck Fitter',
+                        'Pumpman'
+                    ],
+                    'Engine Department — Officers': [
+                        'Chief Engineer',
+                        'Second Engineer',
+                        'Third Engineer',
+                        'Fourth Engineer',
+                        'Electro-Technical Officer (ETO)',
+                        'Engine Cadet (Trainee Engineer)'
+                    ],
+                    'Engine Department — Ratings': [
+                        'Motorman / Oiler',
+                        'Fitter / Engine Fitter',
+                        'Wiper',
+                        'Electrician'
+                    ],
+                    "Catering / Steward's Department": [
+                        'Chief Steward',
+                        'Chief Cook',
+                        'Steward',
+                        'Assistant Cook / Cook\'s Helper',
+                        'Messman',
+                        'Room Steward / Cabin Steward',
+                        'Galley Utility'
+                    ],
+                    'Cruise / Passenger Ships (Additional Roles)': [
+                        'Guest Relations Officer',
+                        'Shore Excursion Staff',
+                        'Entertainment Staff',
+                        'Nurse / Medical Officer',
+                        'Spa Therapist',
+                        'Casino Dealer',
+                        'Retail Shop Staff'
+                    ]
+                }
+            };
+
+            const ofwTypeSelect  = document.querySelector('select[name="ofw_type"]');
+            const categoryGroup  = document.getElementById('work-category-group');
+            const categorySelect = document.getElementById('work_category');
+            const workTypeGroup  = document.getElementById('work-type-group');
+            const workTypeSelect = document.getElementById('work_type');
+            const savedCategory  = <?php echo json_encode($_POST['work_category'] ?? ''); ?>;
+            const savedWorkType  = <?php echo json_encode($_POST['work_type'] ?? ''); ?>;
+
+            function populateCategories() {
+                const type = ofwTypeSelect.value;
+                categorySelect.innerHTML = '<option value="">-- Select Work Category --</option>';
+                workTypeSelect.innerHTML = '<option value="">-- Select Position --</option>';
+                workTypeGroup.style.display = 'none';
+
+                if (type === 'land-based' || type === 'sea-based') {
+                    Object.keys(workData[type]).forEach(function(cat) {
+                        const opt = document.createElement('option');
+                        opt.value = cat;
+                        opt.textContent = cat;
+                        if (savedCategory === cat) opt.selected = true;
+                        categorySelect.appendChild(opt);
+                    });
+                    categoryGroup.style.display = 'block';
+                    if (savedCategory && workData[type][savedCategory]) {
+                        populateWorkTypes(type, savedCategory);
+                    }
+                } else {
+                    categoryGroup.style.display = 'none';
+                }
+            }
+
+            function populateWorkTypes(type, category) {
+                workTypeSelect.innerHTML = '<option value="">-- Select Position --</option>';
+                const works = workData[type] && workData[type][category] ? workData[type][category] : [];
+                works.forEach(function(work) {
+                    const opt = document.createElement('option');
+                    opt.value = work;
+                    opt.textContent = work;
+                    if (savedWorkType === work) opt.selected = true;
+                    workTypeSelect.appendChild(opt);
+                });
+                workTypeGroup.style.display = works.length > 0 ? 'block' : 'none';
+            }
+
+            ofwTypeSelect.addEventListener('change', function() {
+                populateCategories();
+            });
+
+            categorySelect.addEventListener('change', function() {
+                const type = ofwTypeSelect.value;
+                populateWorkTypes(type, this.value);
+            });
+
+            // Restore state on page load (after validation error)
+            if (ofwTypeSelect.value) populateCategories();
+        })();
+
         // Automatic Realtime Age Calculation Mechanics
         const birthdateInput = document.getElementById('birthdate');
         const ageInput = document.getElementById('age');
@@ -342,7 +724,80 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         birthdateInput.addEventListener('change', calculateAge);
+
+        // Prevent future dates on birthdate
+        birthdateInput.addEventListener('change', function () {
+            const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD local
+            if (this.value > today) {
+                this.value = today;
+                alert('Birthdate cannot be a future date.');
+            }
+        });
+        // Set max to today
+        birthdateInput.max = new Date().toLocaleDateString('en-CA');
         window.addEventListener('DOMContentLoaded', calculateAge);
+
+        // Password criteria real-time checker
+        (function() {
+            const pwInput   = document.getElementById('password');
+            const criteria  = document.getElementById('pw-criteria');
+            const critLen   = document.getElementById('crit-length');
+            const critLow   = document.getElementById('crit-lower');
+            const critUp    = document.getElementById('crit-upper');
+            const critNum   = document.getElementById('crit-number');
+            const critSpec  = document.getElementById('crit-special');
+            const confirmPw = document.getElementById('confirm_password');
+            const matchMsg  = document.getElementById('confirm-match-msg');
+            const bar       = document.getElementById('strength-bar');
+
+            function check(el, condition) {
+                el.classList.toggle('met', condition);
+                el.querySelector('.crit-icon').textContent = condition ? '✔' : '○';
+            }
+
+            pwInput.addEventListener('focus', function() { criteria.style.display = 'block'; });
+            pwInput.addEventListener('blur',  function() { if (!pwInput.value) criteria.style.display = 'none'; });
+
+            pwInput.addEventListener('input', function() {
+                const v = pwInput.value;
+                criteria.style.display = 'block';
+
+                const hasLen   = v.length >= 8 && v.length <= 20;
+                const hasLower = /[a-z]/.test(v);
+                const hasUpper = /[A-Z]/.test(v);
+                const hasNum   = /\d/.test(v);
+                const hasSpec  = /[\W_]/.test(v);
+
+                check(critLen,  hasLen);
+                check(critLow,  hasLower);
+                check(critUp,   hasUpper);
+                check(critNum,  hasNum);
+                check(critSpec, hasSpec);
+
+                // Strength bar
+                const score = [hasLen, hasLower, hasUpper, hasNum, hasSpec].filter(Boolean).length;
+                bar.className = '';
+                if (v.length === 0) { bar.className = ''; }
+                else if (score <= 2) bar.className = 'strength-weak';
+                else if (score <= 4) bar.className = 'strength-medium';
+                else                 bar.className = 'strength-strong';
+
+                // Re-check confirm match if already typed
+                if (confirmPw.value) checkConfirm();
+            });
+
+            function checkConfirm() {
+                if (!confirmPw.value) { matchMsg.textContent = ''; return; }
+                if (confirmPw.value === pwInput.value) {
+                    matchMsg.textContent = '✔ Passwords match';
+                    matchMsg.style.color = '#16a34a';
+                } else {
+                    matchMsg.textContent = '✖ Passwords do not match';
+                    matchMsg.style.color = '#dc2626';
+                }
+            }
+            confirmPw.addEventListener('input', checkConfirm);
+        })();
 
         // Sanitize string data transforms automatically
         document.querySelectorAll('.input-caps').forEach(input => {

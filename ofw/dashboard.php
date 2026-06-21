@@ -488,21 +488,32 @@ include '../includes/header.php'; ?>
         }
 
         if ('geolocation' in navigator) {
-            navigator.geolocation.getCurrentPosition(
-                function (position) {
-                    fetch('/armas/api/update-location.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            latitude: position.coords.latitude,
-                            longitude: position.coords.longitude
-                        })
-                    });
-                },
-                function () { },
-                { enableHighAccuracy: true, timeout: 10000 }
-            );
+    navigator.geolocation.getCurrentPosition(
+        function (position) {
+            fetch('/armas/api/update-location.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success) console.warn('Location update failed:', data.message);
+            })
+            .catch(err => console.error('Location fetch error:', err));
+        },
+        function (err) {
+            console.warn('Geolocation denied or failed:', err.message);
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 0        // ← KEY FIX: never use cached position
         }
+    );
+}
     });
 </script>
 

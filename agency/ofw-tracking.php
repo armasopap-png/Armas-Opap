@@ -251,6 +251,41 @@ include '../includes/header.php';
     box-shadow: 0 2px 6px rgba(0, 0, 0, .2)
   }
 
+  /* OFW Info Panel */
+  #ofwInfoPanel{position:absolute;top:16px;right:16px;z-index:1000;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.13);width:270px;display:none;overflow:hidden;font-family:sans-serif}
+  #ofwInfoPanel.show{display:block;animation:slideIn .2s ease}
+  @keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+  .oip-header{padding:14px 16px 10px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:10px}
+  .oip-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;font-weight:700;color:#fff}
+  .oip-avatar.av-online{background:linear-gradient(135deg,#22c55e,#16a34a)}
+  .oip-avatar.av-offline{background:linear-gradient(135deg,#ef4444,#dc2626)}
+  .oip-avatar.av-never{background:linear-gradient(135deg,#94a3b8,#64748b)}
+  .oip-name{font-weight:700;font-size:.92rem;color:#1e293b;line-height:1.3}
+  .oip-status{display:flex;align-items:center;gap:5px;font-size:.73rem;font-weight:600;margin-top:3px}
+  .oip-status .sdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .sdot-green{background:#22c55e}
+  .sdot-red{background:#ef4444}
+  .sdot-gray{background:#94a3b8}
+  .oip-status .stxt-online{color:#16a34a}
+  .oip-status .stxt-offline{color:#dc2626}
+  .oip-status .stxt-never{color:#64748b}
+  .oip-close{margin-left:auto;cursor:pointer;color:#94a3b8;font-size:1.1rem;line-height:1;padding:2px 4px;flex-shrink:0}
+  .oip-close:hover{color:#64748b}
+  .oip-body{padding:12px 16px}
+  .oip-row{display:flex;align-items:flex-start;gap:8px;font-size:.78rem;color:#475569;margin-bottom:7px}
+  .oip-row:last-child{margin-bottom:0}
+  .oip-icon{width:16px;flex-shrink:0;text-align:center;margin-top:1px}
+  .oip-val{line-height:1.4}
+  .oip-coords{font-size:.7rem;color:#94a3b8;margin-top:2px}
+  .oip-nogps{padding:16px;text-align:center;color:#94a3b8;font-size:.82rem}
+  .oip-nogps .nogps-icon{font-size:2rem;margin-bottom:6px}
+  .oip-footer{padding:10px 16px;border-top:1px solid #f1f5f9;display:flex;gap:8px}
+  .oip-btn{flex:1;padding:7px;border-radius:8px;border:none;font-size:.75rem;font-weight:600;cursor:pointer;transition:background .15s}
+  .oip-btn-primary{background:#4F46E5;color:#fff}
+  .oip-btn-primary:hover{background:#4338ca}
+  .oip-btn-secondary{background:#f1f5f9;color:#475569}
+  .oip-btn-secondary:hover{background:#e2e8f0}
+
   @media(max-width:768px) {
     .tracking-layout {
       flex-direction: column;
@@ -444,6 +479,22 @@ include '../includes/header.php';
       </div>
       <div class="tracking-map">
         <div id="map"></div>
+        <!-- OFW Info Panel -->
+        <div id="ofwInfoPanel">
+          <div class="oip-header">
+            <div class="oip-avatar" id="oipAvatar"></div>
+            <div style="flex:1;min-width:0">
+              <div class="oip-name" id="oipName"></div>
+              <div class="oip-status">
+                <span class="sdot" id="oipStatusDot"></span>
+                <span id="oipStatusTxt"></span>
+              </div>
+            </div>
+            <span class="oip-close" onclick="closeInfoPanel()">✕</span>
+          </div>
+          <div id="oipBody"></div>
+          <div class="oip-footer" id="oipFooter"></div>
+        </div>
       </div>
     </div>
   </main>
@@ -520,14 +571,99 @@ include '../includes/header.php';
     markers.push(m);
   });
 
+  function showInfoPanel(ofw){
+      const panel   = document.getElementById('ofwInfoPanel');
+      const avatar  = document.getElementById('oipAvatar');
+      const nameEl  = document.getElementById('oipName');
+      const dot     = document.getElementById('oipStatusDot');
+      const stxt    = document.getElementById('oipStatusTxt');
+      const body    = document.getElementById('oipBody');
+      const footer  = document.getElementById('oipFooter');
+
+      // Initials avatar
+      const initials = ofw.name.split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase();
+      avatar.textContent = initials;
+      avatar.className = 'oip-avatar ' + (ofw.never ? 'av-never' : (ofw.is_online ? 'av-online' : 'av-offline'));
+
+      nameEl.textContent = ofw.name;
+
+      // Status
+      if(ofw.never){
+          dot.className = 'sdot sdot-gray';
+          stxt.className = 'stxt-never'; stxt.textContent = 'Never logged in';
+      } else if(ofw.is_online){
+          dot.className = 'sdot sdot-green';
+          stxt.className = 'stxt-online'; stxt.textContent = 'Online now';
+      } else {
+          dot.className = 'sdot sdot-red';
+          stxt.className = 'stxt-offline'; stxt.textContent = 'Offline';
+      }
+
+      // Body content
+      const loginTime = ofw.last_login ? new Date(ofw.last_login).toLocaleString('en-PH',{timeZone:'Asia/Manila'}) : 'Never';
+      const locTime   = ofw.loc_time   ? new Date(ofw.loc_time).toLocaleString('en-PH',{timeZone:'Asia/Manila'})   : null;
+
+      let bodyHtml = '<div class="oip-body">';
+      bodyHtml += `<div class="oip-row"><span class="oip-icon">📧</span><span class="oip-val">${ofw.email}</span></div>`;
+      if(ofw.city||ofw.country) bodyHtml += `<div class="oip-row"><span class="oip-icon">🌍</span><span class="oip-val">${[ofw.city,ofw.country].filter(Boolean).join(', ')}</span></div>`;
+      bodyHtml += `<div class="oip-row"><span class="oip-icon">🕒</span><span class="oip-val"><b>Last Login:</b><br>${loginTime}</span></div>`;
+      if(ofw.ip) bodyHtml += `<div class="oip-row"><span class="oip-icon">🌐</span><span class="oip-val">IP: ${ofw.ip}</span></div>`;
+
+      if(ofw.lat && ofw.lng){
+          bodyHtml += `<div class="oip-row"><span class="oip-icon">📍</span><span class="oip-val"><b>Location as of:</b><br>${locTime||'Unknown'}<div class="oip-coords">${ofw.lat.toFixed(5)}, ${ofw.lng.toFixed(5)}</div></span></div>`;
+      } else {
+          bodyHtml += `</div><div class="oip-nogps"><div class="nogps-icon">📡</div>No GPS data available for this OFW.</div><div class="oip-body-pad" style="padding-bottom:4px">`;
+      }
+      bodyHtml += '</div>';
+      body.innerHTML = bodyHtml;
+
+      // Footer buttons
+      if(ofw.lat && ofw.lng){
+          footer.style.display = 'flex';
+          footer.innerHTML = `
+              <button class="oip-btn oip-btn-primary" onclick="zoomToOfw(currentPanelIdx)">🗺️ Zoom In</button>
+              <button class="oip-btn oip-btn-secondary" onclick="openGoogleMaps(${ofw.lat},${ofw.lng})">↗ Google Maps</button>`;
+      } else {
+          footer.style.display = 'none';
+          footer.innerHTML = '';
+      }
+
+      panel.classList.add('show');
+  }
+
+  function closeInfoPanel(){
+      document.getElementById('ofwInfoPanel').classList.remove('show');
+      document.querySelectorAll('.ofw-card').forEach(c=>c.classList.remove('active'));
+  }
+
+  let currentPanelIdx = null;
+
   function focusOfw(card) {
     document.querySelectorAll('.ofw-card').forEach(c => c.classList.remove('active'));
     card.classList.add('active');
     const idx = parseInt(card.dataset.idx);
+    currentPanelIdx = idx;
+    const ofw = ofwData[idx];
+
+    // Show info panel
+    showInfoPanel(ofw);
+
+    // Fly to marker or just show panel if no GPS
     if (markers[idx]) {
-      map.setView(markers[idx].getLatLng(), 14);
-      markers[idx].openPopup();
+      map.flyTo(markers[idx].getLatLng(), 15, {animate:true, duration:1});
+      setTimeout(()=>{ markers[idx].openPopup(); }, 800);
     }
+  }
+
+  function zoomToOfw(idx){
+      if(markers[idx]){
+          map.flyTo(markers[idx].getLatLng(), 17, {animate:true, duration:1});
+          setTimeout(()=>{ markers[idx].openPopup(); }, 800);
+      }
+  }
+
+  function openGoogleMaps(lat, lng){
+      window.open('https://www.google.com/maps?q='+lat+','+lng, '_blank');
   }
 
   function highlightCard(idx) {
@@ -539,6 +675,8 @@ include '../includes/header.php';
         behavior: 'smooth',
         block: 'nearest'
       });
+      currentPanelIdx = idx;
+      showInfoPanel(ofwData[idx]);
     }
   }
 
