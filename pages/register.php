@@ -78,6 +78,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($password !== $confirm) {
         $errors[] = 'Passwords do not match.';
     }
+    if (!isset($_POST['agree_terms'])) {
+        $errors[] = 'You must agree to the Terms and Conditions before registering.';
+    }
 
     // Supporting Document Validation
     $document_type = trim($_POST['document_type'] ?? '');
@@ -492,8 +495,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 .pw-crit.met { color:#16a34a; }
                 </style>
 
-                <button type="submit" class="btn btn-primary">Create Account</button>
+                <div class="form-group" style="margin-top:6px;">
+                    <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; font-size:.85rem; color:#334155; font-weight:500; line-height:1.4;">
+                        <input type="checkbox" name="agree_terms" id="agree_terms" required
+                            style="margin-top:3px; width:16px; height:16px; min-width:16px; accent-color:#1a3a6b; cursor:pointer;"
+                            <?php echo isset($_POST['agree_terms']) ? 'checked' : ''; ?>>
+                        <span>
+                            I have read and agree to the
+                            <a href="#" onclick="openTermsModal(event)" style="color:#1a3a6b; font-weight:600; text-decoration:underline;">Terms and Conditions</a>
+                            and Privacy Policy of ARMAS. I certify that the information I provided is true and correct.
+                        </span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="submitBtn">Create Account</button>
             </form>
+
+            <!-- Terms and Conditions Modal -->
+            <div id="termsModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,.55); z-index:1000; align-items:center; justify-content:center; padding:20px;">
+                <div style="background:#fff; border-radius:14px; max-width:560px; width:100%; max-height:80vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,.25);">
+                    <div style="padding:20px 24px; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; justify-content:space-between;">
+                        <h3 style="margin:0; color:#1a3a6b; font-size:1.05rem;">Terms and Conditions</h3>
+                        <button type="button" onclick="closeTermsModal()" style="background:none; border:none; font-size:1.3rem; line-height:1; cursor:pointer; color:#64748b;">&times;</button>
+                    </div>
+                    <div style="padding:20px 24px; overflow-y:auto; font-size:.85rem; color:#475569; line-height:1.6;">
+                        <p><strong>1. Acceptance of Terms.</strong> By registering for an ARMAS account, you agree to be bound by these Terms and Conditions and our Privacy Policy.</p>
+                        <p><strong>2. Accuracy of Information.</strong> You certify that all personal information, documents, and details submitted during registration are true, accurate, and complete to the best of your knowledge.</p>
+                        <p><strong>3. Document Verification.</strong> Supporting documents (e.g., passport, visa) you upload may be reviewed and verified by your agency and ARMAS administrators for case monitoring and assistance purposes.</p>
+                        <p><strong>4. Data Privacy.</strong> Your personal data will be collected, stored, and processed in accordance with the Data Privacy Act of 2012, solely for the purpose of providing OFW assistance, tracking, and reporting services.</p>
+                        <p><strong>5. Account Responsibility.</strong> You are responsible for maintaining the confidentiality of your login credentials and for all activities under your account.</p>
+                        <p><strong>6. Service Use.</strong> ARMAS services are intended to assist registered OFWs with case monitoring, tracking, and reporting. Misuse or submission of false information may result in suspension of your account.</p>
+                    </div>
+                    <div style="padding:16px 24px; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end; gap:10px;">
+                        <button type="button" onclick="closeTermsModal()" class="btn btn-outline" style="padding:8px 18px;">Close</button>
+                        <button type="button" onclick="acceptTermsModal()" class="btn btn-primary" style="padding:8px 18px; width:auto; margin-top:0;">I Agree</button>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                function openTermsModal(e) {
+                    e.preventDefault();
+                    document.getElementById('termsModal').style.display = 'flex';
+                }
+                function closeTermsModal() {
+                    document.getElementById('termsModal').style.display = 'none';
+                }
+                function acceptTermsModal() {
+                    document.getElementById('agree_terms').checked = true;
+                    closeTermsModal();
+                }
+            </script>
 
             <div class="auth-footer">
                 <p>Already have an account? <a href="/armas/pages/login.php">Sign In</a></p>
