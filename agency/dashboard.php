@@ -19,6 +19,11 @@ $stmt->execute([$_SESSION['user_id']]);
 $agency = $stmt->fetch();
 $agency_id = $agency['id'];
 
+// Unread notification count
+$unread_q = $pdo->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND read_at IS NULL");
+$unread_q->execute([$_SESSION['user_id']]);
+$unread_count = $unread_q->fetchColumn();
+
 // Stats
 $total_ofws = $pdo->prepare("SELECT COUNT(*) FROM ofws WHERE agency_id = ?");
 $total_ofws->execute([$agency_id]);
@@ -125,6 +130,18 @@ include '../includes/header.php'; ?>
 
             <div class="sidebar-section">
                 <div class="sidebar-section-title">Account</div>
+                <a href="/armas/agency/notifications.php" class="sidebar-link">
+                    <span class="sidebar-link-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                    </span>
+                    <span class="sidebar-link-text">Notifications</span>
+                    <?php if ($unread_count > 0): ?>
+                        <span class="badge" style="margin-left:auto;background:#dc2626;color:#fff;padding:2px 7px;border-radius:4px;font-size:0.72rem;font-weight:700;"><?php echo $unread_count; ?></span>
+                    <?php endif; ?>
+                </a>
                 <a href="/armas/agency/profile.php" class="sidebar-link">
                     <span class="sidebar-link-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
