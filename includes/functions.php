@@ -82,6 +82,15 @@ function paginate($total, $per_page = 10, $page = 1) {
     return ['offset' => $offset, 'per_page' => $per_page, 'total_pages' => $total_pages, 'current_page' => $page];
 }
 
+function human_time_diff($datetime) {
+    $diff = time() - strtotime($datetime);
+    if ($diff < 60)           return 'Just now';
+    if ($diff < 3600)         return floor($diff/60).' min ago';
+    if ($diff < 86400)        return floor($diff/3600).' hr ago';
+    if ($diff < 604800)       return floor($diff/86400).' day'.($diff<172800?'':'s').' ago';
+    return date('M d, Y', strtotime($datetime));
+}
+
 function get_dashboard_link() {
     if (session_status() === PHP_SESSION_NONE) session_start();
     $role = $_SESSION['role'] ?? '';

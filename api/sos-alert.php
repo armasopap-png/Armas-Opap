@@ -54,19 +54,19 @@ try {
     $sos_id = $pdo->lastInsertId();
 
     // Notify all active agency users
-    $notif_stmt = $pdo->prepare("INSERT INTO notifications (user_id, message, type, created_at) VALUES (?, ?, 'sos_emergency', NOW())");
+    $notif_stmt = $pdo->prepare("INSERT INTO notifications (user_id, message, type, ofw_id, created_at) VALUES (?, ?, 'sos_emergency', ?, NOW())");
     $notified = 0;
 
     $agency_users = $pdo->query("SELECT id FROM users WHERE role = 'agency' AND status = 'active'");
     foreach ($agency_users->fetchAll(PDO::FETCH_COLUMN) as $uid) {
-        $notif_stmt->execute([$uid, $sos_message]);
+        $notif_stmt->execute([$uid, $sos_message, $ofw['id']]);
         $notified++;
     }
 
     // Notify all active admin/superadmin users
     $admin_users = $pdo->query("SELECT id FROM users WHERE role IN ('admin','superadmin') AND status = 'active'");
     foreach ($admin_users->fetchAll(PDO::FETCH_COLUMN) as $uid) {
-        $notif_stmt->execute([$uid, $sos_message]);
+        $notif_stmt->execute([$uid, $sos_message, $ofw['id']]);
         $notified++;
     }
 

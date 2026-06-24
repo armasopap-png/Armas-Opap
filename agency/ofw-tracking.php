@@ -5,6 +5,15 @@ require_once '../includes/auth.php';
 require_once '../includes/functions.php';
 require_auth('agency');
 $page_title = 'OFW Tracking';
+
+// Auto-focus OFW from notification click
+$focus_ofw_id = isset($_GET['ofw_id']) ? intval($_GET['ofw_id']) : null;
+$notif_id     = isset($_GET['notif_id']) ? intval($_GET['notif_id']) : null;
+// Mark the notification read server-side
+if ($notif_id && isset($_SESSION['user_id'])) {
+    $pdo->prepare("UPDATE notifications SET read_at = NOW() WHERE id = ? AND user_id = ? AND read_at IS NULL")
+        ->execute([$notif_id, $_SESSION['user_id']]);
+}
 $use_dashboard_css = true;
 $stmt = $pdo->prepare("SELECT * FROM agencies WHERE user_id = ?");
 $stmt->execute([$_SESSION['user_id']]);
@@ -452,6 +461,7 @@ include '../includes/header.php';
           ?>
             <div class="ofw-card"
               data-idx="<?php echo $i; ?>"
+              data-ofw-id="<?php echo $ofw['id']; ?>"
               data-search="<?php echo strtolower($ofw['first_name'] . ' ' . $ofw['last_name'] . ' ' . ($ofw['country'] ?? '')); ?>"
               onclick="focusOfw(this)">
               <div class="ofw-dot <?php echo $dot_class; ?>"></div>
@@ -685,6 +695,31 @@ include '../includes/header.php';
     document.querySelectorAll('.ofw-card').forEach(c => {
       c.style.display = c.dataset.search.includes(q) ? '' : 'none';
     });
+  }
+
+  // ── Auto-focus from notification click ──────────────────────
+  const focusOFWId = <?php echo $focus_ofw_id ? intval($focus_ofw_id) : 'null'; ?>;
+  if (focusOFWId !== null) {
+    const targetCard = document.querySelector('.ofw-card[data-ofw-id="' + focusOFWId + '"]');
+    if (targetCard) {
+      setTimeout(function () {
+        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        focusOfw(targetCard);
+
+        // SOS emergency banner
+        const idx = parseInt(targetCard.dataset.idx);
+        const ofw = ofwData[idx];
+        const banner = document.createElement('div');
+        banner.id = 'sosBanner';
+        banner.style.cssText = 'position:absolute;top:0;left:0;right:0;z-index:2000;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;padding:10px 18px;display:flex;align-items:center;gap:10px;font-size:.85rem;font-weight:600;box-shadow:0 2px 12px rgba(0,0,0,.2)';
+        banner.innerHTML = '🚨 <span>SOS EMERGENCY — ' + ofw.name + ' needs help!' +
+          (ofw.lat && ofw.lng ? ' Location pinpointed on map.' : ' No GPS available.') +
+          '</span><button onclick="document.getElementById(\'sosBanner\').remove()" style="margin-left:auto;background:rgba(255,255,255,.25);border:none;color:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:.8rem">Dismiss</button>';
+        const mapEl = document.getElementById('map');
+        mapEl.parentElement.style.position = 'relative';
+        mapEl.before(banner);
+      }, 600);
+    }
   }
 </script>
 

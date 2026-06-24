@@ -33,8 +33,17 @@ if (isset($_GET['mark_all'])) {
     exit;
 }
 
-// Get all notifications
-$notifs = $pdo->prepare("SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC");
+// Get all notifications (join sos_alerts to resolve ofw_id for legacy rows)
+$notifs = $pdo->prepare("
+    SELECT n.*,
+           COALESCE(n.ofw_id, sa.ofw_id) AS resolved_ofw_id
+    FROM notifications n
+    LEFT JOIN sos_alerts sa
+           ON n.type = 'sos_emergency'
+          AND ABS(UNIX_TIMESTAMP(n.created_at) - UNIX_TIMESTAMP(sa.created_at)) < 2
+    WHERE n.user_id = ?
+    ORDER BY n.created_at DESC
+");
 $notifs->execute([$_SESSION['user_id']]);
 $notifications = $notifs->fetchAll();
 
@@ -233,18 +242,25 @@ include '../includes/header.php';
                             'info'         => 'ℹ️',
                         ];
                         $icon = $icons[$notif['type']] ?? '🔔';
+                        $ofw_id = $notif['resolved_ofw_id'] ?? null;
+                        // SOS with known OFW → go straight to tracking; otherwise just mark read
+                        $click_url = ($is_sos && $ofw_id)
+                            ? '/armas/agency/ofw-tracking.php?ofw_id=' . intval($ofw_id) . '&notif_id=' . intval($notif['id'])
+                            : '?read=' . $notif['id'];
                         ?>
-                        <div class="notif-item <?php echo $item_class; ?>"
-                             onclick="location.href='?read=<?php echo $notif['id']; ?>'">
+                        <a class="notif-item <?php echo $item_class; ?>" href="<?php echo htmlspecialchars($click_url); ?>" style="text-decoration:none;color:inherit;">
                             <div class="notif-icon"><?php echo $icon; ?></div>
                             <div style="flex:1;">
                                 <div class="notif-message"><?php echo htmlspecialchars($notif['message']); ?></div>
                                 <div class="notif-time"><?php echo date('M d, Y h:i A', strtotime($notif['created_at'])); ?></div>
+                                <?php if ($is_sos && $ofw_id): ?>
+                                    <div style="font-size:.72rem;color:#dc2626;font-weight:600;margin-top:3px;">👆 Click to view location on map</div>
+                                <?php endif; ?>
                             </div>
                             <?php if ($is_unread): ?>
                                 <div class="unread-dot"></div>
                             <?php endif; ?>
-                        </div>
+                        </a>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
