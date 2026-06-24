@@ -19,10 +19,10 @@ $stmt->execute([$_SESSION['user_id']]);
 $agency = $stmt->fetch();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
-    $name = htmlspecialchars($_POST['name']);
-    $license = htmlspecialchars($_POST['license_number']);
-    $address = htmlspecialchars($_POST['address']);
-    $contact = htmlspecialchars($_POST['contact_number']);
+    $name = htmlspecialchars($_POST['name'] ?? '');
+    $license = htmlspecialchars($_POST['license_number'] ?? '');
+    $address = htmlspecialchars($_POST['address'] ?? '');
+    $contact = htmlspecialchars($_POST['contact_number'] ?? '');
 
     $pdo->prepare("UPDATE agencies SET name = ?, license_number = ?, address = ?, contact_number = ? WHERE user_id = ?")
         ->execute([$name, $license, $address, $contact, $_SESSION['user_id']]);
@@ -192,12 +192,12 @@ include '../includes/header.php'; ?>
                             <div class="form-group">
                                 <label class="form-label">Agency Name</label>
                                 <input type="text" name="name" class="form-control"
-                                    value="<?php echo htmlspecialchars($agency['name']); ?>" disabled>
+                                    value="<?php echo htmlspecialchars($agency['name'] ?? ''); ?>" readonly>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">License Number</label>
                                 <input type="text" name="license_number" class="form-control"
-                                    value="<?php echo htmlspecialchars($agency['license_number'] ?? ''); ?>" disabled>
+                                    value="<?php echo htmlspecialchars($agency['license_number'] ?? ''); ?>" readonly>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Email</label>
@@ -206,12 +206,12 @@ include '../includes/header.php'; ?>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Address</label>
-                                <textarea name="address" class="form-control" rows="2" disabled><?php echo htmlspecialchars($agency['address'] ?? ''); ?></textarea>
+                                <textarea name="address" class="form-control" rows="2" readonly><?php echo htmlspecialchars($agency['address'] ?? ''); ?></textarea>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Contact</label>
                                 <input type="text" name="contact_number" class="form-control"
-                                    value="<?php echo htmlspecialchars($agency['contact_number'] ?? ''); ?>" disabled>
+                                    value="<?php echo htmlspecialchars($agency['contact_number'] ?? ''); ?>" readonly>
                             </div>
                             <button type="submit" class="btn btn-primary">Save</button>
                         </form>
