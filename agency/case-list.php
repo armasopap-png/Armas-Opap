@@ -90,7 +90,7 @@ include '../includes/header.php'; ?>
                     </span>
                     <span class="sidebar-link-text">Dashboard</span>
                 </a>
-                <a href="/armas/agency/ofw-list.php" class="sidebar-link active">
+                <a href="/armas/agency/ofw-list.php" class="sidebar-link">
                     <span class="sidebar-link-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -101,7 +101,7 @@ include '../includes/header.php'; ?>
                     </span>
                     <span class="sidebar-link-text">OFW List</span>
                 </a>
-                <a href="/armas/agency/case-list.php" class="sidebar-link">
+                <a href="/armas/agency/case-list.php" class="sidebar-link active">
                     <span class="sidebar-link-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>

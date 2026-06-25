@@ -212,14 +212,24 @@ include '../includes/header.php'; ?>
                             <button type="button" class="btn btn-primary mt-2" onclick="document.getElementById('assignModal').style.display='flex'; initDateLimits();">Add OFW</button>
                         </div>
                     <?php else: ?>
-                        <div class="table-container">
-                            <table class="table">
+                        <div class="table-container" style="overflow-x:auto;">
+                            <table class="table" style="min-width:1400px;">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
                                         <th>Name</th>
                                         <th>Email</th>
                                         <th>Contact</th>
+                                        <th>Address</th>
+                                        <th>OFW Type</th>
+                                        <th>Work Category</th>
+                                        <th>Work Type</th>
+                                        <th>Document Type</th>
+                                        <th>Country</th>
+                                        <th>City</th>
+                                        <th>Work Address</th>
+                                        <th>Date of Departure</th>
+                                        <th>End of Contract</th>
                                         <th>Status</th>
                                         <th>Date Added</th>
                                     </tr>
@@ -228,10 +238,30 @@ include '../includes/header.php'; ?>
                                     <?php foreach ($ofws as $ofw): ?>
                                         <tr>
                                             <td><?php echo $ofw['id']; ?></td>
-                                            <td><?php echo htmlspecialchars($ofw['first_name'] . ' ' . $ofw['last_name']); ?>
+                                            <td>
+                                                <?php
+                                                $full = trim($ofw['last_name'] . ', ' . $ofw['first_name']);
+                                                if (!empty($ofw['middle_name'])) $full .= ' ' . $ofw['middle_name'];
+                                                if (!empty($ofw['suffix'])) $full .= ' ' . $ofw['suffix'];
+                                                echo htmlspecialchars($full);
+                                                ?>
                                             </td>
                                             <td><?php echo htmlspecialchars($ofw['email']); ?></td>
                                             <td><?php echo htmlspecialchars($ofw['contact_number'] ?? '-'); ?></td>
+                                            <td><?php echo htmlspecialchars($ofw['address'] ?? '-'); ?></td>
+                                            <td>
+                                                <span class="badge <?php echo $ofw['ofw_type'] === 'land-based' ? 'badge-info' : 'badge-secondary'; ?>">
+                                                    <?php echo ucfirst(str_replace('-', '-', $ofw['ofw_type'])); ?>
+                                                </span>
+                                            </td>
+                                            <td><?php echo htmlspecialchars($ofw['work_category'] ?: '-'); ?></td>
+                                            <td><?php echo htmlspecialchars($ofw['work_type'] ?: '-'); ?></td>
+                                            <td><?php echo htmlspecialchars($ofw['document_type'] ?: '-'); ?></td>
+                                            <td><?php echo htmlspecialchars($ofw['country'] ?? '-'); ?></td>
+                                            <td><?php echo htmlspecialchars($ofw['city'] ?? '-'); ?></td>
+                                            <td><?php echo htmlspecialchars($ofw['work_address'] ?? '-'); ?></td>
+                                            <td><?php echo $ofw['date_of_departure'] ? date('M d, Y', strtotime($ofw['date_of_departure'])) : '-'; ?></td>
+                                            <td><?php echo $ofw['end_of_contract'] ? date('M d, Y', strtotime($ofw['end_of_contract'])) : '-'; ?></td>
                                             <td><?php echo get_status_badge($ofw['user_status']); ?></td>
                                             <td><?php echo date('M d, Y', strtotime($ofw['created_at'])); ?></td>
                                         </tr>
