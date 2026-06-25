@@ -6,7 +6,7 @@ require_once '../includes/functions.php';
 require_auth('admin');
 $page_title = 'Manage Accounts';
 $use_dashboard_css = true;
-$ofws = $pdo->query("SELECT u.id, u.email, u.status, u.created_at, o.first_name, o.last_name FROM users u JOIN ofws o ON u.id = o.user_id ORDER BY u.created_at DESC")->fetchAll();
+$ofws = $pdo->query("SELECT u.id, u.email, u.status, u.created_at, o.first_name, o.last_name, o.middle_name, o.suffix, o.contact_number, o.address, o.ofw_type, o.work_category, o.work_type, o.document_type, o.country, o.city, o.work_address, o.date_of_departure, o.end_of_contract FROM users u JOIN ofws o ON u.id = o.user_id ORDER BY u.created_at DESC")->fetchAll();
 $agencies = $pdo->query("SELECT u.id, u.email, u.status, u.created_at, a.name FROM users u JOIN agencies a ON u.id = a.user_id ORDER BY u.created_at DESC")->fetchAll();
 ?><?php
 $hide_navbar = true;
@@ -51,33 +51,63 @@ include '../includes/header.php'; ?>
                 </div>
 
                 <div id="ofw" class="tab-content active">
-                    <div class="table-container">
-                        <table class="table">
+                    <div class="table-container" style="overflow-x:auto;">
+                        <table class="table" style="min-width:1400px;">
                             <thead>
                                 <tr>
                                     <th>ID</th>
                                     <th>Name</th>
                                     <th>Email</th>
+                                    <th>Contact</th>
+                                    <th>Home Address</th>
+                                    <th>OFW Type</th>
+                                    <th>Work Category</th>
+                                    <th>Work Type</th>
+                                    <th>Document Type</th>
+                                    <th>Country</th>
+                                    <th>City</th>
+                                    <th>Work Address</th>
+                                    <th>Date of Departure</th>
+                                    <th>End of Contract</th>
                                     <th>Status</th>
                                     <th>Created</th>
                                     <th style="text-align:center;">Active</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($ofws as $u): ?>
+                                <?php foreach ($ofws as $u):
+                                    $full = trim($u['last_name'] . ', ' . $u['first_name']);
+                                    if (!empty($u['middle_name'])) $full .= ' ' . $u['middle_name'];
+                                    if (!empty($u['suffix']))      $full .= ' ' . $u['suffix'];
+                                ?>
                                     <tr>
                                         <td class="td-id">#<?php echo $u['id']; ?></td>
                                         <td>
                                             <div class="name-cell">
                                                 <span class="avatar"><?php echo strtoupper(substr($u['first_name'],0,1) . substr($u['last_name'],0,1)); ?></span>
-                                                <?php echo htmlspecialchars($u['first_name'] . ' ' . $u['last_name']); ?>
+                                                <?php echo htmlspecialchars($full); ?>
                                             </div>
                                         </td>
                                         <td class="td-email"><?php echo htmlspecialchars($u['email']); ?></td>
+                                        <td><?php echo htmlspecialchars($u['contact_number'] ?? '—'); ?></td>
+                                        <td><?php echo htmlspecialchars($u['address'] ?? '—'); ?></td>
+                                        <td>
+                                            <span class="badge <?php echo ($u['ofw_type'] ?? '') === 'land-based' ? 'badge-info' : 'badge-secondary'; ?>">
+                                                <?php echo ucfirst($u['ofw_type'] ?? '—'); ?>
+                                            </span>
+                                        </td>
+                                        <td><?php echo htmlspecialchars($u['work_category'] ?: '—'); ?></td>
+                                        <td><?php echo htmlspecialchars($u['work_type'] ?: '—'); ?></td>
+                                        <td><?php echo htmlspecialchars($u['document_type'] ?: '—'); ?></td>
+                                        <td><?php echo htmlspecialchars($u['country'] ?? '—'); ?></td>
+                                        <td><?php echo htmlspecialchars($u['city'] ?? '—'); ?></td>
+                                        <td><?php echo htmlspecialchars($u['work_address'] ?? '—'); ?></td>
+                                        <td class="td-date"><?php echo $u['date_of_departure'] ? date('M d, Y', strtotime($u['date_of_departure'])) : '—'; ?></td>
+                                        <td class="td-date"><?php echo $u['end_of_contract'] ? date('M d, Y', strtotime($u['end_of_contract'])) : '—'; ?></td>
                                         <td><?php echo get_status_badge($u['status']); ?></td>
                                         <td class="td-date"><?php echo date('M d, Y', strtotime($u['created_at'])); ?></td>
                                         <td style="text-align:center;">
-                                            <label class="toggle-switch" onclick="handleToggle(event, <?php echo $u['id']; ?>, '<?php echo $u['status']; ?>', '<?php echo htmlspecialchars($u['first_name'] . ' ' . $u['last_name']); ?>')">
+                                            <label class="toggle-switch" onclick="handleToggle(event, <?php echo $u['id']; ?>, '<?php echo $u['status']; ?>', '<?php echo htmlspecialchars($full, ENT_QUOTES); ?>')">
                                                 <input type="checkbox" <?php echo $u['status'] === 'active' ? 'checked' : ''; ?> readonly>
                                                 <span class="toggle-slider"></span>
                                             </label>
