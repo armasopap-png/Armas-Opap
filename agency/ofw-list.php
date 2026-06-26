@@ -20,8 +20,8 @@ $agency_id = $agency['id'];
 // Handle assign OFW
 if (isset($_POST['assign_ofw'])) {
     $ofw_user_id = intval($_POST['ofw_user_id']);
-    $departure = $_POST['date_of_departure'];
-    $end_contract = $_POST['end_of_contract'];
+    $departure = $_POST['end_of_contract'];
+    $end_contract = $_POST['date_of_arrival'];
     $country = htmlspecialchars($_POST['country']);
     $city = htmlspecialchars($_POST['city']);
     $address = strtoupper(trim(htmlspecialchars($_POST['work_address'])));
@@ -29,13 +29,13 @@ if (isset($_POST['assign_ofw'])) {
     $today = date('Y-m-d');
     $date_error = '';
     if ($departure < $today) {
-        $date_error = 'Date of Departure cannot be in the past.';
+        $date_error = 'End of Contract cannot be in the past.';
     } elseif ($end_contract < $departure) {
-        $date_error = 'End of Contract cannot be before Date of Departure.';
+        $date_error = 'Date of Arrival cannot be before End of Contract.';
     }
 
     if (!$date_error) {
-        $pdo->prepare("UPDATE ofws SET agency_id=?, date_of_departure=?, end_of_contract=?, country=?, city=?, work_address=? WHERE user_id=?")
+        $pdo->prepare("UPDATE ofws SET agency_id=?, end_of_contract=?, date_of_arrival=?, country=?, city=?, work_address=? WHERE user_id=?")
             ->execute([$agency_id, $departure, $end_contract, $country, $city, $address, $ofw_user_id]);
         header('Location: ofw-list.php');
         exit;
@@ -228,8 +228,8 @@ include '../includes/header.php'; ?>
                                         <th>Country</th>
                                         <th>City</th>
                                         <th>Work Address</th>
-                                        <th>Date of Departure</th>
                                         <th>End of Contract</th>
+                                        <th>Date of Arrival</th>
                                         <th>Status</th>
                                         <th>Date Added</th>
                                     </tr>
@@ -260,8 +260,8 @@ include '../includes/header.php'; ?>
                                             <td><?php echo htmlspecialchars($ofw['country'] ?? '-'); ?></td>
                                             <td><?php echo htmlspecialchars($ofw['city'] ?? '-'); ?></td>
                                             <td><?php echo htmlspecialchars($ofw['work_address'] ?? '-'); ?></td>
-                                            <td><?php echo $ofw['date_of_departure'] ? date('M d, Y', strtotime($ofw['date_of_departure'])) : '-'; ?></td>
                                             <td><?php echo $ofw['end_of_contract'] ? date('M d, Y', strtotime($ofw['end_of_contract'])) : '-'; ?></td>
+                                            <td><?php echo $ofw['date_of_arrival'] ? date('M d, Y', strtotime($ofw['date_of_arrival'])) : '-'; ?></td>
                                             <td><?php echo get_status_badge($ofw['user_status']); ?></td>
                                             <td><?php echo date('M d, Y', strtotime($ofw['created_at'])); ?></td>
                                         </tr>
@@ -307,12 +307,12 @@ include '../includes/header.php'; ?>
                 <!-- Deployment Dates -->
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
                     <div class="form-group">
-                        <label class="form-label">Date of Departure</label>
-                        <input type="date" name="date_of_departure" id="date_of_departure" class="form-control" required min="<?php echo date('Y-m-d'); ?>">
-                    </div>
-                    <div class="form-group">
                         <label class="form-label">End of Contract</label>
                         <input type="date" name="end_of_contract" id="end_of_contract" class="form-control" required min="<?php echo date('Y-m-d'); ?>">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Date of Arrival</label>
+                        <input type="date" name="date_of_arrival" id="date_of_arrival" class="form-control" required min="<?php echo date('Y-m-d'); ?>">
                     </div>
                 </div>
 
@@ -437,45 +437,45 @@ function getToday() {
 
 function initDateLimits() {
     const today = getToday();
-    const dep = document.getElementById('date_of_departure');
-    const con = document.getElementById('end_of_contract');
+    const dep = document.getElementById('end_of_contract');
+    const con = document.getElementById('date_of_arrival');
     dep.min = today;
     dep.value = '';
     con.min = today;
     con.value = '';
 }
 
-document.getElementById('date_of_departure').addEventListener('change', function () {
+document.getElementById('end_of_contract').addEventListener('change', function () {
     const today = getToday();
-    const con = document.getElementById('end_of_contract');
+    const con = document.getElementById('date_of_arrival');
     // Force back to today if user typed a past date
     if (this.value < today) {
         this.value = today;
-        alert('Date of Departure cannot be before today.');
+        alert('End of Contract cannot be before today.');
     }
     con.min = this.value || today;
     if (con.value && con.value < con.min) con.value = '';
 });
 
-document.getElementById('date_of_departure').addEventListener('input', function () {
+document.getElementById('end_of_contract').addEventListener('input', function () {
     const today = getToday();
     if (this.value && this.value < today) {
         this.value = today;
     }
 });
 
-document.getElementById('end_of_contract').addEventListener('change', function () {
-    const dep = document.getElementById('date_of_departure');
+document.getElementById('date_of_arrival').addEventListener('change', function () {
+    const dep = document.getElementById('end_of_contract');
     const today = getToday();
     const minDate = dep.value || today;
     if (this.value < minDate) {
         this.value = '';
-        alert('End of Contract cannot be before Date of Departure (or today if departure is not set).');
+        alert('Date of Arrival cannot be before End of Contract (or today if End of Contract is not set).');
     }
 });
 
-document.getElementById('end_of_contract').addEventListener('input', function () {
-    const dep = document.getElementById('date_of_departure');
+document.getElementById('date_of_arrival').addEventListener('input', function () {
+    const dep = document.getElementById('end_of_contract');
     const today = getToday();
     const minDate = dep.value || today;
     if (this.value && this.value < minDate) {
@@ -486,16 +486,16 @@ document.getElementById('end_of_contract').addEventListener('input', function ()
 // Also block form submit as last line of defense
 document.querySelector('#assignModal form') && document.querySelector('#assignModal form').addEventListener('submit', function(e) {
     const today = getToday();
-    const dep = document.getElementById('date_of_departure').value;
-    const con = document.getElementById('end_of_contract').value;
+    const dep = document.getElementById('end_of_contract').value;
+    const con = document.getElementById('date_of_arrival').value;
     if (dep < today) {
         e.preventDefault();
-        alert('Date of Departure cannot be before today.');
+        alert('End of Contract cannot be before today.');
         return;
     }
     if (con < dep) {
         e.preventDefault();
-        alert('End of Contract cannot be before Date of Departure.');
+        alert('Date of Arrival cannot be before End of Contract.');
         return;
     }
 });
