@@ -212,28 +212,82 @@ include '../includes/header.php'; ?>
                             <button type="button" class="btn btn-primary mt-2" onclick="document.getElementById('assignModal').style.display='flex'; initDateLimits();">Add OFW</button>
                         </div>
                     <?php else: ?>
-                        <div class="table-container">
-                            <table class="table">
+                        <div class="table-container" style="overflow-x:auto;">
+                            <table class="table" style="min-width:900px;">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Contact</th>
+                                        <th>#</th>
+                                        <th>Full Name</th>
+                                        <th>Contact Info</th>
+                                        <th>OFW Type</th>
+                                        <th>Work Category</th>
+                                        <th>Country / City</th>
+                                        <th>Contract Period</th>
                                         <th>Status</th>
-                                        <th>Date Added</th>
+                                        <th style="text-align:center;">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($ofws as $ofw): ?>
+                                    <?php foreach ($ofws as $i => $ofw): ?>
                                         <tr>
-                                            <td><?php echo $ofw['id']; ?></td>
-                                            <td><?php echo htmlspecialchars($ofw['first_name'] . ' ' . $ofw['last_name']); ?>
+                                            <td style="color:#94a3b8;font-size:0.85rem;"><?php echo $i+1; ?></td>
+                                            <td>
+                                                <div style="font-weight:600;color:#1e293b;">
+                                                    <?php echo htmlspecialchars(strtoupper($ofw['last_name']) . ', ' . $ofw['first_name'] . ($ofw['middle_name'] ? ' ' . $ofw['middle_name'] : '') . ($ofw['suffix'] ? ' ' . $ofw['suffix'] : '')); ?>
+                                                </div>
+                                                <div style="font-size:0.8rem;color:#64748b;"><?php echo htmlspecialchars($ofw['email']); ?></div>
                                             </td>
-                                            <td><?php echo htmlspecialchars($ofw['email']); ?></td>
-                                            <td><?php echo htmlspecialchars($ofw['contact_number'] ?? '-'); ?></td>
+                                            <td>
+                                                <div><?php echo htmlspecialchars($ofw['contact_number'] ?? '—'); ?></div>
+                                                <?php if (!empty($ofw['address'])): ?>
+                                                <div style="font-size:0.78rem;color:#94a3b8;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<?php echo htmlspecialchars($ofw['address']); ?>">
+                                                    <?php echo htmlspecialchars($ofw['address']); ?>
+                                                </div>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <span style="display:inline-flex;align-items:center;gap:5px;font-size:0.83rem;">
+                                                    <?php if ($ofw['ofw_type'] === 'sea-based'): ?>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2"><path d="M2 20a2.4 2.4 0 0 0 2 1 2.4 2.4 0 0 0 2-1 2.4 2.4 0 0 1 2-1 2.4 2.4 0 0 1 2 1 2.4 2.4 0 0 0 2 1 2.4 2.4 0 0 0 2-1 2.4 2.4 0 0 1 2-1 2.4 2.4 0 0 1 2 1"/><path d="M4 9h1l1-4h12l1 4h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1z"/></svg>
+                                                        <span style="color:#0ea5e9;">Sea-Based</span>
+                                                    <?php else: ?>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                                                        <span style="color:#8b5cf6;">Land-Based</span>
+                                                    <?php endif; ?>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div style="font-size:0.85rem;"><?php echo htmlspecialchars($ofw['work_category'] ?: '—'); ?></div>
+                                                <div style="font-size:0.78rem;color:#94a3b8;"><?php echo htmlspecialchars($ofw['work_type'] ?: ''); ?></div>
+                                            </td>
+                                            <td>
+                                                <?php if (!empty($ofw['country'])): ?>
+                                                    <div style="font-weight:500;"><?php echo htmlspecialchars($ofw['country']); ?></div>
+                                                    <div style="font-size:0.8rem;color:#64748b;"><?php echo htmlspecialchars($ofw['city'] ?: '—'); ?></div>
+                                                <?php else: ?>
+                                                    <span style="color:#cbd5e1;">—</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td style="font-size:0.83rem;">
+                                                <?php if (!empty($ofw['end_of_contract'])): ?>
+                                                    <div style="color:#64748b;">Until: <strong><?php echo date('M d, Y', strtotime($ofw['end_of_contract'])); ?></strong></div>
+                                                <?php endif; ?>
+                                                <?php if (!empty($ofw['date_of_arrival'])): ?>
+                                                    <div style="color:#94a3b8;font-size:0.78rem;">Arrival: <?php echo date('M d, Y', strtotime($ofw['date_of_arrival'])); ?></div>
+                                                <?php endif; ?>
+                                                <?php if (empty($ofw['end_of_contract']) && empty($ofw['date_of_arrival'])): ?>
+                                                    <span style="color:#cbd5e1;">—</span>
+                                                <?php endif; ?>
+                                            </td>
                                             <td><?php echo get_status_badge($ofw['user_status']); ?></td>
-                                            <td><?php echo date('M d, Y', strtotime($ofw['created_at'])); ?></td>
+                                            <td style="text-align:center;">
+                                                <button type="button"
+                                                    onclick="openOFWDetail(<?php echo htmlspecialchars(json_encode($ofw), ENT_QUOTES); ?>)"
+                                                    style="background:#eff6ff;color:#1a3a6b;border:1px solid #bfdbfe;border-radius:7px;padding:5px 14px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:background 0.15s;"
+                                                    onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">
+                                                    View
+                                                </button>
+                                            </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
@@ -246,6 +300,82 @@ include '../includes/header.php'; ?>
     </main>
 </div>
 
+
+
+<!-- OFW Detail Modal -->
+<div id="ofwDetailModal" style="display:none;position:fixed;inset:0;z-index:1100;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);">
+    <div style="background:#fff;border-radius:16px;width:100%;max-width:680px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,0.25);margin:16px;">
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,#1a3a6b,#0f2447);padding:24px 28px;border-radius:16px 16px 0 0;display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:14px;">
+                <div id="det-avatar" style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700;color:#fff;flex-shrink:0;"></div>
+                <div>
+                    <div id="det-fullname" style="color:#fff;font-size:1.1rem;font-weight:700;"></div>
+                    <div id="det-type-badge" style="margin-top:4px;"></div>
+                </div>
+            </div>
+            <button onclick="document.getElementById('ofwDetailModal').style.display='none'" style="background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:1rem;">✕</button>
+        </div>
+
+        <div style="padding:24px 28px;display:grid;gap:20px;">
+
+            <!-- Status row -->
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <span id="det-status"></span>
+                <span id="det-doc-type" style="background:#f1f5f9;color:#475569;border-radius:20px;padding:3px 12px;font-size:0.8rem;font-weight:600;"></span>
+            </div>
+
+            <!-- Section: Personal Info -->
+            <div>
+                <div style="font-size:0.72rem;font-weight:700;color:#94a3b8;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;">Personal Information</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <div class="det-field"><div class="det-label">First Name</div><div id="det-firstname" class="det-value"></div></div>
+                    <div class="det-field"><div class="det-label">Last Name</div><div id="det-lastname" class="det-value"></div></div>
+                    <div class="det-field"><div class="det-label">Middle Name</div><div id="det-middlename" class="det-value"></div></div>
+                    <div class="det-field"><div class="det-label">Suffix</div><div id="det-suffix" class="det-value"></div></div>
+                    <div class="det-field"><div class="det-label">Email</div><div id="det-email" class="det-value"></div></div>
+                    <div class="det-field"><div class="det-label">Contact Number</div><div id="det-contact" class="det-value"></div></div>
+                    <div class="det-field" style="grid-column:1/-1;"><div class="det-label">Home Address</div><div id="det-address" class="det-value"></div></div>
+                </div>
+            </div>
+
+            <!-- Section: Employment -->
+            <div>
+                <div style="font-size:0.72rem;font-weight:700;color:#94a3b8;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;">Employment Details</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <div class="det-field"><div class="det-label">OFW Type</div><div id="det-ofw-type" class="det-value"></div></div>
+                    <div class="det-field"><div class="det-label">Work Category</div><div id="det-work-cat" class="det-value"></div></div>
+                    <div class="det-field"><div class="det-label">Work Type / Position</div><div id="det-work-type" class="det-value"></div></div>
+                    <div class="det-field"><div class="det-label">Document Type</div><div id="det-doc-type2" class="det-value"></div></div>
+                </div>
+            </div>
+
+            <!-- Section: Deployment -->
+            <div>
+                <div style="font-size:0.72rem;font-weight:700;color:#94a3b8;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;">Deployment Information</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <div class="det-field"><div class="det-label">Country</div><div id="det-country" class="det-value"></div></div>
+                    <div class="det-field"><div class="det-label">City</div><div id="det-city" class="det-value"></div></div>
+                    <div class="det-field" style="grid-column:1/-1;"><div class="det-label">Work Address Abroad</div><div id="det-work-address" class="det-value"></div></div>
+                    <div class="det-field"><div class="det-label">End of Contract</div><div id="det-end-contract" class="det-value"></div></div>
+                    <div class="det-field"><div class="det-label">Date of Arrival</div><div id="det-arrival" class="det-value"></div></div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #f1f5f9;padding-top:16px;">
+                <div style="font-size:0.8rem;color:#94a3b8;">Record added: <span id="det-created"></span></div>
+                <button onclick="document.getElementById('ofwDetailModal').style.display='none'" style="background:#f1f5f9;color:#475569;border:none;border-radius:8px;padding:8px 20px;font-weight:600;cursor:pointer;">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.det-field { background:#f8fafc; border-radius:8px; padding:10px 14px; }
+.det-label { font-size:0.73rem; color:#94a3b8; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:3px; }
+.det-value { font-size:0.9rem; color:#1e293b; font-weight:500; }
+</style>
 
 <!-- Assign/Add OFW Modal -->
 <div id="assignModal" class="modal" style="display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px);">
@@ -588,6 +718,52 @@ document.querySelector('#assignModal form') && document.querySelector('#assignMo
         );
     });
 })();
+</script>
+
+<script>
+function openOFWDetail(ofw) {
+    const fmt = (v) => v || '—';
+    const fmtDate = (v) => v ? new Date(v).toLocaleDateString('en-US', {year:'numeric',month:'short',day:'numeric'}) : '—';
+
+    const fullName = (ofw.last_name.toUpperCase() + ', ' + ofw.first_name + (ofw.middle_name ? ' ' + ofw.middle_name : '') + (ofw.suffix ? ' ' + ofw.suffix : ''));
+    document.getElementById('det-avatar').textContent = ofw.first_name.charAt(0).toUpperCase();
+    document.getElementById('det-fullname').textContent = fullName;
+
+    const typeColor = ofw.ofw_type === 'sea-based' ? '#0ea5e9' : '#8b5cf6';
+    const typeLabel = ofw.ofw_type === 'sea-based' ? '🚢 Sea-Based' : '🏢 Land-Based';
+    document.getElementById('det-type-badge').innerHTML = `<span style="background:rgba(255,255,255,0.15);color:#fff;border-radius:20px;padding:3px 12px;font-size:0.78rem;font-weight:600;">${typeLabel}</span>`;
+
+    const statusMap = { active: ['#dcfce7','#15803d','ACTIVE'], inactive: ['#fef2f2','#dc2626','INACTIVE'] };
+    const [bg, tc, label] = statusMap[ofw.user_status] || ['#f1f5f9','#64748b', ofw.user_status?.toUpperCase()];
+    document.getElementById('det-status').innerHTML = `<span style="background:${bg};color:${tc};border-radius:20px;padding:4px 14px;font-size:0.82rem;font-weight:700;">${label}</span>`;
+    document.getElementById('det-doc-type').textContent = fmt(ofw.document_type).toUpperCase();
+
+    document.getElementById('det-firstname').textContent = fmt(ofw.first_name);
+    document.getElementById('det-lastname').textContent = fmt(ofw.last_name);
+    document.getElementById('det-middlename').textContent = fmt(ofw.middle_name);
+    document.getElementById('det-suffix').textContent = fmt(ofw.suffix);
+    document.getElementById('det-email').textContent = fmt(ofw.email);
+    document.getElementById('det-contact').textContent = fmt(ofw.contact_number);
+    document.getElementById('det-address').textContent = fmt(ofw.address);
+
+    document.getElementById('det-ofw-type').textContent = ofw.ofw_type ? ofw.ofw_type.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase()) : '—';
+    document.getElementById('det-work-cat').textContent = fmt(ofw.work_category);
+    document.getElementById('det-work-type').textContent = fmt(ofw.work_type);
+    document.getElementById('det-doc-type2').textContent = fmt(ofw.document_type);
+
+    document.getElementById('det-country').textContent = fmt(ofw.country);
+    document.getElementById('det-city').textContent = fmt(ofw.city);
+    document.getElementById('det-work-address').textContent = fmt(ofw.work_address);
+    document.getElementById('det-end-contract').textContent = fmtDate(ofw.end_of_contract);
+    document.getElementById('det-arrival').textContent = fmtDate(ofw.date_of_arrival);
+
+    document.getElementById('det-created').textContent = fmtDate(ofw.created_at);
+
+    document.getElementById('ofwDetailModal').style.display = 'flex';
+}
+document.getElementById('ofwDetailModal').addEventListener('click', function(e) {
+    if (e.target === this) this.style.display = 'none';
+});
 </script>
 
 <?php include '../includes/footer.php'; ?>
