@@ -328,11 +328,19 @@ include '../includes/header.php';
                         <div class="form-row">
                             <div>
                                 <label class="form-label">Country (Location Abroad) <span>*</span></label>
-                                <input type="text" name="location_abroad" class="form-control" placeholder="e.g., Saudi Arabia" required>
+                                <div class="cs-wrapper" id="country-wrapper">
+                                    <input type="text" id="country-search" class="form-control cs-input" placeholder="Search country..." autocomplete="off" required>
+                                    <input type="hidden" name="location_abroad" id="country-value">
+                                    <div class="cs-dropdown" id="country-dropdown"></div>
+                                </div>
                             </div>
                             <div>
                                 <label class="form-label">City</label>
-                                <input type="text" name="city" class="form-control" placeholder="e.g., Riyadh">
+                                <div class="cs-wrapper" id="city-wrapper">
+                                    <input type="text" id="city-search" class="form-control cs-input" placeholder="Select country first..." autocomplete="off" disabled>
+                                    <input type="hidden" name="city" id="city-value">
+                                    <div class="cs-dropdown" id="city-dropdown"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -393,6 +401,177 @@ function triggerSOS() {
         { timeout: 8000, maximumAge: 0 }
     );
 }
+
+/* ===== Country / City Searchable Dropdown ===== */
+(function() {
+    const STYLE = `
+        .cs-wrapper { position: relative; }
+        .cs-dropdown {
+            display: none; position: absolute; z-index: 9999;
+            top: calc(100% + 4px); left: 0; right: 0;
+            background: #fff; border: 1px solid #e2e8f0;
+            border-radius: 8px; max-height: 220px; overflow-y: auto;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+        .cs-dropdown.open { display: block; }
+        .cs-item {
+            padding: 9px 14px; cursor: pointer;
+            font-size: 0.9rem; color: #1e293b;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.12s;
+        }
+        .cs-item:last-child { border-bottom: none; }
+        .cs-item:hover, .cs-item.highlighted { background: #eff6ff; }
+        .cs-item.cs-empty { color: #94a3b8; cursor: default; font-style: italic; }
+        .cs-input.cs-selected { background: #f0fdf4; border-color: #86efac; }
+    `;
+    const styleEl = document.createElement('style');
+    styleEl.textContent = STYLE;
+    document.head.appendChild(styleEl);
+
+    let allCountries = [];
+    let citiesCache = {};
+
+    async function loadCountries() {
+        try {
+            const r = await fetch('https://countriesnow.space/api/v0.1/countries/flag/images');
+            const data = await r.json();
+            allCountries = data.data.map(c => c.name).sort();
+        } catch (e) {
+            // fallback list of common OFW destinations
+            allCountries = ["Australia","Bahrain","Canada","Germany","Hong Kong","Italy","Japan","Kuwait","Malaysia","New Zealand","Oman","Qatar","Saudi Arabia","Singapore","South Korea","Taiwan","United Arab Emirates","United Kingdom","United States"];
+        }
+    }
+
+    async function loadCities(country) {
+        if (citiesCache[country]) return citiesCache[country];
+        try {
+            const r = await fetch('https://countriesnow.space/api/v0.1/countries/cities', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ country })
+            });
+            const data = await r.json();
+            citiesCache[country] = data.error ? [] : (data.data || []).sort();
+        } catch (e) {
+            citiesCache[country] = [];
+        }
+        return citiesCache[country];
+    }
+
+    function makeDropdown(inputEl, dropdownEl, hiddenEl, getItems, onSelect) {
+        let highlighted = -1;
+
+        inputEl.addEventListener('input', async function() {
+            const q = this.value.trim().toLowerCase();
+            hiddenEl.value = '';
+            inputEl.classList.remove('cs-selected');
+            const items = await getItems(q);
+            renderDropdown(items, q);
+        });
+
+        inputEl.addEventListener('focus', async function() {
+            const q = this.value.trim().toLowerCase();
+            const items = await getItems(q);
+            renderDropdown(items, q);
+        });
+
+        inputEl.addEventListener('keydown', function(e) {
+            const items = dropdownEl.querySelectorAll('.cs-item:not(.cs-empty)');
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                highlighted = Math.min(highlighted + 1, items.length - 1);
+                updateHighlight(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                highlighted = Math.max(highlighted - 1, 0);
+                updateHighlight(items);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (highlighted >= 0 && items[highlighted]) items[highlighted].click();
+            } else if (e.key === 'Escape') {
+                closeDropdown();
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!inputEl.closest('.cs-wrapper').contains(e.target)) closeDropdown();
+        });
+
+        function updateHighlight(items) {
+            items.forEach((el, i) => el.classList.toggle('highlighted', i === highlighted));
+            if (items[highlighted]) items[highlighted].scrollIntoView({ block: 'nearest' });
+        }
+
+        function renderDropdown(items, q) {
+            highlighted = -1;
+            if (!items.length) {
+                dropdownEl.innerHTML = '<div class="cs-item cs-empty">No results found</div>';
+            } else {
+                dropdownEl.innerHTML = items.slice(0, 80).map(item => {
+                    const hi = item.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<strong>$1</strong>');
+                    return `<div class="cs-item" data-value="${item}">${hi}</div>`;
+                }).join('');
+                dropdownEl.querySelectorAll('.cs-item').forEach(el => {
+                    el.addEventListener('click', function() {
+                        const val = this.dataset.value;
+                        inputEl.value = val;
+                        hiddenEl.value = val;
+                        inputEl.classList.add('cs-selected');
+                        closeDropdown();
+                        onSelect(val);
+                    });
+                });
+            }
+            dropdownEl.classList.add('open');
+        }
+
+        function closeDropdown() {
+            dropdownEl.classList.remove('open');
+            highlighted = -1;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        await loadCountries();
+
+        const countryInput  = document.getElementById('country-search');
+        const countryDrop   = document.getElementById('country-dropdown');
+        const countryHidden = document.getElementById('country-value');
+        const cityInput     = document.getElementById('city-search');
+        const cityDrop      = document.getElementById('city-dropdown');
+        const cityHidden    = document.getElementById('city-value');
+
+        if (!countryInput) return;
+
+        let currentCountry = '';
+
+        makeDropdown(
+            countryInput, countryDrop, countryHidden,
+            async (q) => q ? allCountries.filter(c => c.toLowerCase().includes(q)) : allCountries,
+            async (selected) => {
+                currentCountry = selected;
+                cityInput.disabled = false;
+                cityInput.placeholder = 'Loading cities...';
+                cityInput.value = '';
+                cityHidden.value = '';
+                cityInput.classList.remove('cs-selected');
+                await loadCities(selected);
+                cityInput.placeholder = 'Search city...';
+            }
+        );
+
+        makeDropdown(
+            cityInput, cityDrop, cityHidden,
+            async (q) => {
+                if (!currentCountry) return [];
+                const cities = await loadCities(currentCountry);
+                return q ? cities.filter(c => c.toLowerCase().includes(q)) : cities;
+            },
+            () => {}
+        );
+    });
+})();
 
 function sendSOSAlert(lat, lng, status, btn) {
     status.className = 'sos-status sending';
