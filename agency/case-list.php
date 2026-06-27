@@ -289,33 +289,20 @@ include '../includes/header.php'; ?>
                 <!-- Location -->
                 <div class="form-group">
                     <label class="form-label">Country</label>
-                    <select name="country" class="form-control" required onchange="updateCities(this.value)">
-                        <option value="">-- Select Country --</option>
-                        <option value="Saudi Arabia">Saudi Arabia</option>
-                        <option value="United Arab Emirates">United Arab Emirates</option>
-                        <option value="Kuwait">Kuwait</option>
-                        <option value="Qatar">Qatar</option>
-                        <option value="Bahrain">Bahrain</option>
-                        <option value="Oman">Oman</option>
-                        <option value="Hong Kong">Hong Kong</option>
-                        <option value="Singapore">Singapore</option>
-                        <option value="Taiwan">Taiwan</option>
-                        <option value="Japan">Japan</option>
-                        <option value="South Korea">South Korea</option>
-                        <option value="Malaysia">Malaysia</option>
-                        <option value="United States">United States</option>
-                        <option value="United Kingdom">United Kingdom</option>
-                        <option value="Canada">Canada</option>
-                        <option value="Australia">Australia</option>
-                        <option value="Italy">Italy</option>
-                        <option value="Germany">Germany</option>
-                        <option value="Other">Other</option>
-                    </select>
+                    <div class="cs-wrapper">
+                        <input type="text" id="cl-country-search" class="form-control cs-input" placeholder="Search country..." autocomplete="off" required>
+                        <input type="hidden" name="country" id="cl-country-value">
+                        <div class="cs-dropdown" id="cl-country-dropdown"></div>
+                    </div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">City</label>
-                    <input type="text" name="city" class="form-control" placeholder="e.g., Dubai, Riyadh" required>
+                    <div class="cs-wrapper">
+                        <input type="text" id="cl-city-search" class="form-control cs-input" placeholder="Select country first..." autocomplete="off" disabled>
+                        <input type="hidden" name="city" id="cl-city-value">
+                        <div class="cs-dropdown" id="cl-city-dropdown"></div>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -469,6 +456,138 @@ document.querySelector('#assignModal form') && document.querySelector('#assignMo
         return;
     }
 });
+</script>
+
+
+<script>
+/* ===== Country / City Searchable Dropdown (case-list) ===== */
+(function() {
+    if (!document.getElementById('cs-style')) {
+        const STYLE = `
+            .cs-wrapper { position: relative; }
+            .cs-dropdown { display: none; position: absolute; z-index: 9999;
+                top: calc(100% + 4px); left: 0; right: 0;
+                background: #fff; border: 1px solid #e2e8f0;
+                border-radius: 8px; max-height: 220px; overflow-y: auto;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+            .cs-dropdown.open { display: block; }
+            .cs-item { padding: 9px 14px; cursor: pointer; font-size: 0.9rem; color: #1e293b;
+                border-bottom: 1px solid #f1f5f9; transition: background 0.12s; }
+            .cs-item:last-child { border-bottom: none; }
+            .cs-item:hover, .cs-item.highlighted { background: #eff6ff; }
+            .cs-item.cs-empty { color: #94a3b8; cursor: default; font-style: italic; }
+            .cs-input.cs-selected { background: #f0fdf4; border-color: #86efac; }
+        `;
+        const s = document.createElement('style'); s.id = 'cs-style';
+        s.textContent = STYLE; document.head.appendChild(s);
+    }
+
+    let allCountries = [];
+    let citiesCache = {};
+
+    async function loadCountries() {
+        if (allCountries.length) return;
+        try {
+            const r = await fetch('https://countriesnow.space/api/v0.1/countries/flag/images');
+            const data = await r.json();
+            allCountries = data.data.map(c => c.name).sort();
+        } catch (e) {
+            allCountries = ["Australia","Bahrain","Canada","Germany","Hong Kong","Italy","Japan","Kuwait","Malaysia","New Zealand","Oman","Qatar","Saudi Arabia","Singapore","South Korea","Taiwan","United Arab Emirates","United Kingdom","United States"];
+        }
+    }
+
+    async function loadCities(country) {
+        if (citiesCache[country]) return citiesCache[country];
+        try {
+            const r = await fetch('https://countriesnow.space/api/v0.1/countries/cities', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ country })
+            });
+            const data = await r.json();
+            citiesCache[country] = data.error ? [] : (data.data || []).sort();
+        } catch (e) { citiesCache[country] = []; }
+        return citiesCache[country];
+    }
+
+    function initSearchable(inputId, dropdownId, hiddenId, getItems, onSelect) {
+        const inputEl = document.getElementById(inputId);
+        const dropdownEl = document.getElementById(dropdownId);
+        const hiddenEl = document.getElementById(hiddenId);
+        if (!inputEl) return;
+        let highlighted = -1;
+
+        async function render(q) {
+            highlighted = -1;
+            const items = await getItems(q);
+            if (!items.length) {
+                dropdownEl.innerHTML = '<div class="cs-item cs-empty">No results found</div>';
+            } else {
+                const esc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                dropdownEl.innerHTML = items.slice(0, 80).map(item => {
+                    const hi = q ? item.replace(new RegExp(`(${esc})`, 'gi'), '<strong>$1</strong>') : item;
+                    return `<div class="cs-item" data-value="${item}">${hi}</div>`;
+                }).join('');
+                dropdownEl.querySelectorAll('.cs-item').forEach(el => {
+                    el.addEventListener('click', function() {
+                        inputEl.value = this.dataset.value;
+                        hiddenEl.value = this.dataset.value;
+                        inputEl.classList.add('cs-selected');
+                        dropdownEl.classList.remove('open');
+                        onSelect(this.dataset.value);
+                    });
+                });
+            }
+            dropdownEl.classList.add('open');
+        }
+
+        inputEl.addEventListener('input', async function() {
+            hiddenEl.value = ''; inputEl.classList.remove('cs-selected');
+            await render(this.value.trim().toLowerCase());
+        });
+        inputEl.addEventListener('focus', async function() { await render(this.value.trim().toLowerCase()); });
+        inputEl.addEventListener('keydown', function(e) {
+            const els = dropdownEl.querySelectorAll('.cs-item:not(.cs-empty)');
+            if (e.key === 'ArrowDown') { e.preventDefault(); highlighted = Math.min(highlighted+1, els.length-1); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); highlighted = Math.max(highlighted-1, 0); }
+            else if (e.key === 'Enter') { e.preventDefault(); if (els[highlighted]) els[highlighted].click(); return; }
+            else if (e.key === 'Escape') { dropdownEl.classList.remove('open'); return; }
+            els.forEach((el,i) => el.classList.toggle('highlighted', i === highlighted));
+            if (els[highlighted]) els[highlighted].scrollIntoView({ block: 'nearest' });
+        });
+        document.addEventListener('click', function(e) {
+            if (!inputEl.closest('.cs-wrapper').contains(e.target)) dropdownEl.classList.remove('open');
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        await loadCountries();
+        let currentCountry = '';
+
+        initSearchable('cl-country-search','cl-country-dropdown','cl-country-value',
+            async (q) => q ? allCountries.filter(c => c.toLowerCase().includes(q)) : allCountries,
+            async (selected) => {
+                currentCountry = selected;
+                const cityInput = document.getElementById('cl-city-search');
+                cityInput.disabled = false;
+                cityInput.placeholder = 'Loading cities...';
+                cityInput.value = '';
+                document.getElementById('cl-city-value').value = '';
+                cityInput.classList.remove('cs-selected');
+                await loadCities(selected);
+                cityInput.placeholder = 'Search city...';
+            }
+        );
+
+        initSearchable('cl-city-search','cl-city-dropdown','cl-city-value',
+            async (q) => {
+                if (!currentCountry) return [];
+                const cities = await loadCities(currentCountry);
+                return q ? cities.filter(c => c.toLowerCase().includes(q)) : cities;
+            },
+            () => {}
+        );
+    });
+})();
 </script>
 
 <?php include '../includes/footer.php'; ?>
