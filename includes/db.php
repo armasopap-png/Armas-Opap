@@ -4,10 +4,10 @@
  * PDO MySQL connection with error handling
  */
 
-$host = 'sql207.infinityfree.com';  // check your actual host in VistaPanel > MySQL Databases
+$host = 'sql105.infinityfree.com';
 $dbname = 'if0_42292012_armas';
-$username = 'if0_42292012';         // usually same as your account username
-$password = 'your_db_password';     // the password you set when creating the DB
+$username = 'if0_42292012';
+$password = 'eJs5LzyvQkeqe';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
