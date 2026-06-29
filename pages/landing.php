@@ -96,6 +96,18 @@ require_once 'includes/functions.php';
             transition: var(--transition);
         }
 
+        /* Hamburger → X animation */
+        .hamburger.open span:nth-child(1) {
+            transform: translateY(8px) rotate(45deg);
+        }
+        .hamburger.open span:nth-child(2) {
+            opacity: 0;
+            transform: scaleX(0);
+        }
+        .hamburger.open span:nth-child(3) {
+            transform: translateY(-8px) rotate(-45deg);
+        }
+
         .nav-menu {
             display: flex;
             align-items: center;
@@ -653,7 +665,7 @@ require_once 'includes/functions.php';
                 </div>
             </a>
 
-            <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()">
+            <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="false">
                 <span></span>
                 <span></span>
                 <span></span>

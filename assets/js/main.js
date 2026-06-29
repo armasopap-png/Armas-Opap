@@ -127,14 +127,29 @@ document.addEventListener('DOMContentLoaded', function() {
     // 10. Mobile hamburger menu
     const hamburger = document.getElementById('hamburger');
     const navMenu = document.getElementById('nav-menu');
-    
-    window.toggleMobileMenu = function() {
-        hamburger?.classList.toggle('open');
-        navMenu?.classList.toggle('open');
-    };
-    
+
+    function toggleMobileMenu() {
+        const isOpen = navMenu.classList.toggle('open');
+        hamburger.classList.toggle('open', isOpen);
+        hamburger.setAttribute('aria-expanded', isOpen);
+    }
+
+    // Expose globally (kept for any legacy callers, but inline onclick removed from landing.php)
+    window.toggleMobileMenu = toggleMobileMenu;
+
     if (hamburger) {
         hamburger.addEventListener('click', toggleMobileMenu);
+    }
+
+    // Close menu when any nav link is clicked (smooth UX on mobile)
+    if (navMenu) {
+        navMenu.querySelectorAll('a').forEach(function(link) {
+            link.addEventListener('click', function() {
+                navMenu.classList.remove('open');
+                hamburger.classList.remove('open');
+                hamburger.setAttribute('aria-expanded', 'false');
+            });
+        });
     }
     
     // 11. Activate/Deactivate toggle via fetch
