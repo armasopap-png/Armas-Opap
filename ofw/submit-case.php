@@ -586,7 +586,9 @@ function sendSOSAlert(lat, lng, status, btn) {
     .then(data => {
         if (data.success) {
             status.className = 'sos-status sent';
-            status.innerHTML = '✅ SOS Alert sent! <strong>' + data.notified + ' agency staff</strong> have been notified. Stay safe.';
+            var count = data.agency_notified || 0;
+            var who = count + ' agency staff';
+            status.innerHTML = '✅ SOS Alert sent! <strong>' + who + '</strong> have been notified. Stay safe.';
             btn.innerHTML = '✓ SOS SENT';
             btn.style.background = '#059669';
             btn.style.animation = 'none';

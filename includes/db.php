@@ -4,10 +4,10 @@
  * PDO MySQL connection with error handling
  */
 
-$host = 'localhost';
-$dbname = 'armas';
-$username = 'root';
-$password = '';
+$host = 'sql300.infinityfree.com';
+$dbname = 'if0_42292833_armas';
+$username = 'if0_42292833';
+$password = 'BLYTIODhF8KFhZ';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);

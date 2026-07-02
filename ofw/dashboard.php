@@ -378,7 +378,7 @@ include '../includes/header.php'; ?>
             <div class="welcome-banner">
                 <h2>Welcome to ARMAS</h2>
                 <p>Protecting Every Filipino, Every Mile Away. Submit your repatriation request or track your existing cases here.</p>
-                <a href="/armas/ofw/submit-case.php" class="btn btn-secondary">Submit New Case</a>
+                <a href="/armas/ofw/submit-case.php" class="btn btn-secondary">Submit New Report</a>
             </div>
 
             <div class="stats-grid">

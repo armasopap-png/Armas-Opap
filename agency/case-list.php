@@ -11,7 +11,7 @@ require_once '../includes/auth.php';
 require_once '../includes/functions.php';
 require_auth('agency');
 
-$page_title = 'Case List';
+$page_title = 'Reports List';
 $use_dashboard_css = true;
 
 // Get agency record
@@ -19,6 +19,15 @@ $stmt = $pdo->prepare("SELECT * FROM agencies WHERE user_id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $agency = $stmt->fetch();
 $agency_id = $agency['id'];
+
+// Mark notification as read if coming from notification link
+if (isset($_GET['read'])) {
+    $pdo->prepare("UPDATE notifications SET read_at = NOW() WHERE id = ? AND user_id = ?")
+        ->execute([intval($_GET['read']), $_SESSION['user_id']]);
+}
+
+// Auto-open case from notification
+$view_case_id = isset($_GET['view']) ? intval($_GET['view']) : null;
 
 // ── Handle status update (AJAX or form POST) ────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
@@ -35,6 +44,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
             WHERE c.id = ? AND o.agency_id = ?
         ");
         $upd->execute([$new_status, $case_id, $agency_id]);
+
+        // Notify the OFW who submitted the case about the status change
+        if ($upd->rowCount() > 0) {
+            $case_info = $pdo->prepare("
+                SELECT c.case_number, c.type, o.user_id
+                FROM cases c
+                JOIN ofws o ON c.ofw_id = o.id
+                WHERE c.id = ?
+            ");
+            $case_info->execute([$case_id]);
+            $case_row = $case_info->fetch();
+
+            if ($case_row && $case_row['user_id']) {
+                $status_labels = [
+                    'pending'    => 'Pending',
+                    'in_process' => 'In Process',
+                    'resolved'   => 'Resolved',
+                    'closed'     => 'Closed',
+                ];
+                $status_label = $status_labels[$new_status] ?? $new_status;
+                $case_label   = $case_row['case_number'] ?: ('#' . $case_id);
+                $case_message = "🔄 Your case $case_label" . ($case_row['type'] ? " ({$case_row['type']})" : '') . " status has been updated to: $status_label";
+
+                $notify_ofw = $pdo->prepare("INSERT INTO notifications (user_id, message, type, ofw_id, created_at) VALUES (?, ?, 'status_update', ?, NOW())");
+                $notify_ofw->execute([$case_row['user_id'], $case_message, null]);
+            }
+        }
     }
 
     // If AJAX request, return JSON
@@ -185,7 +221,7 @@ function next_statuses(string $current): array {
                             <line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>
                         </svg>
                     </span>
-                    <span class="sidebar-link-text">Cases</span>
+                    <span class="sidebar-link-text">Reports</span>
                 </a>
                 <a href="/armas/agency/reports.php" class="sidebar-link">
                     <span class="sidebar-link-icon">
@@ -193,7 +229,7 @@ function next_statuses(string $current): array {
                             <line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line>
                         </svg>
                     </span>
-                    <span class="sidebar-link-text">Reports</span>
+                    <span class="sidebar-link-text">Data Analytics</span>
                 </a>
                 <a href="/armas/agency/ofw-tracking.php" class="sidebar-link">
                     <span class="sidebar-link-icon">
@@ -246,8 +282,8 @@ function next_statuses(string $current): array {
                     </svg>
                 </button>
                 <div>
-                    <h2 style="margin:0;font-size:1.2rem;font-weight:700;color:#1e293b;">Case List</h2>
-                    <p style="margin:0;font-size:0.8rem;color:#94a3b8;">Cases submitted by OFWs under your agency</p>
+                    <h2 style="margin:0;font-size:1.2rem;font-weight:700;color:#1e293b;">Report List</h2>
+                    <p style="margin:0;font-size:0.8rem;color:#94a3b8;">Reports submitted by OFWs under your agency</p>
                 </div>
             </div>
             <div class="main-header-actions">
@@ -327,16 +363,16 @@ function next_statuses(string $current): array {
                     <?php if (empty($cases)): ?>
                         <div class="empty-state">
                             <div class="empty-state-icon">📂</div>
-                            <h3>No Cases Found</h3>
+                            <h3>No Reports Found</h3>
                             <p>
                                 <?php if ($filter_status): ?>
                                     There are no <strong><?php echo status_label($filter_status); ?></strong> cases at the moment.
                                 <?php else: ?>
-                                    No cases have been submitted by OFWs under your agency yet.
+                                    No reports have been submitted by OFWs under your agency yet.
                                 <?php endif; ?>
                             </p>
                             <?php if ($filter_status): ?>
-                                <a href="case-list.php" class="btn btn-outline btn-sm mt-2">View All Cases</a>
+                                <a href="case-list.php" class="btn btn-outline btn-sm mt-2">View All Reports</a>
                             <?php endif; ?>
                         </div>
                     <?php else: ?>
@@ -387,11 +423,6 @@ function next_statuses(string $current): array {
                                                  title="<?php echo htmlspecialchars($case['description']); ?>">
                                                 <?php echo htmlspecialchars($case['description']); ?>
                                             </div>
-                                            <button type="button"
-                                                onclick='openCaseDetail(<?php echo htmlspecialchars(json_encode($case), ENT_QUOTES); ?>)'
-                                                style="background:none;border:none;color:#3b82f6;font-size:0.75rem;cursor:pointer;padding:0;margin-top:2px;">
-                                                View full →
-                                            </button>
                                             <?php else: ?>
                                             <span style="color:#cbd5e1;">—</span>
                                             <?php endif; ?>
@@ -420,24 +451,10 @@ function next_statuses(string $current): array {
 
                                         <!-- Action -->
                                         <td style="text-align:center;">
-                                            <?php if (!empty($next)): ?>
-                                            <?php $next_status = $next[0]; ?>
-                                            <button
-                                                type="button"
-                                                onclick="updateStatus(<?php echo $case['id']; ?>, '<?php echo $next_status; ?>')"
-                                                id="btn-<?php echo $case['id']; ?>"
-                                                style="background:#1a3a6b;color:#fff;border:none;border-radius:7px;padding:6px 14px;font-size:0.78rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:background 0.15s;"
-                                                onmouseover="this.style.background='#0f2447'"
-                                                onmouseout="this.style.background='#1a3a6b'">
-                                                Mark <?php echo status_label($next_status); ?>
-                                            </button>
-                                            <?php else: ?>
-                                            <span style="font-size:0.78rem;color:#94a3b8;font-style:italic;">Closed</span>
-                                            <?php endif; ?>
                                             <button
                                                 type="button"
                                                 onclick='openCaseDetail(<?php echo htmlspecialchars(json_encode($case), ENT_QUOTES); ?>)'
-                                                style="display:block;margin:6px auto 0;background:#eff6ff;color:#1a3a6b;border:1px solid #bfdbfe;border-radius:7px;padding:5px 12px;font-size:0.78rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:background 0.15s;"
+                                                style="background:#eff6ff;color:#1a3a6b;border:1px solid #bfdbfe;border-radius:7px;padding:6px 14px;font-size:0.78rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:background 0.15s;"
                                                 onmouseover="this.style.background='#dbeafe'"
                                                 onmouseout="this.style.background='#eff6ff'">
                                                 View Details
@@ -568,7 +585,7 @@ function updateStatus(caseId, newStatus) {
         if (btn) {
             if (nextNext) {
                 btn.disabled = false;
-                btn.textContent = 'Mark ' + STATUS_LABEL[nextNext];
+                btn.innerHTML = 'Mark ' + STATUS_LABEL[nextNext];
                 btn.onclick = () => updateStatus(caseId, nextNext);
                 btn.onmouseover = () => btn.style.background = '#0f2447';
                 btn.onmouseout  = () => btn.style.background = '#1a3a6b';
@@ -625,18 +642,46 @@ function syncModalStatus(caseId, status) {
     badge.innerHTML = `<span style="${STATUS_STYLE[status]}border-radius:20px;padding:4px 14px;font-size:0.82rem;font-weight:700;">${STATUS_LABEL[status]}</span>`;
 
     const container = document.getElementById('cd-btn-container');
-    const next = NEXT_STATUS[status];
-    if (next) {
-        container.innerHTML = `
-            <button
-                onclick="updateStatus(${caseId}, '${next}'); syncModalStatus(${caseId}, '${next}'); document.getElementById('cd-case-id').textContent='${caseId}';"
-                style="background:#1a3a6b;color:#fff;border:none;border-radius:8px;padding:8px 20px;font-weight:600;cursor:pointer;font-size:0.85rem;"
-                onmouseover="this.style.background='#0f2447'" onmouseout="this.style.background='#1a3a6b'">
-                Mark ${STATUS_LABEL[next]}
-            </button>`;
-    } else {
+
+    const pipeline = ['pending', 'in_process', 'resolved', 'closed'];
+    const currentIndex = pipeline.indexOf(status);
+
+    if (status === 'closed') {
         container.innerHTML = `<span style="font-size:0.85rem;color:#94a3b8;font-style:italic;">This case is closed.</span>`;
+        return;
     }
+
+    const options = pipeline.map((s, i) => {
+        const disabled = i <= currentIndex ? 'disabled style="color:#cbd5e1;cursor:not-allowed;"' : '';
+        const labels = { pending: 'Pending', in_process: 'In Process', resolved: 'Resolved', closed: 'Closed' };
+        return `<option value="${s}" ${s === status ? 'selected' : ''} ${i < currentIndex ? 'disabled' : ''}>${labels[s]}</option>`;
+    }).join('');
+
+    container.innerHTML = `
+        <div style="display:flex;align-items:center;gap:10px;">
+            <label style="font-size:0.85rem;color:#64748b;font-weight:600;">Update Status:</label>
+            <select id="modal-status-select-${caseId}"
+                onchange="handleModalStatusChange(${caseId}, this.value, '${status}')"
+                style="border:1px solid #d1d5db;border-radius:8px;padding:8px 12px;font-size:0.85rem;color:#1e293b;background:#fff;cursor:pointer;outline:none;">
+                ${options}
+            </select>
+        </div>`;
+}
+
+function handleModalStatusChange(caseId, newStatus, currentStatus) {
+    const pipeline = ['pending', 'in_process', 'resolved', 'closed'];
+    if (pipeline.indexOf(newStatus) <= pipeline.indexOf(currentStatus)) {
+        alert('You can only move forward in the status pipeline.');
+        document.getElementById('modal-status-select-' + caseId).value = currentStatus;
+        return;
+    }
+    if (!confirm('Update status to "' + newStatus.replace('_', ' ') + '"?')) {
+        document.getElementById('modal-status-select-' + caseId).value = currentStatus;
+        return;
+    }
+    updateStatus(caseId, newStatus);
+    syncModalStatus(caseId, newStatus);
+    document.getElementById('cd-case-id').textContent = caseId;
 }
 
 document.getElementById('caseDetailModal').addEventListener('click', function(e) {
@@ -657,6 +702,14 @@ function toggleSidebar() {
     }
     overlay.classList.toggle('active', sidebar.classList.contains('mobile-open'));
 }
+    
+    <?php if ($view_case_id): ?>
+document.addEventListener('DOMContentLoaded', function() {
+    const allCases = <?php echo json_encode(array_values($cases)); ?>;
+    const target = allCases.find(c => c.id == <?php echo $view_case_id; ?>);
+    if (target) openCaseDetail(target);
+});
+<?php endif; ?>
 </script>
 
 <?php include '../includes/footer.php'; ?>

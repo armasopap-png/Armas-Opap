@@ -360,7 +360,7 @@ include '../includes/header.php';
               <polyline points="10 9 9 9 8 9"></polyline>
             </svg>
           </span>
-          <span class="sidebar-link-text">Cases</span>
+          <span class="sidebar-link-text">Reports</span>
         </a>
         <a href="/armas/agency/reports.php" class="sidebar-link">
           <span class="sidebar-link-icon">
@@ -370,7 +370,7 @@ include '../includes/header.php';
               <line x1="6" y1="20" x2="6" y2="14"></line>
             </svg>
           </span>
-          <span class="sidebar-link-text">Reports</span>
+          <span class="sidebar-link-text">Analytics</span>
         </a>
         <a href="/armas/agency/ofw-tracking.php" class="sidebar-link active">
           <span class="sidebar-link-icon">

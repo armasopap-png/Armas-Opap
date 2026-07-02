@@ -22,8 +22,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = filter_var(trim($_POST['email']), FILTER_SANITIZE_EMAIL);
     $password = $_POST['password'];
     $confirm = $_POST['confirm_password'];
-    $address = strtoupper(trim(htmlspecialchars($_POST['address'])));
+    $house_no = strtoupper(trim(htmlspecialchars($_POST['house_no'] ?? '')));
+    $street = strtoupper(trim(htmlspecialchars($_POST['street'] ?? '')));
+    $barangay = strtoupper(trim(htmlspecialchars($_POST['barangay'] ?? '')));
+    $city_municipality = strtoupper(trim(htmlspecialchars($_POST['city_municipality'] ?? '')));
+    $province = strtoupper(trim(htmlspecialchars($_POST['province'] ?? '')));
+    $region = strtoupper(trim(htmlspecialchars($_POST['region'] ?? '')));
+    $zip_code = trim(htmlspecialchars($_POST['zip_code'] ?? ''));
+    $address_country = strtoupper(trim(htmlspecialchars($_POST['address_country'] ?? '')));
     $contact = htmlspecialchars($_POST['contact_number']);
+    $emergency_contact_name = strtoupper(trim(htmlspecialchars($_POST['emergency_contact_name'] ?? '')));
+    $emergency_contact_number = htmlspecialchars(trim($_POST['emergency_contact_number'] ?? ''));
+    $emergency_contact_relationship = strtoupper(trim(htmlspecialchars($_POST['emergency_contact_relationship'] ?? '')));
     $ofw_type = $_POST['ofw_type'] ?? '';
     $work_category = trim($_POST['work_category'] ?? '');
     $work_type = trim($_POST['work_type'] ?? '');
@@ -60,20 +70,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Birthdate is required.';
     } elseif ($birthdate > date('Y-m-d')) {
         $errors[] = 'Birthdate cannot be a future date.';
+    } else {
+        $bd = DateTime::createFromFormat('Y-m-d', $birthdate);
+        if (!$bd) {
+            $errors[] = 'Invalid birthdate format.';
+        } else {
+            $today = new DateTime();
+            $age = $today->diff($bd)->y;
+            if ($age < 18) {
+                $errors[] = 'You must be at least 18 years old to register.';
+            }
+        }
     }
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = 'Invalid email address.';
+    $errors[] = 'Invalid email address.';
+} else {
+    $allowed_domains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com'];
+    $email_domain = strtolower(substr(strrchr($email, "@"), 1));
+    if (!in_array($email_domain, $allowed_domains)) {
+        $errors[] = 'Please use a Gmail, Yahoo, Outlook, Hotmail, or iCloud email address.';
     }
+}
     if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/', $password)) {
         $errors[] = 'Password must be at least 8 characters and include an uppercase letter, lowercase letter, number, and special character.';
     }
-    if (empty($address)) {
-        $errors[] = 'Address is required.';
+    if (empty($street)) {
+        $errors[] = 'Street is required.';
+    }
+    if (empty($barangay)) {
+        $errors[] = 'Barangay is required.';
+    }
+    if (empty($city_municipality)) {
+        $errors[] = 'City / Municipality is required.';
+    }
+    if (empty($province)) {
+        $errors[] = 'Province is required.';
+    }
+    if (empty($region)) {
+        $errors[] = 'Region is required.';
+    }
+    if (empty($zip_code)) {
+        $errors[] = 'ZIP Code is required.';
+    } elseif (!preg_match('/^\d{4}$/', $zip_code)) {
+        $errors[] = 'ZIP Code must be exactly 4 digits.';
+    }
+    if (empty($address_country)) {
+        $errors[] = 'Country is required.';
     }
     if (empty($contact)) {
         $errors[] = 'Contact number is required.';
     } elseif (!preg_match('/^\d{11}$/', preg_replace('/\s+/', '', $contact))) {
         $errors[] = 'Contact number must be exactly 11 digits (numbers only).';
+    }
+    if (empty($emergency_contact_name)) {
+        $errors[] = 'Emergency contact name is required.';
+    } elseif (!preg_match('/^[A-Za-z\s\-\.]+$/', $emergency_contact_name)) {
+        $errors[] = 'Emergency contact name must contain letters only (no numbers or special characters).';
+    }
+    if (empty($emergency_contact_relationship)) {
+        $errors[] = 'Emergency contact relationship is required.';
+    }
+    if (empty($emergency_contact_number)) {
+        $errors[] = 'Emergency contact number is required.';
+    } elseif (!preg_match('/^\d{11}$/', preg_replace('/\s+/', '', $emergency_contact_number))) {
+        $errors[] = 'Emergency contact number must be exactly 11 digits (numbers only).';
+    } elseif (preg_replace('/\s+/', '', $emergency_contact_number) === preg_replace('/\s+/', '', $contact)) {
+        $errors[] = 'Emergency contact number must be different from your own contact number.';
     }
     if ($password !== $confirm) {
         $errors[] = 'Passwords do not match.';
@@ -111,6 +173,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    // Build a single-line address string (kept for backward compatibility with
+    // pages/reports that still read the combined `address` column)
+    $address = trim(implode(', ', array_filter([
+        $house_no,
+        $street,
+        $barangay,
+        $city_municipality,
+        $province,
+        $region,
+        $zip_code,
+        $address_country,
+    ], fn($part) => $part !== '')));
+
     if (empty($errors)) {
         try {
             $hash = password_hash($password, PASSWORD_BCRYPT);
@@ -131,9 +206,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (move_uploaded_file($file['tmp_name'], $destination)) {
                 // Save OFW Profile details
-                $pdo->prepare("INSERT INTO ofws (user_id, last_name, first_name, middle_name, suffix, address, contact_number, ofw_type, work_category, work_type, document_type, agency_id)
-                               VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")
-                    ->execute([$user_id, $last_name, $first_name, $middle_name, $suffix, $address, $contact, $ofw_type, $work_category, $work_type, $document_type, 0]);
+                $pdo->prepare("INSERT INTO ofws (user_id, last_name, first_name, middle_name, suffix, sex, birthdate, address, house_no, street, barangay, city_municipality, province, region, zip_code, address_country, contact_number, emergency_contact_name, emergency_contact_number, emergency_contact_relationship, ofw_type, work_category, work_type, document_type, agency_id)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    ->execute([$user_id, $last_name, $first_name, $middle_name, $suffix, $sex, $birthdate, $address, $house_no, $street, $barangay, $city_municipality, $province, $region, $zip_code, $address_country, $contact, $emergency_contact_name, $emergency_contact_number, $emergency_contact_relationship, $ofw_type, $work_category, $work_type, $document_type, 0]);
 
                 // Generate OTP Verification Codes
                 $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -361,13 +436,95 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Address (Philippines)</label>
-                    <textarea name="address" class="form-control input-caps" rows="2" required><?php echo isset($_POST['address']) ? htmlspecialchars($_POST['address']) : ''; ?></textarea>
+                    <label class="form-label" style="margin-bottom:2px;">Permanent Address</label>
+                    <p style="margin:0 0 10px; font-size:0.82rem; color:#64748b;">Please provide your complete permanent address.</p>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">House No. / Unit No.</label>
+                        <input type="text" name="house_no" class="form-control input-caps" maxlength="50" value="<?php echo isset($_POST['house_no']) ? htmlspecialchars($_POST['house_no']) : ''; ?>" placeholder="e.g. Blk 3 Lot 12 / Unit 4B">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Street <span style="color:#dc2626">*</span></label>
+                        <input type="text" name="street" class="form-control input-caps" maxlength="150" value="<?php echo isset($_POST['street']) ? htmlspecialchars($_POST['street']) : ''; ?>" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Barangay <span style="color:#dc2626">*</span></label>
+                        <input type="text" name="barangay" class="form-control input-caps" maxlength="100" value="<?php echo isset($_POST['barangay']) ? htmlspecialchars($_POST['barangay']) : ''; ?>" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">City / Municipality <span style="color:#dc2626">*</span></label>
+                        <input type="text" name="city_municipality" class="form-control input-caps" maxlength="100" value="<?php echo isset($_POST['city_municipality']) ? htmlspecialchars($_POST['city_municipality']) : ''; ?>" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Province <span style="color:#dc2626">*</span></label>
+                        <input type="text" name="province" class="form-control input-caps" maxlength="100" value="<?php echo isset($_POST['province']) ? htmlspecialchars($_POST['province']) : ''; ?>" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Region <span style="color:#dc2626">*</span></label>
+                        <select name="region" class="form-control enhanced-select" required>
+                            <option value="">-- Select Region --</option>
+                            <?php
+                            $ph_regions = [
+                                'REGION I - ILOCOS REGION', 'REGION II - CAGAYAN VALLEY', 'REGION III - CENTRAL LUZON',
+                                'REGION IV-A - CALABARZON', 'MIMAROPA REGION', 'REGION V - BICOL REGION',
+                                'REGION VI - WESTERN VISAYAS', 'REGION VII - CENTRAL VISAYAS', 'REGION VIII - EASTERN VISAYAS',
+                                'REGION IX - ZAMBOANGA PENINSULA', 'REGION X - NORTHERN MINDANAO', 'REGION XI - DAVAO REGION',
+                                'REGION XII - SOCCSKSARGEN', 'REGION XIII - CARAGA', 'NCR - NATIONAL CAPITAL REGION',
+                                'CAR - CORDILLERA ADMINISTRATIVE REGION', 'BARMM - BANGSAMORO AUTONOMOUS REGION IN MUSLIM MINDANAO',
+                            ];
+                            $selected_region = $_POST['region'] ?? '';
+                            foreach ($ph_regions as $r) {
+                                $sel = ($selected_region === $r) ? 'selected' : '';
+                                echo "<option value=\"" . htmlspecialchars($r) . "\" $sel>" . htmlspecialchars($r) . "</option>";
+                            }
+                            ?>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">ZIP Code <span style="color:#dc2626">*</span></label>
+                        <input type="text" name="zip_code" class="form-control" data-numeric-only maxlength="4" value="<?php echo isset($_POST['zip_code']) ? htmlspecialchars($_POST['zip_code']) : ''; ?>" placeholder="e.g. 1234" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Country <span style="color:#dc2626">*</span></label>
+                        <input type="text" name="address_country" class="form-control input-caps" maxlength="100" value="<?php echo isset($_POST['address_country']) ? htmlspecialchars($_POST['address_country']) : 'Philippines'; ?>" required>
+                    </div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Contact Number</label>
                     <input type="text" name="contact_number" class="form-control" data-numeric-only maxlength="11" value="<?php echo isset($_POST['contact_number']) ? htmlspecialchars($_POST['contact_number']) : ''; ?>" placeholder="09XX XXX XXXX" required>
+                </div>
+
+                <div style="margin: 28px 0 16px; padding-top: 16px; border-top: 1px dashed var(--border);">
+                    <h3 style="margin:0 0 4px; color:#1a3a6b; font-size:1.05rem;">🚨 Emergency Contact</h3>
+                    <p style="margin:0; color:#64748b; font-size:0.85rem;">Who should we reach if something happens to you while working abroad?</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Emergency Contact Name <span style="color:#dc2626">*</span></label>
+                    <input type="text" name="emergency_contact_name" class="form-control input-caps" data-alpha-only maxlength="150" value="<?php echo isset($_POST['emergency_contact_name']) ? htmlspecialchars($_POST['emergency_contact_name']) : ''; ?>" placeholder="FULL NAME OF EMERGENCY CONTACT" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Relationship <span style="color:#dc2626">*</span></label>
+                        <input type="text" name="emergency_contact_relationship" class="form-control input-caps" data-alpha-only maxlength="100" value="<?php echo isset($_POST['emergency_contact_relationship']) ? htmlspecialchars($_POST['emergency_contact_relationship']) : ''; ?>" placeholder="e.g. Spouse, Parent, Sibling" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Emergency Contact Number <span style="color:#dc2626">*</span></label>
+                        <input type="text" name="emergency_contact_number" class="form-control" data-numeric-only maxlength="11" value="<?php echo isset($_POST['emergency_contact_number']) ? htmlspecialchars($_POST['emergency_contact_number']) : ''; ?>" placeholder="09XX XXX XXXX" required>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -763,6 +920,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         const birthdateInput = document.getElementById('birthdate');
         const ageInput = document.getElementById('age');
 
+        let ageErrorMsg = document.getElementById('age-error-msg');
+        if (!ageErrorMsg) {
+            ageErrorMsg = document.createElement('div');
+            ageErrorMsg.id = 'age-error-msg';
+            ageErrorMsg.style.color = '#dc2626';
+            ageErrorMsg.style.fontSize = '0.85rem';
+            ageErrorMsg.style.marginTop = '4px';
+            ageErrorMsg.style.display = 'none';
+            ageErrorMsg.textContent = 'You must be at least 18 years old to register.';
+            ageInput.parentNode.appendChild(ageErrorMsg);
+        }
+
         function calculateAge() {
             if (!birthdateInput.value) return;
             const birthDate = new Date(birthdateInput.value);
@@ -773,9 +942,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 age--;
             }
             ageInput.value = age >= 0 ? age : 0;
+
+            if (age < 18) {
+                ageErrorMsg.style.display = 'block';
+                birthdateInput.setCustomValidity('You must be at least 18 years old to register.');
+            } else {
+                ageErrorMsg.style.display = 'none';
+                birthdateInput.setCustomValidity('');
+            }
         }
 
         birthdateInput.addEventListener('change', calculateAge);
+        birthdateInput.addEventListener('input', calculateAge);
+
+        // Block form submission if underage
+        const registerForm = birthdateInput.closest('form');
+        if (registerForm) {
+            registerForm.addEventListener('submit', function(e) {
+                calculateAge();
+                if (parseInt(ageInput.value, 10) < 18) {
+                    e.preventDefault();
+                    ageErrorMsg.style.display = 'block';
+                    birthdateInput.reportValidity();
+                    birthdateInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+        }
 
         // Prevent future dates on birthdate
         birthdateInput.addEventListener('change', function () {

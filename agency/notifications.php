@@ -164,11 +164,11 @@ include '../includes/header.php';
                 </a>
                 <a href="/armas/agency/case-list.php" class="sidebar-link">
                     <span class="sidebar-link-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg></span>
-                    <span class="sidebar-link-text">Cases</span>
+                    <span class="sidebar-link-text">Reports</span>
                 </a>
                 <a href="/armas/agency/reports.php" class="sidebar-link">
                     <span class="sidebar-link-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span>
-                    <span class="sidebar-link-text">Reports</span>
+                    <span class="sidebar-link-text">Analytics</span>
                 </a>
                 <a href="/armas/agency/ofw-tracking.php" class="sidebar-link">
                     <span class="sidebar-link-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></span>
@@ -226,7 +226,7 @@ include '../includes/header.php';
                     <div class="empty-state">
                         <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                         <h3>No Notifications</h3>
-                        <p>You're all caught up! Notifications from OFW case reports and SOS alerts will appear here.</p>
+                        <p>You're all caught up! Notifications from OFW reports and SOS alerts will appear here.</p>
                     </div>
                 <?php else: ?>
                     <?php foreach ($notifications as $notif): ?>
@@ -244,9 +244,32 @@ include '../includes/header.php';
                         $icon = $icons[$notif['type']] ?? '🔔';
                         $ofw_id = $notif['resolved_ofw_id'] ?? null;
                         // SOS with known OFW → go straight to tracking; otherwise just mark read
-                        $click_url = ($is_sos && $ofw_id)
-                            ? '/armas/agency/ofw-tracking.php?ofw_id=' . intval($ofw_id) . '&notif_id=' . intval($notif['id'])
-                            : '?read=' . $notif['id'];
+                        if ($is_sos && $ofw_id) {
+    $click_url = '/armas/agency/ofw-tracking.php?ofw_id=' . intval($ofw_id) . '&notif_id=' . intval($notif['id']);
+} elseif ($notif['type'] === 'new_case' || $notif['type'] === 'status_update') {
+    // Extract case number from message to find case id
+    $case_stmt = $pdo->prepare("
+        SELECT c.id FROM cases c
+        JOIN ofws o ON c.ofw_id = o.id
+        WHERE o.agency_id = ?
+        ORDER BY ABS(UNIX_TIMESTAMP(c.created_at) - UNIX_TIMESTAMP(?)) ASC
+        LIMIT 1
+    ");
+    // Try to find case by case_number mentioned in message
+    preg_match('/ARMAS-[A-Z0-9\-]+/', $notif['message'], $matches);
+    $case_id_link = null;
+    if (!empty($matches[0])) {
+        $cs = $pdo->prepare("SELECT id FROM cases WHERE case_number = ?");
+        $cs->execute([$matches[0]]);
+        $found = $cs->fetch();
+        if ($found) $case_id_link = $found['id'];
+    }
+    $click_url = $case_id_link
+        ? '/armas/agency/case-list.php?view=' . $case_id_link . '&read=' . $notif['id']
+        : '?read=' . $notif['id'];
+} else {
+    $click_url = '?read=' . $notif['id'];
+}
                         ?>
                         <a class="notif-item <?php echo $item_class; ?>" href="<?php echo htmlspecialchars($click_url); ?>" style="text-decoration:none;color:inherit;">
                             <div class="notif-icon"><?php echo $icon; ?></div>

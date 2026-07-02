@@ -200,6 +200,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_employment']))
     }
 }
 
+// Update Emergency Contact information — self-editable since this can change over time.
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_emergency_contact'])) {
+    $ec_name = strtoupper(trim(htmlspecialchars($_POST['emergency_contact_name'] ?? '')));
+    $ec_number = trim(htmlspecialchars($_POST['emergency_contact_number'] ?? ''));
+    $ec_relationship = strtoupper(trim(htmlspecialchars($_POST['emergency_contact_relationship'] ?? '')));
+
+    if (empty($ec_name) || !preg_match('/^[A-Za-z\s\-\.]+$/', $ec_name)) {
+        $error = 'Please enter a valid emergency contact name (letters only).';
+    } elseif (empty($ec_relationship)) {
+        $error = 'Please enter the emergency contact\'s relationship to you.';
+    } elseif (!preg_match('/^\d{11}$/', preg_replace('/\s+/', '', $ec_number))) {
+        $error = 'Emergency contact number must be exactly 11 digits (numbers only).';
+    } else {
+        $pdo->prepare("UPDATE ofws SET emergency_contact_name = ?, emergency_contact_number = ?, emergency_contact_relationship = ? WHERE user_id = ?")
+            ->execute([$ec_name, $ec_number, $ec_relationship, $_SESSION['user_id']]);
+
+        $success = 'Emergency contact updated successfully!';
+
+        // Refresh data
+        $stmt = $pdo->prepare("SELECT o.*, u.email, u.status AS account_status, u.created_at AS account_created
+                                FROM ofws o JOIN users u ON o.user_id = u.id WHERE o.user_id = ?");
+        $stmt->execute([$_SESSION['user_id']]);
+        $ofw = $stmt->fetch();
+    }
+}
+
 // ---- Helpers for nicely formatted, read-only display values ----
 function display_value($value) {
     $value = trim((string) ($value ?? ''));
@@ -668,7 +694,56 @@ include '../includes/header.php';
                             <div class="info-item-label">Address</div>
                             <div class="info-item-value caps"><?php echo display_value($ofw['address'] ?? ''); ?></div>
                         </div>
+                        <div class="info-item">
+                            <div class="info-item-label">Emergency Contact</div>
+                            <div class="info-item-value caps"><?php echo display_value($ofw['emergency_contact_name'] ?? ''); ?></div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-item-label">Relationship</div>
+                            <div class="info-item-value caps"><?php echo display_value($ofw['emergency_contact_relationship'] ?? ''); ?></div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-item-label">Emergency Contact Number</div>
+                            <div class="info-item-value"><?php echo display_value($ofw['emergency_contact_number'] ?? ''); ?></div>
+                        </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Emergency Contact (Editable) -->
+            <div class="card employment-card">
+                <div class="card-header">
+                    <div class="card-header-flex">
+                        <span class="card-header-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+                        </span>
+                        <div>
+                            <h3 style="margin:0;">Emergency Contact</h3>
+                            <div class="section-subtitle">Who we should reach if something happens to you while working abroad</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="emergencyContactForm">
+                        <input type="hidden" name="update_emergency_contact" value="1">
+
+                        <div class="form-group">
+                            <label class="form-label">Emergency Contact Name <span style="color:#dc2626">*</span></label>
+                            <input type="text" name="emergency_contact_name" class="form-control input-caps" maxlength="150" value="<?php echo htmlspecialchars($ofw['emergency_contact_name'] ?? ''); ?>" placeholder="FULL NAME OF EMERGENCY CONTACT" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Relationship <span style="color:#dc2626">*</span></label>
+                            <input type="text" name="emergency_contact_relationship" class="form-control input-caps" maxlength="100" value="<?php echo htmlspecialchars($ofw['emergency_contact_relationship'] ?? ''); ?>" placeholder="e.g. Spouse, Parent, Sibling" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Emergency Contact Number <span style="color:#dc2626">*</span></label>
+                            <input type="text" name="emergency_contact_number" class="form-control" maxlength="11" value="<?php echo htmlspecialchars($ofw['emergency_contact_number'] ?? ''); ?>" placeholder="09XX XXX XXXX" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
                 </div>
             </div>
 

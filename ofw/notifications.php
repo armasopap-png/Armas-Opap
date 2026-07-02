@@ -43,6 +43,24 @@ $unread_count = $unread->fetchColumn();
 $stmt = $pdo->prepare("SELECT o.*, u.email FROM ofws o JOIN users u ON o.user_id=u.id WHERE o.user_id=?");
 $stmt->execute([$_SESSION['user_id']]);
 $ofw = $stmt->fetch();
+$ofw_id = $ofw['id'];
+
+// Build a click-through URL for each notification so clicking it opens the
+// related case (when one can be identified) instead of just marking it read.
+function get_notification_url($pdo, $notif, $ofw_id) {
+    if (in_array($notif['type'], ['new_case', 'status_update'])) {
+        preg_match('/ARMAS-[A-Z0-9\-]+/', $notif['message'], $matches);
+        if (!empty($matches[0])) {
+            $cs = $pdo->prepare("SELECT id FROM cases WHERE case_number = ? AND ofw_id = ?");
+            $cs->execute([$matches[0], $ofw_id]);
+            $found = $cs->fetch();
+            if ($found) {
+                return 'track-case.php?view=' . $found['id'] . '&read=' . $notif['id'];
+            }
+        }
+    }
+    return '?read=' . $notif['id'];
+}
 ?>
 
 <?php
@@ -374,7 +392,7 @@ include '../includes/header.php';
                         <div class="notification-list">
                             <?php foreach ($notifications as $notif): ?>
                                 <div class="notification-item <?php echo $notif['read_at'] ? 'read' : 'unread'; ?>"
-                                     onclick="location.href='?read=<?php echo $notif['id']; ?>'" style="cursor: pointer;">
+                                     onclick="location.href='<?php echo htmlspecialchars(get_notification_url($pdo, $notif, $ofw_id)); ?>'" style="cursor: pointer;">
                                     <div class="notification-icon">
                                         <?php
                                         $icons = [
@@ -390,6 +408,9 @@ include '../includes/header.php';
                                         <div class="notification-time">
                                             <?php echo date('M d, Y h:i A', strtotime($notif['created_at'])); ?>
                                         </div>
+                                        <?php if ($notif['type'] === 'status_update'): ?>
+                                            <div style="font-size:.72rem;color:#1a3a6b;font-weight:600;margin-top:3px;">👆 Click to view case details</div>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             <?php endforeach; ?>

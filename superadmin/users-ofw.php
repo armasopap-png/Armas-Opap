@@ -332,74 +332,82 @@ include '../includes/header.php'; ?>
 </style>
 
 <!-- Create OFW Modal -->
-<div id="createModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
-    <div style="background:#fff; border-radius:12px; padding:32px; max-width:560px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.3); max-height:90vh; overflow-y:auto;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2 style="margin:0; color:#1a3a6b; font-size:1.2rem;">Create OFW Account</h2>
-            <button onclick="document.getElementById('createModal').style.display='none'" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#666;">&times;</button>
+<div id="createModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; padding:16px; box-sizing:border-box;">
+    <div style="background:#fff; border-radius:14px; width:100%; max-width:680px; max-height:calc(100vh - 32px); display:flex; flex-direction:column; box-shadow:0 24px 64px rgba(0,0,0,0.35); box-sizing:border-box; overflow:hidden;">
+        <!-- Header -->
+        <div style="background:#1a3a6b; padding:20px 24px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0;">
+            <div>
+                <div style="color:#fff; font-size:1.05rem; font-weight:700; line-height:1.2;">Create OFW Account</div>
+                <div style="color:rgba(255,255,255,0.7); font-size:0.78rem; margin-top:2px;">Fill in the OFW's information below</div>
+            </div>
+            <button type="button" onclick="document.getElementById('createModal').style.display='none'" style="background:rgba(255,255,255,0.15); border:none; border-radius:8px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#fff; font-size:1.2rem; line-height:1; flex-shrink:0;">&times;</button>
         </div>
-        <form method="POST">
-            <input type="hidden" name="create_ofw" value="1">
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
-                <div class="form-group">
-                    <label class="form-label">Last Name <span style="color:red;">*</span></label>
-                    <input type="text" name="last_name" class="form-control" oninput="this.value=this.value.toUpperCase()" required>
+
+        <!-- Body -->
+        <div style="overflow-y:auto; flex:1; padding:24px;">
+            <form method="POST">
+                <input type="hidden" name="create_ofw" value="1">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+                    <div class="form-group">
+                        <label class="form-label">Last Name <span style="color:red;">*</span></label>
+                        <input type="text" name="last_name" class="form-control" oninput="this.value=this.value.toUpperCase()" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">First Name <span style="color:red;">*</span></label>
+                        <input type="text" name="first_name" class="form-control" oninput="this.value=this.value.toUpperCase()" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">First Name <span style="color:red;">*</span></label>
-                    <input type="text" name="first_name" class="form-control" oninput="this.value=this.value.toUpperCase()" required>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+                    <div class="form-group">
+                        <label class="form-label">Middle Name</label>
+                        <input type="text" name="middle_name" class="form-control" oninput="this.value=this.value.toUpperCase()">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Suffix</label>
+                        <input type="text" name="suffix" class="form-control" placeholder="Jr., Sr., III…">
+                    </div>
                 </div>
-            </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
-                <div class="form-group">
-                    <label class="form-label">Middle Name</label>
-                    <input type="text" name="middle_name" class="form-control" oninput="this.value=this.value.toUpperCase()">
+                <div class="form-group" style="margin-bottom:16px;">
+                    <label class="form-label">Email Address <span style="color:red;">*</span></label>
+                    <input type="email" name="email" class="form-control" required>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Suffix</label>
-                    <input type="text" name="suffix" class="form-control" placeholder="Jr., Sr., III…">
+                <div class="form-group" style="margin-bottom:16px;">
+                    <label class="form-label">Password <span style="color:red;">*</span></label>
+                    <input type="text" name="password" class="form-control" placeholder="Minimum 8 characters" required minlength="8">
+                    <small style="color:#666;">Share this securely with the OFW.</small>
                 </div>
-            </div>
-            <div class="form-group" style="margin-bottom:16px;">
-                <label class="form-label">Email Address <span style="color:red;">*</span></label>
-                <input type="email" name="email" class="form-control" required>
-            </div>
-            <div class="form-group" style="margin-bottom:16px;">
-                <label class="form-label">Password <span style="color:red;">*</span></label>
-                <input type="text" name="password" class="form-control" placeholder="Minimum 8 characters" required minlength="8">
-                <small style="color:#666;">Share this securely with the OFW.</small>
-            </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
-                <div class="form-group">
-                    <label class="form-label">Select Agency <span style="color:red;">*</span></label>
-                    <select name="agency_id" class="form-control" required>
-                        <option value="">-- Select Agency --</option>
-                        <?php foreach ($agencies as $a): ?>
-                            <option value="<?php echo $a['id']; ?>"><?php echo htmlspecialchars($a['name']); ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+                    <div class="form-group">
+                        <label class="form-label">Select Agency <span style="color:red;">*</span></label>
+                        <select name="agency_id" class="form-control" required>
+                            <option value="">-- Select Agency --</option>
+                            <?php foreach ($agencies as $a): ?>
+                                <option value="<?php echo $a['id']; ?>"><?php echo htmlspecialchars($a['name']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">OFW Type <span style="color:red;">*</span></label>
+                        <select name="ofw_type" class="form-control" required>
+                            <option value="land-based">Land-Based</option>
+                            <option value="sea-based">Sea-Based</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">OFW Type <span style="color:red;">*</span></label>
-                    <select name="ofw_type" class="form-control" required>
-                        <option value="land-based">Land-Based</option>
-                        <option value="sea-based">Sea-Based</option>
-                    </select>
+                <div class="form-group" style="margin-bottom:16px;">
+                    <label class="form-label">Address</label>
+                    <textarea name="address" class="form-control" rows="2" oninput="this.value=this.value.toUpperCase()"></textarea>
                 </div>
-            </div>
-            <div class="form-group" style="margin-bottom:16px;">
-                <label class="form-label">Address</label>
-                <textarea name="address" class="form-control" rows="2" oninput="this.value=this.value.toUpperCase()"></textarea>
-            </div>
-            <div class="form-group" style="margin-bottom:24px;">
-                <label class="form-label">Contact Number</label>
-                <input type="text" name="contact_number" class="form-control" placeholder="09XXXXXXXXX">
-            </div>
-            <div style="display:flex; gap:12px; justify-content:flex-end;">
-                <button type="button" onclick="document.getElementById('createModal').style.display='none'" style="padding:10px 24px; border:1px solid #ccc; border-radius:8px; background:#fff; cursor:pointer;">Cancel</button>
-                <button type="submit" class="btn btn-primary">Create Account</button>
-            </div>
-        </form>
+                <div class="form-group" style="margin-bottom:24px;">
+                    <label class="form-label">Contact Number</label>
+                    <input type="text" name="contact_number" class="form-control" placeholder="09XXXXXXXXX">
+                </div>
+                <div style="display:flex; gap:12px; justify-content:flex-end;">
+                    <button type="button" onclick="document.getElementById('createModal').style.display='none'" style="padding:10px 24px; border:1px solid #ccc; border-radius:8px; background:#fff; cursor:pointer;">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Account</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 

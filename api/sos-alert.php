@@ -22,8 +22,8 @@ $lng     = isset($data['longitude']) && $data['longitude'] !== null ? floatval($
 $user_id = $_SESSION['user_id'];
 
 try {
-    // Get OFW record
-    $stmt = $pdo->prepare("SELECT o.id, o.first_name, o.last_name FROM ofws o WHERE o.user_id = ?");
+    // Get OFW record (include agency_id to know which agency to notify)
+    $stmt = $pdo->prepare("SELECT o.id, o.first_name, o.last_name, o.agency_id FROM ofws o WHERE o.user_id = ?");
     $stmt->execute([$user_id]);
     $ofw = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -53,30 +53,41 @@ try {
     $insert->execute([$ofw['id'], $user_id, $lat, $lng, $sos_message]);
     $sos_id = $pdo->lastInsertId();
 
-    // Notify all active agency users
+    // Notify agency: only the OFW's tagged agency if assigned, otherwise broadcast to all agencies
     $notif_stmt = $pdo->prepare("INSERT INTO notifications (user_id, message, type, ofw_id, created_at) VALUES (?, ?, 'sos_emergency', ?, NOW())");
-    $notified = 0;
+    $agency_notified = 0;
 
-    $agency_users = $pdo->query("SELECT id FROM users WHERE role = 'agency' AND status = 'active'");
-    foreach ($agency_users->fetchAll(PDO::FETCH_COLUMN) as $uid) {
-        $notif_stmt->execute([$uid, $sos_message, $ofw['id']]);
-        $notified++;
+    if (!empty($ofw['agency_id'])) {
+        // OFW is tagged to a specific agency — notify only that agency's user
+        $tagged_stmt = $pdo->prepare("
+            SELECT u.id FROM users u
+            JOIN agencies a ON a.user_id = u.id
+            WHERE a.id = ? AND u.role = 'agency' AND u.status = 'active'
+        ");
+        $tagged_stmt->execute([$ofw['agency_id']]);
+        foreach ($tagged_stmt->fetchAll(PDO::FETCH_COLUMN) as $uid) {
+            $notif_stmt->execute([$uid, $sos_message, $ofw['id']]);
+            $agency_notified++;
+        }
+    } else {
+        // OFW not tagged to any agency — broadcast to all active agency users
+        $agency_users = $pdo->query("SELECT id FROM users WHERE role = 'agency' AND status = 'active'");
+        foreach ($agency_users->fetchAll(PDO::FETCH_COLUMN) as $uid) {
+            $notif_stmt->execute([$uid, $sos_message, $ofw['id']]);
+            $agency_notified++;
+        }
     }
 
-    // Notify all active admin/superadmin users
-    $admin_users = $pdo->query("SELECT id FROM users WHERE role IN ('admin','superadmin') AND status = 'active'");
-    foreach ($admin_users->fetchAll(PDO::FETCH_COLUMN) as $uid) {
-        $notif_stmt->execute([$uid, $sos_message, $ofw['id']]);
-        $notified++;
-    }
+    $notified = $agency_notified;
 
     echo json_encode([
-        'success'  => true,
-        'message'  => 'SOS alert sent',
-        'sos_id'   => $sos_id,
-        'notified' => $notified,
-        'lat'      => $lat,
-        'lng'      => $lng
+        'success'         => true,
+        'message'         => 'SOS alert sent',
+        'sos_id'          => $sos_id,
+        'notified'        => $notified,
+        'agency_notified' => $agency_notified,
+        'lat'             => $lat,
+        'lng'             => $lng
     ]);
 
 } catch (PDOException $e) {

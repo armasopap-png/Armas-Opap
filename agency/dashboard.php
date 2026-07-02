@@ -105,7 +105,7 @@ include '../includes/header.php'; ?>
                             <polyline points="10 9 9 9 8 9"></polyline>
                         </svg>
                     </span>
-                    <span class="sidebar-link-text">Cases</span>
+                    <span class="sidebar-link-text">Reports</span>
                 </a>
                 <a href="/armas/agency/reports.php" class="sidebar-link">
                     <span class="sidebar-link-icon">
@@ -115,7 +115,7 @@ include '../includes/header.php'; ?>
                             <line x1="6" y1="20" x2="6" y2="14"></line>
                         </svg>
                     </span>
-                    <span class="sidebar-link-text">Reports</span>
+                    <span class="sidebar-link-text">Analytics</span>
                 </a>
                 <a href="/armas/agency/ofw-tracking.php" class="sidebar-link">
                     <span class="sidebar-link-icon">
@@ -155,15 +155,15 @@ include '../includes/header.php'; ?>
         </nav>
 
         <div class="sidebar-footer">
-            <a href="/armas/pages/logout.php" class="btn btn-outline btn-sm w-100" style="display:flex; align-items:center; justify-content:center; gap:8px;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                    <polyline points="16 17 21 12 16 7"></polyline>
-                    <line x1="21" y1="12" x2="9" y2="12"></line>
-                </svg>
-                <span class="sidebar-link-text">Logout</span>
-            </a>
-        </div>
+    <a href="/armas/pages/logout.php" class="btn btn-outline btn-sm w-100" style="display:flex; align-items:center; justify-content:center; gap:8px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        <span class="sidebar-link-text">Logout</span>
+    </a>
+</div>
     </aside>
 
     <main class="main-content">
@@ -191,7 +191,7 @@ include '../includes/header.php'; ?>
         <div class="main-body">
             <div class="welcome-banner">
                 <h2><?php echo htmlspecialchars($agency['name']); ?></h2>
-                <p>Manage your OFWs and cases from this dashboard.</p>
+                <p>Manage your OFWs and reports from this dashboard.</p>
             </div>
 
             <div class="stats-grid">

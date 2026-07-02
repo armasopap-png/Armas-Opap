@@ -8,9 +8,46 @@ require_once '../includes/db.php';
 
 $error = '';
 
+// ── Remember-me auto-login (runs before showing the form) ──────────────
+if (!isset($_SESSION['user_id']) && isset($_COOKIE['remember_me'])) {
+    list($ruid, $rtoken) = array_pad(explode(':', $_COOKIE['remember_me'], 2), 2, null);
+
+    if ($ruid && $rtoken) {
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ? AND remember_token IS NOT NULL");
+        $stmt->execute([$ruid]);
+        $ruser = $stmt->fetch();
+
+        if ($ruser && $ruser['remember_expires'] && new DateTime() < new DateTime($ruser['remember_expires'])
+            && password_verify($rtoken, $ruser['remember_token'])
+            && $ruser['status'] === 'active') {
+
+            $_SESSION['user_id'] = $ruser['id'];
+            $_SESSION['role'] = $ruser['role'];
+            $_SESSION['status'] = $ruser['status'];
+
+            $ip = $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
+            $pdo->prepare("UPDATE users SET last_login=?, last_login_ip=? WHERE id=?")
+                ->execute([date('Y-m-d H:i:s'), $ip, $ruser['id']]);
+
+            $routes = [
+                'ofw' => '/armas/ofw/dashboard.php',
+                'agency' => '/armas/agency/dashboard.php',
+                'admin' => '/armas/admin/dashboard.php',
+                'superadmin' => '/armas/superadmin/dashboard.php',
+            ];
+            header('Location: ' . $routes[$ruser['role']]);
+            exit;
+        } else {
+            // Invalid/expired token — clear the bad cookie
+            setcookie('remember_me', '', time() - 3600, '/');
+        }
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = filter_var(trim($_POST['email']), FILTER_SANITIZE_EMAIL);
     $password = $_POST['password'];
+    $remember = isset($_POST['remember_me']);
 
     // Check lock
     $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
@@ -37,6 +74,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['role'] = $user['role'];
                 $_SESSION['status'] = $user['status'];
+
+                // Remember me: issue a long-lived random token, store only its hash
+                if ($remember) {
+                    $token = bin2hex(random_bytes(32));
+                    $token_hash = password_hash($token, PASSWORD_DEFAULT);
+                    $expires = date('Y-m-d H:i:s', strtotime('+30 days'));
+
+                    $pdo->prepare("UPDATE users SET remember_token=?, remember_expires=? WHERE id=?")
+                        ->execute([$token_hash, $expires, $user['id']]);
+
+                    setcookie('remember_me', $user['id'] . ':' . $token, [
+                        'expires' => strtotime('+30 days'),
+                        'path' => '/',
+                        'secure' => !empty($_SERVER['HTTPS']),
+                        'httponly' => true,
+                        'samesite' => 'Lax',
+                    ]);
+                } else {
+                    // Make sure no stale remember token/cookie lingers
+                    $pdo->prepare("UPDATE users SET remember_token=NULL, remember_expires=NULL WHERE id=?")
+                        ->execute([$user['id']]);
+                    if (isset($_COOKIE['remember_me'])) {
+                        setcookie('remember_me', '', time() - 3600, '/');
+                    }
+                }
 
                 // Log to audit_logs
                 $pdo->prepare("INSERT INTO audit_logs (actor_id, action, ip_address) VALUES (?,?,?)")
@@ -181,6 +243,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 1.25rem;
         }
 
+        .remember-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 12px;
+        }
+
+        .remember-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--dark);
+            user-select: none;
+        }
+
+        .remember-checkbox input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
         .btn-primary {
             width: 100%;
             padding: 14px;
@@ -228,9 +314,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <img src="/armas/assets/img/armas.png" alt="ARMAS Shield">
             </div>
 
-            <div class="auth-header">
-                <p>Sign in to your ARMAS account</p>
-            </div>
+           
 
             <?php if ($error): ?>
                 <div class="alert-error">
@@ -270,7 +354,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <button type="button" class="toggle-password"
                             onclick="this.previousElementSibling.type = this.previousElementSibling.type === 'password' ? 'text' : 'password'; this.textContent = this.previousElementSibling.type === 'password' ? '👁' : '🙈'">👁</button>
                     </div>
-                    <p style="text-align:right; margin-top:8px;"><a href="/armas/pages/forgot-password.php" style="color:var(--primary); font-size:0.85rem; font-weight:600;">Forgot Password?</a></p>
+
+                    <div class="remember-row">
+                        <label class="remember-checkbox">
+                            <input type="checkbox" name="remember_me">
+                            Remember me
+                        </label>
+                        <a href="/armas/pages/forgot-password.php" style="color:var(--primary); font-size:0.85rem; font-weight:600;">Forgot Password?</a>
+                    </div>
                 </div>
 
                 <button type="submit" class="btn btn-primary">Sign In</button>

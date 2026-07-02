@@ -17,6 +17,12 @@ $stmt->execute([$_SESSION['user_id']]);
 $ofw = $stmt->fetch();
 $ofw_id = $ofw['id'];
 
+// Mark notification as read if coming from a notification link
+if (isset($_GET['read'])) {
+    $pdo->prepare("UPDATE notifications SET read_at = NOW() WHERE id = ? AND user_id = ?")
+        ->execute([intval($_GET['read']), $_SESSION['user_id']]);
+}
+
 // Pagination
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $per_page = 10;
@@ -409,6 +415,24 @@ include '../includes/header.php';
                 <div style="background:#f8fafc; border-radius:10px; padding:16px; margin-bottom:24px;">
                     <p style="color:#94a3b8; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin:0 0 8px;">Description</p>
                     <p style="color:#1e293b; margin:0; line-height:1.6;"><?php echo htmlspecialchars($view_case['description']); ?></p>
+                </div>
+
+                <div style="margin-bottom:24px;">
+                    <p style="color:#94a3b8; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin:0 0 10px;">Case Updates</p>
+                    <?php if (empty($case_updates)): ?>
+                        <p style="color:#64748b; font-size:0.85rem; margin:0; background:#f8fafc; border-radius:10px; padding:16px;">
+                            No updates yet. Current status: <?php echo get_status_badge($view_case['status']); ?>
+                        </p>
+                    <?php else: ?>
+                        <div style="display:flex; flex-direction:column; gap:12px;">
+                            <?php foreach ($case_updates as $u): ?>
+                                <div style="background:#f8fafc; border-radius:10px; padding:14px 16px; border-left:3px solid #1a3a6b;">
+                                    <p style="color:#1e293b; margin:0 0 4px; line-height:1.5;"><?php echo htmlspecialchars($u['note']); ?></p>
+                                    <p style="color:#94a3b8; font-size:0.75rem; margin:0;"><?php echo date('M d, Y h:i A', strtotime($u['created_at'])); ?></p>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
 
                 <div style="text-align:right;">

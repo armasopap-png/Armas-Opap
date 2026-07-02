@@ -32,6 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['temp_password'];
     $address = strtoupper(trim(htmlspecialchars($_POST['address'])));
     $contact = htmlspecialchars($_POST['contact_number']);
+    $country  = htmlspecialchars(trim($_POST['country'] ?? ''));
+    $city     = htmlspecialchars(trim($_POST['city'] ?? ''));
 
     // Check if email exists
     $check = $pdo->prepare("SELECT id FROM users WHERE email = ?");
@@ -48,9 +50,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ->execute([$email, $hash]);
             $user_id = $pdo->lastInsertId();
 
-            $pdo->prepare("INSERT INTO ofws (user_id, last_name, first_name, middle_name, suffix, agency_id, address, contact_number)
-                           VALUES (?,?,?,?,?,?,?,?)")
-                ->execute([$user_id, $last_name, $first_name, $middle_name, $suffix, $agency['id'], $address, $contact]);
+            $pdo->prepare("INSERT INTO ofws (user_id, last_name, first_name, middle_name, suffix, agency_id, address, contact_number, country, city)
+                           VALUES (?,?,?,?,?,?,?,?,?,?)")
+                ->execute([$user_id, $last_name, $first_name, $middle_name, $suffix, $agency['id'], $address, $contact, $country, $city]);
 
             $pdo->commit();
 
@@ -123,7 +125,7 @@ include '../includes/header.php'; ?>
                             <polyline points="10 9 9 9 8 9"></polyline>
                         </svg>
                     </span>
-                    <span class="sidebar-link-text">Cases</span>
+                    <span class="sidebar-link-text">Reports</span>
                 </a>
                 <a href="/armas/agency/reports.php" class="sidebar-link">
                     <span class="sidebar-link-icon">
@@ -133,7 +135,7 @@ include '../includes/header.php'; ?>
                             <line x1="6" y1="20" x2="6" y2="14"></line>
                         </svg>
                     </span>
-                    <span class="sidebar-link-text">Reports</span>
+                    <span class="sidebar-link-text">Analytics</span>
                 </a>
                 <a href="/armas/agency/ofw-tracking.php" class="sidebar-link">
                     <span class="sidebar-link-icon">
@@ -262,6 +264,38 @@ include '../includes/header.php'; ?>
                             <input type="text" name="contact_number" class="form-control">
                         </div>
 
+                        <!-- Country Searchable Dropdown -->
+                        <div class="form-group">
+                            <label class="form-label">Country (Current Work Location)</label>
+                            <div class="armas-search-select" id="cntry-wrap">
+                                <div class="armas-ss-trigger" id="cntry-trigger" tabindex="0" role="combobox" aria-haspopup="listbox" aria-expanded="false">
+                                    <span class="armas-ss-label" id="cntry-label">Select a country...</span>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                                </div>
+                                <div class="armas-ss-panel" id="cntry-panel" role="listbox" hidden>
+                                    <input class="armas-ss-search" id="cntry-search" type="text" placeholder="Type to search country..." autocomplete="off" spellcheck="false">
+                                    <ul class="armas-ss-list" id="cntry-list"></ul>
+                                </div>
+                                <input type="hidden" name="country" id="cntry-val">
+                            </div>
+                        </div>
+
+                        <!-- City Searchable Dropdown -->
+                        <div class="form-group">
+                            <label class="form-label">City (Current Work Location)</label>
+                            <div class="armas-search-select" id="city-wrap">
+                                <div class="armas-ss-trigger armas-ss-disabled" id="city-trigger" tabindex="0" role="combobox" aria-haspopup="listbox" aria-expanded="false">
+                                    <span class="armas-ss-label" id="city-label">Select a country first...</span>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                                </div>
+                                <div class="armas-ss-panel" id="city-panel" role="listbox" hidden>
+                                    <input class="armas-ss-search" id="city-search" type="text" placeholder="Type to search city..." autocomplete="off" spellcheck="false">
+                                    <ul class="armas-ss-list" id="city-list"></ul>
+                                </div>
+                                <input type="hidden" name="city" id="city-val">
+                            </div>
+                        </div>
+
                         <button type="submit" class="btn btn-primary">Add OFW</button>
                         <a href="/armas/agency/ofw-list.php" class="btn btn-outline">Cancel</a>
                     </form>
@@ -290,6 +324,241 @@ include '../includes/header.php'; ?>
     }
 </script>
 
-<header class="main-header">
+<style>
+/* ── ARMAS Searchable Select ── */
+.armas-search-select { position: relative; }
 
-    <?php include '../includes/footer.php'; ?>
+.armas-ss-trigger {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 42px; padding: 0 14px;
+    border: 1px solid #d1d5db; border-radius: 8px;
+    background: #fff; cursor: pointer;
+    font-size: 0.9rem; color: #374151;
+    transition: border-color .2s, box-shadow .2s;
+    user-select: none;
+}
+.armas-ss-trigger:hover { border-color: #a5b4fc; }
+.armas-ss-trigger.armas-ss-open,
+.armas-ss-trigger:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,.18);
+}
+.armas-ss-trigger.armas-ss-disabled {
+    background: #f3f4f6; color: #9ca3af;
+    cursor: not-allowed; pointer-events: none;
+}
+.armas-ss-trigger svg { flex-shrink:0; color:#9ca3af; transition: transform .2s; }
+.armas-ss-trigger.armas-ss-open svg { transform: rotate(180deg); }
+.armas-ss-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.armas-ss-panel {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: #fff; border: 1px solid #d1d5db; border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.13);
+    z-index: 9999; overflow: hidden;
+}
+.armas-ss-panel[hidden] { display: none !important; }
+
+.armas-ss-search {
+    display: block; width: 100%; box-sizing: border-box;
+    padding: 10px 14px; border: none; border-bottom: 1px solid #f0f0f0;
+    font-size: 0.875rem; color: #374151;
+    outline: none; background: #fafafa;
+}
+.armas-ss-search:focus { background: #fff; border-bottom-color: #a5b4fc; }
+
+.armas-ss-list {
+    list-style: none; margin: 0; padding: 4px 0;
+    max-height: 230px; overflow-y: auto;
+}
+.armas-ss-list li {
+    padding: 9px 16px; font-size: 0.875rem; color: #374151;
+    cursor: pointer; transition: background .1s;
+}
+.armas-ss-list li:hover,
+.armas-ss-list li.armas-ss-active { background: #eef2ff; color: #4f46e5; }
+.armas-ss-list li.armas-ss-muted  { color: #9ca3af; cursor: default; font-style: italic; }
+</style>
+
+<script>
+(function () {
+    /* ─── All countries hardcoded — no network needed ─── */
+    var COUNTRIES = [
+        "Afghanistan","Albania","Algeria","Andorra","Angola","Antigua and Barbuda",
+        "Argentina","Armenia","Australia","Austria","Azerbaijan","Bahamas","Bahrain",
+        "Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bhutan",
+        "Bolivia","Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria",
+        "Burkina Faso","Burundi","Cabo Verde","Cambodia","Cameroon","Canada",
+        "Central African Republic","Chad","Chile","China","Colombia","Comoros",
+        "Congo","Costa Rica","Croatia","Cuba","Cyprus","Czech Republic","Denmark",
+        "Djibouti","Dominica","Dominican Republic","Ecuador","Egypt","El Salvador",
+        "Equatorial Guinea","Eritrea","Estonia","Eswatini","Ethiopia","Fiji",
+        "Finland","France","Gabon","Gambia","Georgia","Germany","Ghana","Greece",
+        "Grenada","Guatemala","Guinea","Guinea-Bissau","Guyana","Haiti","Honduras",
+        "Hungary","Iceland","India","Indonesia","Iran","Iraq","Ireland","Israel",
+        "Italy","Jamaica","Japan","Jordan","Kazakhstan","Kenya","Kiribati","Kuwait",
+        "Kyrgyzstan","Laos","Latvia","Lebanon","Lesotho","Liberia","Libya",
+        "Liechtenstein","Lithuania","Luxembourg","Madagascar","Malawi","Malaysia",
+        "Maldives","Mali","Malta","Marshall Islands","Mauritania","Mauritius",
+        "Mexico","Micronesia","Moldova","Monaco","Mongolia","Montenegro","Morocco",
+        "Mozambique","Myanmar","Namibia","Nauru","Nepal","Netherlands","New Zealand",
+        "Nicaragua","Niger","Nigeria","North Korea","North Macedonia","Norway",
+        "Oman","Pakistan","Palau","Palestine","Panama","Papua New Guinea","Paraguay",
+        "Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda",
+        "Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines",
+        "Samoa","San Marino","Sao Tome and Principe","Saudi Arabia","Senegal",
+        "Serbia","Seychelles","Sierra Leone","Singapore","Slovakia","Slovenia",
+        "Solomon Islands","Somalia","South Africa","South Korea","South Sudan",
+        "Spain","Sri Lanka","Sudan","Suriname","Sweden","Switzerland","Syria",
+        "Taiwan","Tajikistan","Tanzania","Thailand","Timor-Leste","Togo","Tonga",
+        "Trinidad and Tobago","Tunisia","Turkey","Turkmenistan","Tuvalu","Uganda",
+        "Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay",
+        "Uzbekistan","Vanuatu","Vatican City","Venezuela","Vietnam","Yemen",
+        "Zambia","Zimbabwe"
+    ];
+
+    /* ─── Generic searchable dropdown ─── */
+    function SearchSelect(opts) {
+        var trigger = document.getElementById(opts.triggerId);
+        var panel   = document.getElementById(opts.panelId);
+        var search  = document.getElementById(opts.searchId);
+        var list    = document.getElementById(opts.listId);
+        var hidden  = document.getElementById(opts.hiddenId);
+        var label   = document.getElementById(opts.labelId);
+        var onPick  = opts.onPick || function(){};
+        var items   = [];
+
+        function open() {
+            if (trigger.classList.contains('armas-ss-disabled')) return;
+            panel.hidden = false;
+            trigger.classList.add('armas-ss-open');
+            trigger.setAttribute('aria-expanded','true');
+            search.value = '';
+            renderItems(items);
+            search.focus();
+        }
+        function close() {
+            panel.hidden = true;
+            trigger.classList.remove('armas-ss-open');
+            trigger.setAttribute('aria-expanded','false');
+        }
+        function toggle() { panel.hidden ? open() : close(); }
+
+        function renderItems(arr) {
+            var q = search.value.toLowerCase();
+            var filtered = arr.filter(function(i){ return i.toLowerCase().indexOf(q) !== -1; });
+            list.innerHTML = '';
+            if (!filtered.length) {
+                list.innerHTML = '<li class="armas-ss-muted">No results found</li>';
+                return;
+            }
+            filtered.forEach(function(item) {
+                var li = document.createElement('li');
+                li.textContent = item;
+                li.addEventListener('mousedown', function(e){ e.preventDefault(); pick(item); });
+                list.appendChild(li);
+            });
+        }
+
+        function pick(val) {
+            hidden.value = val;
+            label.textContent = val;
+            label.style.color = '#374151';
+            close();
+            onPick(val);
+        }
+
+        function setItems(arr) {
+            items = arr;
+        }
+        function enable() {
+            trigger.classList.remove('armas-ss-disabled');
+        }
+        function disable(msg) {
+            trigger.classList.add('armas-ss-disabled');
+            label.textContent = msg || 'Select a country first...';
+            hidden.value = '';
+        }
+        function setLoading(msg) {
+            list.innerHTML = '<li class="armas-ss-muted">' + msg + '</li>';
+        }
+
+        // Events
+        trigger.addEventListener('click', toggle);
+        trigger.addEventListener('keydown', function(e){
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+            if (e.key === 'Escape') close();
+        });
+        search.addEventListener('input', function(){ renderItems(items); });
+        document.addEventListener('mousedown', function(e){
+            if (!trigger.contains(e.target) && !panel.contains(e.target)) close();
+        });
+
+        return { setItems: setItems, enable: enable, disable: disable, setLoading: setLoading, open: open, close: close };
+    }
+
+    /* ─── Init country ─── */
+    var countryDD = SearchSelect({
+        triggerId: 'cntry-trigger',
+        panelId:   'cntry-panel',
+        searchId:  'cntry-search',
+        listId:    'cntry-list',
+        hiddenId:  'cntry-val',
+        labelId:   'cntry-label',
+        onPick: function(country) {
+            // reset city
+            cityDD.disable('Loading cities...');
+            cityDD.enable();
+            document.getElementById('city-panel').hidden = true;
+
+            var cityList = document.getElementById('city-list');
+            cityList.innerHTML = '<li class="armas-ss-muted">Loading cities...</li>';
+            document.getElementById('city-label').textContent = 'Loading cities...';
+
+            fetch('https://countriesnow.space/api/v0.1/countries/cities', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ country: country })
+            })
+            .then(function(r){ return r.json(); })
+            .then(function(data){
+                if (!data.error && data.data && data.data.length) {
+                    var sorted = data.data.slice().sort();
+                    cityDD.setItems(sorted);
+                    document.getElementById('city-label').textContent = 'Select a city...';
+                    document.getElementById('city-val').value = '';
+                } else {
+                    cityDD.setItems([]);
+                    document.getElementById('city-label').textContent = 'No cities found';
+                }
+            })
+            .catch(function(){
+                cityDD.setItems([]);
+                document.getElementById('city-label').textContent = 'Failed to load cities';
+            });
+        }
+    });
+    countryDD.setItems(COUNTRIES);
+
+    /* ─── Init city ─── */
+    var cityDD = SearchSelect({
+        triggerId: 'city-trigger',
+        panelId:   'city-panel',
+        searchId:  'city-search',
+        listId:    'city-list',
+        hiddenId:  'city-val',
+        labelId:   'city-label'
+    });
+    // city starts disabled
+    document.getElementById('city-trigger').classList.add('armas-ss-disabled');
+
+})();
+</script>
+
+
+</div><!-- end main-body -->
+    </main>
+</div><!-- end dashboard-layout -->
+
+<?php include '../includes/footer.php'; ?>
